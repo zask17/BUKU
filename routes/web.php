@@ -7,8 +7,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('site.cek-koneksi');
+Route::get('/cek-koneksi', 
+[SiteController::class, 'cekKoneksi'])
+->name('site.cek-koneksi');
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', 
+[App\Http\Controllers\HomeController::class, 'index'])
+->name('home');
