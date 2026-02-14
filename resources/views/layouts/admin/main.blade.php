@@ -3,6 +3,7 @@
   <head>
     @include('layouts.admin.head')
   </head>
+  
   <body>
     <div class="container-scroller">
       @include('layouts.admin.navbar')

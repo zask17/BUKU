@@ -41,7 +41,7 @@
 <div class="content-wrapper">
     <section class="landing-hero shadow-sm">
         <div class="container">
-            <h1 class="display-4">Sistem Manajemen Inventaris & Pengadaan Toko</h1>
+            <h1 class="display-4">halo admin</h1>
             <p class="lead text-muted mt-3">
                 Kelola stok barang, pengadaan, penerimaan, dan penjualan dengan mudah dan efisien. <br>
                 Ditenagai oleh basis data relasional yang kokoh dengan otomatisasi tingkat tinggi.
