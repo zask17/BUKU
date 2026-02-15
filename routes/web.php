@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\SiteController;
 use App\Http\Controllers\Admin\DashboardAdminController;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Visitor\DashboardVisitorController;
 
 Route::get('/', function () {
@@ -19,6 +20,13 @@ Route::get('/home',
 [App\Http\Controllers\HomeController::class, 'index'])
 ->name('home');
 
+// --- RUTE HALAMAN LOGIN ---
+// LOGIN
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->name('login.process');
+
+// LOGOUT
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 
 // AKSES ADMIN (idrole = 1)

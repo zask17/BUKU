@@ -115,8 +115,8 @@ class LoginController extends Controller
         return redirect('/')->with('Success', 'Logout berhasil!');
     }
 
-        protected function loggedOut(Request $request)
-    {
-        return redirect('/')->with('success', 'Logout berhasil!');
-    }
+    //     protected function loggedOut(Request $request)
+    // {
+    //     return redirect('/')->with('success', 'Logout berhasil!');
+    // }
 }
