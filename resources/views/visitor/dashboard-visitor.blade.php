@@ -1,4 +1,4 @@
-@extends('layouts.admin.main')
+@extends('layouts.visitor.main')
 
 @section('style-page')
 <style>
