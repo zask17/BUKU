@@ -8,41 +8,50 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardAdminController extends Controller
 {
+    /**
+     * Fungsi pembantu untuk mengambil statistik dasar.
+     * PERBAIKAN: Menambahkan fungsi yang sebelumnya hilang.
+     */
+    private function getStats()
+    {
+        return [
+            'jumlahPengunjung' => DB::table('users')->where('idrole', 2)->count(),
+            'jumlahKategori' => DB::table('kategori')->count(),
+            'jumlahBuku' => DB::table('buku')->count(),
+        ];
+    }
+
     public function index()
     {
-        //Jumlah pengunjung
-        $jumlahPengunjung = DB::table('users')->where('idrole', 2)->count();
-
-        //Jumlah kategori
-        $jumlahKategori = DB::table('kategori')->count();
-
-        //Jumlah buku
-        $jumlahBuku = DB::table('buku')->count();
-
-        //Jumlah peminjaman
-        // $jumlahPeminjaman = DB::table('peminjaman')->count();
-
-        return view('admin.dashboard-admin', compact('jumlahPengunjung', 'jumlahKategori', 'jumlahBuku'));
+        return view('admin.dashboard-admin', $this->getStats());
     }
 
     // Fungsi untuk halaman Kategori
     public function kategori()
     {
-        // Tetap kirim data statistik agar card di atas tidak error
-        $jumlahPengunjung = DB::table('users')->where('idrole', 2)->count();
-        $jumlahKategori = DB::table('kategori')->count();
-        $jumlahBuku = DB::table('buku')->count();
+        // Mengambil data kategori untuk ditampilkan di tabel
+        $dataKategori = DB::table('kategori')->orderBy('nama_kategori', 'asc')->get();
 
-        return view('admin.kategori-admin', compact('jumlahPengunjung', 'jumlahKategori', 'jumlahBuku'));
+        // Menggabungkan statistik dengan data kategori
+        // PERBAIKAN: Mengarahkan ke view admin, bukan visitor
+        $data = array_merge($this->getStats(), ['dataKategori' => $dataKategori]);
+
+        return view('admin.kategori-admin', $data);
     }
 
     // Fungsi untuk halaman Buku
     public function buku()
     {
-        $jumlahPengunjung = DB::table('users')->where('idrole', 2)->count();
-        $jumlahKategori = DB::table('kategori')->count();
-        $jumlahBuku = DB::table('buku')->count();
+        // Mengambil data buku beserta nama kategorinya menggunakan Join
+        $dataBuku = DB::table('buku')
+            ->leftJoin('kategori', 'buku.idkategori', '=', 'kategori.idkategori')
+            ->select('buku.*', 'kategori.nama_kategori')
+            ->get();
 
-        return view('admin.buku-admin', compact('jumlahPengunjung', 'jumlahKategori', 'jumlahBuku'));
+        // Menggabungkan statistik dengan data buku
+        // PERBAIKAN: Mengarahkan ke view admin, bukan visitor
+        $data = array_merge($this->getStats(), ['dataBuku' => $dataBuku]);
+
+        return view('admin.buku-admin', $data);
     }
 }
