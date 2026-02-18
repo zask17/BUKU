@@ -8,30 +8,44 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardVisitorController extends Controller
 {
+    // Fungsi pembantu untuk mengambil statistik data
+    private function getStats()
+    {
+        return [
+            'jumlahKategori'   => DB::table('kategori')->count(),
+            'jumlahBuku'       => DB::table('buku')->count(),
+            // 'jumlahPengunjung' => DB::table('users')->where('role_id', 2)->count(), // Menghitung role visitor
+        ];
+    }
 
     public function index()
     {
-        //Jumlah kategori
-        $jumlahKategori = DB::table('kategori')->count();
-
-        //Jumlah buku
-        $jumlahBuku = DB::table('buku')->count();
-
-        //Jumlah peminjaman
-        // $jumlahPeminjaman = DB::table('peminjaman')->count();
-
-        return view('visitor.dashboard-visitor', compact('jumlahPengguna', 'jumlahKategori', 'jumlahBuku'));
+        // Menggunakan getStats agar data konsisten di semua halaman
+        return view('visitor.dashboard-visitor', $this->getStats());
     }
 
     public function kategori()
     {
-        // Memanggil file kategori-visitor.blade.php
-        return view('visitor.kategori-visitor', $this->getStats());
+        // Mengambil data kategori untuk ditampilkan di tabel
+        $allKategori = DB::table('kategori')->get();
+
+        // Menggabungkan statistik dashboard dengan data kategori
+        $data = array_merge($this->getStats(), ['allKategori' => $allKategori]);
+
+        return view('visitor.kategori-visitor', $data);
     }
+
 
     public function buku()
     {
-        // Memanggil file buku-visitor.blade.php
-        return view('visitor.buku-visitor', $this->getStats());
+        // Mengambil data buku dengan join kategori
+        $dataBuku = DB::table('buku')
+            ->leftJoin('kategori', 'buku.idkategori', '=', 'kategori.idkategori')
+            ->select('buku.*', 'kategori.nama_kategori')
+            ->get();
+
+        $data = array_merge($this->getStats(), ['dataBuku' => $dataBuku]);
+
+        return view('visitor.buku-visitor', $data);
     }
 }

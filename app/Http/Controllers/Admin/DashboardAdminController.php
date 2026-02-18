@@ -49,7 +49,6 @@ class DashboardAdminController extends Controller
             ->get();
 
         // Menggabungkan statistik dengan data buku
-        // PERBAIKAN: Mengarahkan ke view admin, bukan visitor
         $data = array_merge($this->getStats(), ['dataBuku' => $dataBuku]);
 
         return view('admin.buku-admin', $data);

@@ -25,6 +25,7 @@
                 <i class="mdi mdi-format-list-bulleted menu-icon"></i>
             </a>
         </li>
+
         <li class="nav-item {{ Request::is('visitor/buku') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('visitor.buku') }}">
                 <span class="menu-title">Buku</span>

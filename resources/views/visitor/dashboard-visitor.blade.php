@@ -50,14 +50,14 @@
                 <p class="lead text-muted mt-3">
                     Jangan lupa makan karena gak semua punya someone buat diajak makan siang.
                 </p>
-                <div class="mt-4">
+                {{-- <div class="mt-4">
                     @auth
                         <a href="{{ url('/dashboard') }}" class="btn btn-gradient-primary btn-lg me-2">Buka Dashboard</a>
                     @else
                         <a href="{{ route('login') }}" class="btn btn-gradient-primary btn-lg me-2">Mulai Sekarang</a>
                     @endauth
                     <a href="#features" class="btn btn-outline-custom btn-lg">Lihat Fitur Database</a>
-                </div>
+                </div> --}}
             </div>
         </section>
 
