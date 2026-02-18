@@ -13,20 +13,21 @@
                 <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
             </a>
         </li>
-        <li class="nav-item {{ Request::is('dashboard') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ url('/dashboard') }}">
+
+        <li class="nav-item {{ Request::is('admin/dashboard') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.dashboard') }}">
                 <span class="menu-title">Dashboard</span>
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
         </li>
-        <li class="nav-item {{ Request::is('kategori*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ url('/kategori') }}">
+        <li class="nav-item {{ Request::is('admin/kategori*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.kategori') }}">
                 <span class="menu-title">Kategori</span>
                 <i class="mdi mdi-format-list-bulleted menu-icon"></i>
             </a>
         </li>
-        <li class="nav-item {{ Request::is('buku*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ url('/buku') }}">
+        <li class="nav-item {{ Request::is('admin/buku*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.buku') }}">
                 <span class="menu-title">Buku</span>
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>

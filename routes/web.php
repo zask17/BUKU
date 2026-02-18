@@ -10,15 +10,19 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/cek-koneksi', 
-[SiteController::class, 'cekKoneksi'])
-->name('site.cek-koneksi');
+Route::get(
+    '/cek-koneksi',
+    [SiteController::class, 'cekKoneksi']
+)
+    ->name('site.cek-koneksi');
 
 Auth::routes();
 
-Route::get('/home', 
-[App\Http\Controllers\HomeController::class, 'index'])
-->name('home');
+Route::get(
+    '/home',
+    [App\Http\Controllers\HomeController::class, 'index']
+)
+    ->name('home');
 
 // --- RUTE HALAMAN LOGIN ---
 // LOGIN
@@ -34,7 +38,24 @@ Route::get('/admin/dashboard', [DashboardAdminController::class, 'index'])
     ->name('admin.dashboard')
     ->middleware(['auth', 'role:1']);
 
+Route::get('/admin/kategori', [DashboardAdminController::class, 'kategori']) // Ganti ke fungsi kategori
+    ->name('admin.kategori')
+    ->middleware(['auth', 'role:1']);
+
+Route::get('/admin/buku', [DashboardAdminController::class, 'buku']) // Ganti ke fungsi buku
+    ->name('admin.buku')
+    ->middleware(['auth', 'role:1']);
+
+
 // AKSES VISITOR (idrole = 2 - default)
 Route::get('/visitor/dashboard', [DashboardVisitorController::class, 'index'])
     ->name('visitor.dashboard')
+    ->middleware(['auth', 'role:2']);
+
+Route::get('/visitor/kategori', [DashboardVisitorController::class, 'kategori']) // Ke fungsi kategori
+    ->name('visitor.kategori')
+    ->middleware(['auth', 'role:2']);
+
+Route::get('/visitor/buku', [DashboardVisitorController::class, 'buku']) // Ke fungsi buku
+    ->name('visitor.buku')
     ->middleware(['auth', 'role:2']);

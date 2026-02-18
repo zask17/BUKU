@@ -1,8 +1,8 @@
 <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
     <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
-        <a class="navbar-brand brand-logo" href="{{ url('/') }}"><img src="{{ asset('assets/images/logo.svg') }}"
+        <a class="navbar-brand brand-logo" href="{{ url('admin/dashboard') }}"><img src="{{ asset('assets/images/logo.svg') }}"
                 alt="logo" /></a>
-        <a class="navbar-brand brand-logo-mini" href="{{ url('/') }}"><img
+        <a class="navbar-brand brand-logo-mini" href="{{ url('admin/dashboard') }}"><img
                 src="{{ asset('assets/images/logo-mini.svg') }}" alt="logo" /></a>
     </div>
 
