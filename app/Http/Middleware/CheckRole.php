@@ -22,8 +22,8 @@ class CheckRole
             return redirect('/login');
         }
 
-        // 2. Cek apakah idrole user sesuai dengan parameter di route 
-        // Jika Admin (1) atau Visitor (2) cocok, lanjutkan permintaan
+        // 2. Cek idrole user sesuai dengan route 
+        // Admin (1) atau Visitor (2)
         if (Auth::user()->idrole == $roleId) {
             return $next($request);
         }

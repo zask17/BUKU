@@ -39,18 +39,73 @@ class DashboardAdminController extends Controller
         return view('admin.kategori-admin', $data);
     }
 
+
+    // --- CRUD KATEGORI ---
+    public function kategoriStore(Request $request)
+    {
+        DB::table('kategori')->insert(['nama_kategori' => $request->nama_kategori]);
+        return redirect()->back()->with('success', 'Kategori ditambahkan!');
+    }
+
+    public function kategoriUpdate(Request $request, $id)
+    {
+        DB::table('kategori')->where('idkategori', $id)->update(['nama_kategori' => $request->nama_kategori]);
+        return redirect()->back()->with('success', 'Kategori diperbarui!');
+    }
+
+    public function kategoriDestroy($id)
+    {
+        DB::table('kategori')->where('idkategori', $id)->delete();
+        return redirect()->back()->with('success', 'Kategori dihapus!');
+    }
+
     // Fungsi untuk halaman Buku
     public function buku()
     {
-        // Mengambil data buku beserta nama kategorinya menggunakan Join
+        // 1. Ambil data buku dan kategorinya menggunakan Join
         $dataBuku = DB::table('buku')
             ->leftJoin('kategori', 'buku.idkategori', '=', 'kategori.idkategori')
             ->select('buku.*', 'kategori.nama_kategori')
             ->get();
 
-        // Menggabungkan statistik dengan data buku
-        $data = array_merge($this->getStats(), ['dataBuku' => $dataBuku]);
+        // 2. Ambil data kategori
+        $dataKategori = DB::table('kategori')->orderBy('nama_kategori', 'asc')->get();
+
+        // 3. Menggabungkan statistik dengan data buku DAN data kategori
+        $data = array_merge($this->getStats(), [
+            'dataBuku' => $dataBuku,
+            'dataKategori' => $dataKategori // Variabel ini sekarang tersedia untuk view
+        ]);
 
         return view('admin.buku-admin', $data);
+    }
+
+    // --- CRUD BUKU ---
+    public function bukuStore(Request $request)
+    {
+        DB::table('buku')->insert([
+            'kode' => $request->kode,
+            'judul' => $request->judul,
+            'pengarang' => $request->pengarang,
+            'idkategori' => $request->idkategori
+        ]);
+        return redirect()->back()->with('success', 'Buku ditambahkan!');
+    }
+
+    public function bukuUpdate(Request $request, $id)
+    {
+        DB::table('buku')->where('idbuku', $id)->update([
+            'kode' => $request->kode,
+            'judul' => $request->judul,
+            'pengarang' => $request->pengarang,
+            'idkategori' => $request->idkategori
+        ]);
+        return redirect()->back()->with('success', 'Buku diperbarui!');
+    }
+
+    public function bukuDestroy($id)
+    {
+        DB::table('buku')->where('idbuku', $id)->delete();
+        return redirect()->back()->with('success', 'Buku dihapus!');
     }
 }

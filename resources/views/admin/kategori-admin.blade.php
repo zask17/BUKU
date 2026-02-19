@@ -66,12 +66,16 @@
                 <div class="card">
                     <div class="card-body">
                         <h4 class="card-title">Daftar Kategori</h4>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalAdd">Tambah</button>
                         <div class="table-responsive">
+
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>No</th>
                                         <th>Nama Kategori</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -79,6 +83,16 @@
                                         <tr>
                                             <td>{{ $key + 1 }}</td>
                                             <td>{{ $item->nama_kategori }}</td>
+                                            <td>
+                                                <button class="btn btn-info btn-xs" data-bs-toggle="modal"
+                                                    data-bs-target="#edit{{ $item->idkategori }}">Edit</button>
+                                                <form action="{{ route('admin.kategori.destroy', $item->idkategori) }}"
+                                                    method="POST" class="d-inline">
+                                                    @csrf @method('DELETE')
+                                                    <button class="btn btn-danger btn-xs"
+                                                        onclick="return confirm('Hapus?')">Hapus</button>
+                                                </form>
+                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>
