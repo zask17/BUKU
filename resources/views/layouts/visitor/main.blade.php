@@ -14,6 +14,15 @@
 
       <div class="main-panel">
         <div class="content-wrapper">
+          <div class="page-header">
+            <h3 class="page-title"> @yield('title-page', 'Dashboard') </h3>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('visitor.dashboard') }}">Dashboard</a></li>
+                @yield('breadcrumb')
+              </ol>
+            </nav>
+          </div>
           @yield('content')
         </div>
 

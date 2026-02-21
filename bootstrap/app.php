@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Daftarkan alias middleware untuk handle role
+        // Alias middleware untuk handle role
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);

@@ -1,5 +1,11 @@
 @extends('layouts.visitor.main')
 
+@section('title-page', 'Daftar Buku')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item active" aria-current="page">Buku</li>
+@endsection
+
 @section('style-page')
     <style>
         .landing-hero {

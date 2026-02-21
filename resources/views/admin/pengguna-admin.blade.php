@@ -1,7 +1,9 @@
 @extends('layouts.admin.main')
-@section('title-page', 'Daftar Pengguna')
+
+@section('title-page', 'Manajemen Pengguna')
+
 @section('breadcrumb')
-    <li class="breadcrumb-item active">Pengguna</li>
+    <li class="breadcrumb-item active" aria-current="page">Pengguna</li>
 @endsection
 
 @section('style-page')
@@ -47,41 +49,42 @@
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Daftar Pengguna Sistem</h4>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th> ID </th>
-                                <th> Nama </th>
-                                <th> Email </th>
-                                <th> Role </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($dataUsers as $u)
-                            <tr>
-                                <td> {{ $u->iduser }} </td>
-                                <td> {{ $u->nama_user }} </td>
-                                <td> {{ $u->email }} </td>
-                                <td>
-                                    <label class="badge {{ $u->role_id == 1 ? 'badge-danger' : 'badge-info' }}">
-                                        {{ strtoupper($u->nama_role) }}
-                                    </label>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+    <div class="row">
+        <div class="col-lg-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Daftar Pengguna Sistem</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nama Pengguna</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($dataPengguna as $user)
+                                    <tr>
+                                        <td>{{ $user->iduser }}</td>
+                                        <td>{{ $user->nama_user }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        <td>
+                                            <label
+                                                class="badge {{ $user->idrole == 1 ? 'badge-gradient-danger' : 'badge-gradient-info' }}">
+                                                {{ $user->nama_role }}
+                                            </label>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @section('js-page')

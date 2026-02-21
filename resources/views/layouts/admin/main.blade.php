@@ -18,7 +18,7 @@
             <h3 class="page-title"> @yield('title-page', 'Dashboard') </h3>
             <nav aria-label="breadcrumb">
               <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Admin</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                 @yield('breadcrumb')
               </ol>
             </nav>

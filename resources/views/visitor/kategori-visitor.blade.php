@@ -1,5 +1,11 @@
 @extends('layouts.visitor.main')
 
+@section('title-page', 'Daftar Kategori')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item active" aria-current="page">Kategori</li>
+@endsection
+
 @section('style-page')
     <style>
         .landing-hero {

@@ -20,12 +20,21 @@
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
         </li>
+        
+        <li class="nav-item {{ Request::is('admin/pengguna*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.pengguna') }}">
+                <span class="menu-title">Pengguna</span>
+                <i class="mdi mdi-account menu-icon"></i>
+            </a>
+        </li>
+        
         <li class="nav-item {{ Request::is('admin/kategori*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.kategori') }}">
                 <span class="menu-title">Kategori</span>
                 <i class="mdi mdi-format-list-bulleted menu-icon"></i>
             </a>
         </li>
+
         <li class="nav-item {{ Request::is('admin/buku*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.buku') }}">
                 <span class="menu-title">Buku</span>

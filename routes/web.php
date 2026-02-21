@@ -18,11 +18,12 @@ Auth::routes();
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.process');
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Ganti dari POST jadi GET (untuk test saja, nanti kembalikan ke POST)
+Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // --- GRUP AKSES ADMIN (idrole = 1) ---
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function () {
-    // Dashboard
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
 
     // CRUD Kategori

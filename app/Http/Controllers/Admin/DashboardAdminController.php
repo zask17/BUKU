@@ -5,17 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Models\Kategori;
+use App\Models\Buku;
+use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class DashboardAdminController extends Controller
 {
-    /**
-     * Fungsi pembantu untuk mengambil statistik dasar.
-     * PERBAIKAN: Menambahkan fungsi yang sebelumnya hilang.
-     */
     private function getStats()
     {
         return [
-            'jumlahPengunjung' => DB::table('users')->where('idrole', 2)->count(),
+            'jumlahPengguna' => DB::table('users')->count(),
             'jumlahKategori' => DB::table('kategori')->count(),
             'jumlahBuku' => DB::table('buku')->count(),
         ];
@@ -26,19 +29,32 @@ class DashboardAdminController extends Controller
         return view('admin.dashboard-admin', $this->getStats());
     }
 
+    // Fungsi untuk halaman Pengguna
+    public function pengguna()
+    {
+        $dataPengguna = DB::table('users')
+            ->join('roles', 'users.idrole', '=', 'roles.idrole')
+            ->select('users.*', 'roles.nama_role')
+            ->orderBy('users.iduser', 'asc')
+            ->get();
+
+        $data = array_merge($this->getStats(), ['dataPengguna' => $dataPengguna]);
+
+        return view('admin.pengguna-admin', $data);
+    }
+
+
     // Fungsi untuk halaman Kategori
     public function kategori()
     {
         // Mengambil data kategori untuk ditampilkan di tabel
-        $dataKategori = DB::table('kategori')->orderBy('nama_kategori', 'asc')->get();
+        $dataKategori = DB::table('kategori')->orderBy('idkategori', 'asc')->get();
 
         // Menggabungkan statistik dengan data kategori
-        // PERBAIKAN: Mengarahkan ke view admin, bukan visitor
         $data = array_merge($this->getStats(), ['dataKategori' => $dataKategori]);
 
         return view('admin.kategori-admin', $data);
     }
-
 
     // --- CRUD KATEGORI ---
     public function kategoriStore(Request $request)
@@ -66,15 +82,16 @@ class DashboardAdminController extends Controller
         $dataBuku = DB::table('buku')
             ->leftJoin('kategori', 'buku.idkategori', '=', 'kategori.idkategori')
             ->select('buku.*', 'kategori.nama_kategori')
+            ->orderBy('buku.idbuku', 'asc')
             ->get();
 
         // 2. Ambil data kategori
-        $dataKategori = DB::table('kategori')->orderBy('nama_kategori', 'asc')->get();
+        $dataKategori = DB::table('kategori')->orderBy('idkategori', 'asc')->get();
 
         // 3. Menggabungkan statistik dengan data buku DAN data kategori
         $data = array_merge($this->getStats(), [
             'dataBuku' => $dataBuku,
-            'dataKategori' => $dataKategori // Variabel ini sekarang tersedia untuk view
+            'dataKategori' => $dataKategori
         ]);
 
         return view('admin.buku-admin', $data);
