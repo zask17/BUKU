@@ -2,11 +2,18 @@
 
 @section('title-page', 'Login')
 
+{{-- Nonadkitfkan navbar dan sidebar --}}
+@php
+    $hideNavbar = true;
+    $hideSidebar = true;
+@endphp
+
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
             <div class="card shadow-lg border-0 mt-5">
+                
                 <div class="card-header bg-gradient-primary text-white text-center py-4">
                     <h3 class="mb-0">Masuk ke Akun Anda</h3>
                 </div>

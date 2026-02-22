@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
@@ -13,16 +14,29 @@ class User extends Authenticatable
 
     protected $table = 'users';
     protected $primaryKey = 'iduser';
-    
+
+    // Diaktifkan kalau tidak mau otomatis update timestamps
+    // public $timestamps = false;  
+
     protected $fillable = [
-        'nama_user', 'email', 'password', 'idrole',
+        'nama_user',
+        'email',
+        'password',
+        'idrole',
+        'email_verified_at',
+        'remember_token',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
-    // Setiap User punya satu Role
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    // Relasi setiap User punya satu Role
     public function role()
     {
         return $this->belongsTo(Role::class, 'idrole', 'idrole');

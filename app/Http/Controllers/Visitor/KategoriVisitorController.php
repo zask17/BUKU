@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Visitor;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use App\Models\Kategori;
+use App\Models\Buku;
 
-class DashboardVisitorController extends Controller
+class KategoriVisitorController extends Controller
 {
     private function getStats()
     {
@@ -17,6 +19,10 @@ class DashboardVisitorController extends Controller
 
     public function index()
     {
-        return view('visitor.dashboard-visitor', $this->getStats());
+        $dataKategori = DB::table('kategori')
+            ->orderBy('nama_kategori', 'asc')
+            ->get();
+
+        return view('visitor.kategori-visitor', compact('dataKategori'));
     }
 }
