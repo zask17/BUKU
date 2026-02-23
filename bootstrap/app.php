@@ -17,5 +17,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        
+    // // Handle 403 Forbidden
+    //     $exceptions->render(function ($request, \Symfony\Component\HttpFoundation\Response $response) {
+    //         if ($response->getStatusCode() === 403) {
+    //             return response()->view('errors.403', [], 403);
+    //         }
+    //         return $response;
+    //     });
+        
+    //     // Handle 404 Not Found
+    //     $exceptions->render(function ($request, \Symfony\Component\HttpFoundation\Response $response) {
+    //         if ($response->getStatusCode() === 404) {
+    //             return response()->view('errors.404', [], 404);
+    //         }
+    //         return $response;
+    //     });
+
     })->create();

@@ -23,6 +23,8 @@ class User extends Authenticatable
         'email',
         'password',
         'idrole',
+        'id_google',
+        'otp',
         'email_verified_at',
         'remember_token',
     ];
@@ -30,6 +32,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'otp',
     ];
 
     protected $casts = [

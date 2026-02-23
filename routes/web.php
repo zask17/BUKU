@@ -2,7 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\SiteController;
+use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Auth\ConfirmPasswordController;
+use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\Auth\TwoFactorController;
+use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\PenggunaAdminController;
@@ -26,9 +39,18 @@ Auth::routes();
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.process');
-// Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Ganti dari POST jadi GET (ini lagi eror aja, nanti balik ke POST)
-Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+// Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Google Login
+Route::get('/auth/google', [App\Http\Controllers\Auth\LoginController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [App\Http\Controllers\Auth\LoginController::class, 'handleGoogleCallback']);
+
+// OTP
+Route::get('/otp-verify', [App\Http\Controllers\Auth\LoginController::class, 'showOtpForm'])->name('otp.form');
+Route::post('/otp-verify', [App\Http\Controllers\Auth\LoginController::class, 'verifyOtp'])->name('otp.verify');
+
 
 // --- GRUP AKSES ADMIN (idrole = 1) ---
 Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function () {
