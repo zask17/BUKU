@@ -20,14 +20,14 @@
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
         </li>
-        
+
         <li class="nav-item {{ Request::is('admin/pengguna*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.pengguna') }}">
                 <span class="menu-title">Pengguna</span>
                 <i class="mdi mdi-account menu-icon"></i>
             </a>
         </li>
-        
+
         <li class="nav-item {{ Request::is('admin/kategori*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.kategori') }}">
                 <span class="menu-title">Kategori</span>
@@ -41,5 +41,28 @@
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>
         </li>
+
+        <li class="nav-item {{ Request::is('admin/pdf*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('pdf.index') }}">
+                <span class="menu-title">Generate PDF</span>
+                <i class="mdi mdi-file-pdf menu-icon"></i>
+            </a>
+        </li>
+
+        {{--
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('pdf.sertifikat') }}" target="_blank">
+                <i class="fas fa-certificate"></i>
+                <span>Cetak Sertifikat</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('pdf.undangan') }}" target="_blank">
+                <i class="fas fa-envelope"></i>
+                <span>Cetak Undangan</span>
+            </a>
+        </li> --}}
+
     </ul>
 </nav>

@@ -26,6 +26,8 @@ use App\Http\Controllers\Visitor\DashboardVisitorController;
 use App\Http\Controllers\Visitor\KategoriVisitorController;
 use App\Http\Controllers\Visitor\BukuVisitorController;
 
+use App\Http\Controllers\PdfController;
+
 
 // --- RUTE UMUM ---
 Route::get('/', function () {
@@ -71,7 +73,22 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::post('/buku', [BukuAdminController::class, 'store'])->name('admin.buku.store');
     Route::put('/buku/{id}', [BukuAdminController::class, 'update'])->name('admin.buku.update');
     Route::delete('/buku/{id}', [BukuAdminController::class, 'destroy'])->name('admin.buku.destroy');
+
+    // // PDF
+    // Route::get('/pdf-menu', [PdfController::class, 'index'])->name('admin.pdf.index');
+    // Route::get('/pdf-sertifikat', [PdfController::class, 'sertifikatForm'])->name('admin.pdf.sertifikat.form'); // Add this
+    // Route::get('/pdf-undangan', [PdfController::class, 'undanganForm'])->name('admin.pdf.undangan.form');       // Add this
+
+    // // Preview/Download routes
+    // Route::post('/pdf-sertifikat-preview', [PdfController::class, 'sertifikatPreview'])->name('admin.pdf.sertifikat.preview');
+    // Route::post('/pdf-undangan-preview', [PdfController::class, 'undanganPreview'])->name('admin.pdf.undangan.preview');
+
+    // // PDF
+    // Route::get('/generate-pdf', [PdfController::class, 'index'])->name('admin.pdf.index');
+    // Route::post('/generate-sertifikat', [PdfController::class, 'sertifikat'])->name('admin.pdf.sertifikat');
+    // Route::post('/generate-undangan', [PdfController::class, 'undangan'])->name('admin.pdf.undangan');
 });
+
 
 // --- GRUP AKSES VISITOR (idrole = 2) ---
 Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], function () {
@@ -83,4 +100,36 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
 
     // Buku
     Route::get('/buku', [BukuVisitorController::class, 'index'])->name('visitor.buku');
+
+    // Route::get('/pdf-menu', [PdfController::class, 'index'])->name('visitor.pdf.index');
+    // Route::get('/pdf-sertifikat', [PdfController::class, 'sertifikatForm'])->name('visitor.pdf.sertifikat.form'); // Add this
+    // Route::get('/pdf-undangan', [PdfController::class, 'undanganForm'])->name('visitor.pdf.undangan.form');       // Add this
+
+    // // Preview/Download routes
+    // Route::post('/pdf-sertifikat-preview', [PdfController::class, 'sertifikatPreview'])->name('visitor.pdf.sertifikat.preview');
+    // Route::post('/pdf-undangan-preview', [PdfController::class, 'undanganPreview'])->name('visitor.pdf.undangan.preview');
+
+    // // PDF
+    // Route::get('/generate-pdf', [PdfController::class, 'index'])->name('visitor.pdf.index');
+    // Route::post('/generate-sertifikat', [PdfController::class, 'sertifikat'])->name('visitor.pdf.sertifikat');
+    // Route::post('/generate-undangan', [PdfController::class, 'undangan'])->name('visitor.pdf.undangan');
+});
+
+
+// --- PDF Routes (satu grup untuk admin & visitor) ---
+Route::middleware(['auth', 'role:1,2'])->group(function () {
+    // Index (menu pilihan sertifikat & undangan)
+    Route::get('/generate-pdf', [PdfController::class, 'index'])->name('pdf.index');
+
+    // Form & Proses Sertifikat
+    Route::get('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatForm'])->name('pdf.sertifikat.form');
+    Route::post('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatPreview'])->name('pdf.sertifikat');
+
+    // Form & Proses Undangan
+    Route::get('/generate-pdf/undangan', [PdfController::class, 'undanganForm'])->name('pdf.undangan.form');
+    Route::post('/generate-pdf/undangan', [PdfController::class, 'undanganPreview'])->name('pdf.undangan');
+
+    // Preview & Download
+    Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview');
+    Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
 });

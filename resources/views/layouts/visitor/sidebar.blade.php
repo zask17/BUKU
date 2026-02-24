@@ -32,5 +32,34 @@
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>
         </li>
+
+        <li class="nav-item {{ Request::is('visitor/pdf*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('pdf.index') }}">
+                <span class="menu-title">Generate PDF</span>
+                <i class="mdi mdi-file-pdf menu-icon"></i>
+            </a>
+        </li>
+
+        {{-- <li class="nav-item">
+            <a class="nav-link"
+                href="{{ Auth::user()->idrole == 1 ? route('admin.pdf.index') : route('visitor.pdf.index') }}">
+                <span class="menu-title">Generate PDF</span>
+                <i class="mdi mdi-file-pdf menu-icon"></i>
+            </a>
+        </li> --}}
+
+        {{-- <li class="nav-item">
+            <a class="nav-link" href="{{ route('pdf.sertifikat') }}" target="_blank">
+                <i class="fas fa-certificate"></i>
+                <span>Unduh Sertifikat</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ route('pdf.undangan') }}" target="_blank">
+                <i class="fas fa-file-pdf"></i>
+                <span> Undangan</span>
+            </a>
+        </li> --}}
+
     </ul>
 </nav>
