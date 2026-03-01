@@ -40,6 +40,13 @@
             </a>
         </li>
 
+        <li class="nav-item {{ Request::is('barang*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('barang.index') }}">
+                <span class="menu-title">Tag Harga UMKM</span>
+                <i class="mdi mdi-tag-multiple menu-icon"></i>
+            </a>
+        </li>
+
         {{-- <li class="nav-item">
             <a class="nav-link"
                 href="{{ Auth::user()->idrole == 1 ? route('admin.pdf.index') : route('visitor.pdf.index') }}">
