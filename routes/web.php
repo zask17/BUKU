@@ -47,12 +47,13 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Google Login
-Route::get('/auth/google', [App\Http\Controllers\Auth\LoginController::class, 'redirectToGoogle'])->name('auth.google');
-Route::get('/auth/google/callback', [App\Http\Controllers\Auth\LoginController::class, 'handleGoogleCallback']);
+Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallback']);
 
 // OTP
-Route::get('/otp-verify', [App\Http\Controllers\Auth\LoginController::class, 'showOtpForm'])->name('otp.form');
-Route::post('/otp-verify', [App\Http\Controllers\Auth\LoginController::class, 'verifyOtp'])->name('otp.verify');
+Route::get('/otp-verify', [LoginController::class, 'showOtpForm'])->name('otp.form');
+Route::post('/otp-verify', [LoginController::class, 'verifyOtp'])->name('otp.verify');
+Route::post('/otp-resend', [LoginController::class, 'resendOtp'])->name('otp.resend');
 
 
 // --- GRUP AKSES ADMIN (idrole = 1) ---

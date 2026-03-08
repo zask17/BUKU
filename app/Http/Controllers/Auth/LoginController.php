@@ -177,13 +177,27 @@ class LoginController extends Controller
         return redirect()->route('visitor.dashboard')
             ->with('success', 'Login berhasil!');
 
-        // ini sudah dihandle di middleware role, jadi gak perlu cek role lagi di sini
-        //     if ($user->idrole == 1) {
-        //         return redirect()->route('admin.dashboard')->with('Success', 'Selamat datang Admin!');
-        //     } else {
-        //         return redirect()->route('visitor.dashboard')->with('Success', 'Login berhasil!');
-        //     }
-        // }
+    }
+
+    /**
+     * Kirim ulang kode OTP
+     */
+    public function resendOtp(Request $request)
+    {
+        $userId = session('pending_user_id');
+
+        if (!$userId) {
+            return redirect()->route('login')->withErrors(['email' => 'Sesi habis, silakan login kembali.']);
+        }
+
+        $user = User::find($userId);
+
+        if ($user) {
+            $this->sendOtp($user);
+            return back()->with('success', 'Kode OTP baru telah dikirim ke email Anda.');
+        }
+
+        return redirect()->route('login');
     }
 
     /**

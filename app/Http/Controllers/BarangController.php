@@ -90,13 +90,13 @@ class BarangController extends Controller
             ->orderBy('id_barang', 'asc')
             ->get();
 
-        // Menghitung start_index (0-39) untuk grid 5x8
+        // Menghitung start_index untuk grid 5x8
         $start_index = (($request->startY - 1) * 5) + ($request->startX - 1);
 
         $pdf = Pdf::loadView('barang.pdf', compact(
             'barangs',
             'start_index'
-        ))->setPaper('a4', 'portrait');
+        ))->setPaper('a5', 'landscape');
 
         return $pdf->stream('tag-harga-tnj108.pdf');
     }
