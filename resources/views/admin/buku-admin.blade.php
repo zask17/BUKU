@@ -51,14 +51,14 @@
                                 @forelse($dataBuku as $key => $buku)
                                     <tr>
                                         <td> {{ $key + 1 }} </td>
-                                        <td> <code>{{ $buku->kode }}</code> </td>
+                                        <td class="font-weight-bold"> {{ $buku->kode }} </td>
                                         <td class="font-weight-bold"> {{ $buku->judul }} </td>
                                         <td>
                                             <label class="badge badge-gradient-info">
                                                 {{ $buku->nama_kategori ?? 'Umum' }}
                                             </label>
                                         </td>
-                                        <td> {{ $buku->pengarang }} </td>
+                                        <td class="font-weight-bold"> {{ $buku->pengarang }} </td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-inverse-dark btn-icon" data-bs-toggle="modal"
                                                 data-bs-target="#modalEditBuku{{ $buku->idbuku }}">

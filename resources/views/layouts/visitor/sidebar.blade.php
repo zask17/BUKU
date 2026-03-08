@@ -36,7 +36,7 @@
         <li class="nav-item {{ Request::is('visitor/pdf*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('pdf.index') }}">
                 <span class="menu-title">Generate PDF</span>
-                <i class="mdi mdi-file-pdf menu-icon"></i>
+                <i class="mdi mdi-file menu-icon"></i>
             </a>
         </li>
 

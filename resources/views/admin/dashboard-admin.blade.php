@@ -2,9 +2,9 @@
 
 @section('title-page', 'Dashboard Admin')
 
-@section('breadcrumb')
+{{-- @section('breadcrumb')
     <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-@endsection
+@endsection --}}
 
 @section('style-page')
     <style>

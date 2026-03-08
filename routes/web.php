@@ -65,30 +65,20 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/pengguna', [PenggunaAdminController::class, 'index'])->name('admin.pengguna');
 
     // Kategori
-    Route::get('/kategori', [KategoriAdminController::class, 'index'])->name('admin.kategori');
-    Route::post('/kategori', [KategoriAdminController::class, 'store'])->name('admin.kategori.store');
-    Route::put('/kategori/{id}', [KategoriAdminController::class, 'update'])->name('admin.kategori.update');
-    Route::delete('/kategori/{id}', [KategoriAdminController::class, 'destroy'])->name('admin.kategori.destroy');
-
+    Route::get('/kategori', [KategoriAdminController::class, 'index'])->name('admin.kategori.index');
+    Route::get('/kategori/create', [KategoriAdminController::class, 'create'])->name('admin.kategori.create');
+    Route::post('/kategori/store', [KategoriAdminController::class, 'store'])->name('admin.kategori.store');
+    Route::get('/kategori/{id}/edit', [KategoriAdminController::class, 'edit'])->name('admin.kategori.edit');
+    Route::put('/kategori/{id}/update', [KategoriAdminController::class, 'update'])->name('admin.kategori.update');
+    Route::delete('/kategori/{id}/destroy', [KategoriAdminController::class, 'destroy'])->name('admin.kategori.destroy');
+    
     // Buku
-    Route::get('/buku', [BukuAdminController::class, 'index'])->name('admin.buku');
-    Route::post('/buku', [BukuAdminController::class, 'store'])->name('admin.buku.store');
-    Route::put('/buku/{id}', [BukuAdminController::class, 'update'])->name('admin.buku.update');
-    Route::delete('/buku/{id}', [BukuAdminController::class, 'destroy'])->name('admin.buku.destroy');
-
-    // // PDF
-    // Route::get('/pdf-menu', [PdfController::class, 'index'])->name('admin.pdf.index');
-    // Route::get('/pdf-sertifikat', [PdfController::class, 'sertifikatForm'])->name('admin.pdf.sertifikat.form'); // Add this
-    // Route::get('/pdf-undangan', [PdfController::class, 'undanganForm'])->name('admin.pdf.undangan.form');       // Add this
-
-    // // Preview/Download routes
-    // Route::post('/pdf-sertifikat-preview', [PdfController::class, 'sertifikatPreview'])->name('admin.pdf.sertifikat.preview');
-    // Route::post('/pdf-undangan-preview', [PdfController::class, 'undanganPreview'])->name('admin.pdf.undangan.preview');
-
-    // // PDF
-    // Route::get('/generate-pdf', [PdfController::class, 'index'])->name('admin.pdf.index');
-    // Route::post('/generate-sertifikat', [PdfController::class, 'sertifikat'])->name('admin.pdf.sertifikat');
-    // Route::post('/generate-undangan', [PdfController::class, 'undangan'])->name('admin.pdf.undangan');
+    Route::get('/buku', [BukuAdminController::class, 'index'])->name('admin.buku.index');
+    Route::get('/buku/create', [BukuAdminController::class, 'create'])->name('admin.buku.create');
+    Route::post('/buku/store', [BukuAdminController::class, 'store'])->name('admin.buku.store');
+    Route::get('/buku/{id}/edit', [BukuAdminController::class, 'edit'])->name('admin.buku.edit');
+    Route::put('/buku/{id}/update', [BukuAdminController::class, 'update'])->name('admin.buku.update');
+    Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('admin.buku.destroy');
 });
 
 
@@ -102,19 +92,6 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
 
     // Buku
     Route::get('/buku', [BukuVisitorController::class, 'index'])->name('visitor.buku');
-
-    // Route::get('/pdf-menu', [PdfController::class, 'index'])->name('visitor.pdf.index');
-    // Route::get('/pdf-sertifikat', [PdfController::class, 'sertifikatForm'])->name('visitor.pdf.sertifikat.form'); // Add this
-    // Route::get('/pdf-undangan', [PdfController::class, 'undanganForm'])->name('visitor.pdf.undangan.form');       // Add this
-
-    // // Preview/Download routes
-    // Route::post('/pdf-sertifikat-preview', [PdfController::class, 'sertifikatPreview'])->name('visitor.pdf.sertifikat.preview');
-    // Route::post('/pdf-undangan-preview', [PdfController::class, 'undanganPreview'])->name('visitor.pdf.undangan.preview');
-
-    // // PDF
-    // Route::get('/generate-pdf', [PdfController::class, 'index'])->name('visitor.pdf.index');
-    // Route::post('/generate-sertifikat', [PdfController::class, 'sertifikat'])->name('visitor.pdf.sertifikat');
-    // Route::post('/generate-undangan', [PdfController::class, 'undangan'])->name('visitor.pdf.undangan');
 });
 
 

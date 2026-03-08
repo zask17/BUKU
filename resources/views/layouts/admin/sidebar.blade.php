@@ -28,15 +28,15 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::is('admin/kategori*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.kategori') }}">
+        <li class="nav-item {{ Request::routeIs('admin.kategori.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.kategori.index') }}">
                 <span class="menu-title">Kategori</span>
                 <i class="mdi mdi-format-list-bulleted menu-icon"></i>
             </a>
         </li>
 
-        <li class="nav-item {{ Request::is('admin/buku*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.buku') }}">
+        <li class="nav-item {{ Request::routeIs('admin.buku.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.buku.index') }}">
                 <span class="menu-title">Buku</span>
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>
@@ -45,7 +45,7 @@
         <li class="nav-item {{ Request::is('admin/pdf*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('pdf.index') }}">
                 <span class="menu-title">Generate PDF</span>
-                <i class="mdi mdi-file-pdf menu-icon"></i>
+                <i class="mdi mdi-file menu-icon"></i>
             </a>
         </li>
 

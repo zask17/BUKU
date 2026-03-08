@@ -37,6 +37,29 @@
   <script src="{{ asset('assets/js/misc.js') }}"></script>
   <script src="{{ asset('assets/js/settings.js') }}"></script>
   <script src="{{ asset('assets/js/todolist.js') }}"></script>
+  {{-- <script src="{{ asset('assets/vendors/js/vendor.bundle.base.js') }}"></script>
+  <script src="{{ asset('assets/js/off-canvas.js') }}"></script>
+  @stack('scripts') --}}
+
+  <!-- Utility for Button Loader -->
+  <script>
+    function setButtonLoading(button, loadingText = 'Memproses...') {
+      button.disabled = true;
+      button.dataset.originalHtml = button.innerHTML;
+      button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+      button.style.opacity = '0.8';
+    }
+
+    function resetButtonLoading(button) {
+      if (button.dataset.originalHtml) {
+        button.innerHTML = button.dataset.originalHtml;
+        button.disabled = false;
+        button.style.opacity = '1';
+      }
+    }
+  </script>
+
+  @yield('js-page')
 </body>
 
 </html>

@@ -8,24 +8,24 @@ use Illuminate\Support\Facades\DB;
 
 class KategoriAdminController extends Controller
 {
-    private function getStats()
-    {
-        return [
-            'jumlahPengguna' => DB::table('users')->count(),
-            'jumlahKategori' => DB::table('kategori')->count(),
-            'jumlahBuku'     => DB::table('buku')->count(),
-        ];
-    }
+    // private function getStats()
+    // {
+    //     return [
+    //         'jumlahPengguna' => DB::table('users')->count(),
+    //         'jumlahKategori' => DB::table('kategori')->count(),
+    //         'jumlahBuku'     => DB::table('buku')->count(),
+    //     ];
+    // }
 
     public function index()
     {
-        $dataKategori = DB::table('kategori')
-            ->orderBy('idkategori', 'asc')
-            ->get();
+        $dataKategori = DB::table('kategori')->orderBy('idkategori', 'asc')->get();
+        return view('admin.kategori.index', compact('dataKategori'));
+    }
 
-        $data = array_merge($this->getStats(), ['dataKategori' => $dataKategori]);
-
-        return view('admin.kategori-admin', $data);
+    public function create()
+    {
+        return view('admin.kategori.create');
     }
 
     public function store(Request $request)
@@ -38,7 +38,16 @@ class KategoriAdminController extends Controller
             'nama_kategori' => $request->nama_kategori,
         ]);
 
-        return redirect()->back()->with('success', 'Kategori berhasil ditambahkan!');
+        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil ditambahkan!');
+    }
+
+    public function edit($id)
+    {
+        $kategori = DB::table('kategori')->where('idkategori', $id)->first();
+        if (!$kategori) {
+            return redirect()->route('admin.kategori.index')->with('error', 'Data tidak ditemukan.');
+        }
+        return view('admin.kategori.edit', compact('kategori'));
     }
 
     public function update(Request $request, $id)
@@ -51,15 +60,12 @@ class KategoriAdminController extends Controller
             ->where('idkategori', $id)
             ->update(['nama_kategori' => $request->nama_kategori]);
 
-        return redirect()->back()->with('success', 'Kategori berhasil diperbarui!');
+        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
-        DB::table('kategori')
-            ->where('idkategori', $id)
-            ->delete();
-
-        return redirect()->back()->with('success', 'Kategori berhasil dihapus!');
+        DB::table('kategori')->where('idkategori', $id)->delete();
+        return redirect()->route('admin.kategori.index')->with('success', 'Kategori berhasil dihapus!');
     }
 }
