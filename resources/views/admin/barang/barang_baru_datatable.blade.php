@@ -1,20 +1,23 @@
 @extends('layouts.admin.main')
 
-@section('title-page', 'Tambah Barang (Datable)')
+@section('title-page', 'Tambah Barang (Local - DataTables)')
 
 @section('breadcrumb')
-    <li class="breadcrumb-item active" aria-current="page">Tambah Barang Datable</li>
+    <li class="breadcrumb-item active" aria-current="page">Barang Baru - DataTables</li>
+@endsection
+
+@section('css-page')
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css">
 @endsection
 
 @section('content')
 <style>
-    /* Hover pointer pada row */
     #tableBarang tbody tr {
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: background-color 0.15s;
     }
     #tableBarang tbody tr:hover {
-        background-color: #f1f1f1;
+        background-color: #f8f9fa;
     }
 </style>
 
@@ -29,9 +32,11 @@
                     </div>
                     <div class="form-group">
                         <label>Harga Barang :</label>
-                        <input type="number" id="harga_barang" class="form-control" required placeholder="Masukkan harga">
+                        <input type="number" id="harga_barang" class="form-control" required min="1" placeholder="Masukkan harga">
                     </div>
-                    <button type="button" id="btnSubmit" class="btn btn-success float-right">Submit</button>
+                    <div class="text-end">
+                        <button type="button" id="btnSubmit" class="btn btn-success">Submit</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -40,9 +45,9 @@
     <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title">Daftar Barang (HTML Table)</h4>
+                <h4 class="card-title">Daftar Barang</h4>
                 <div class="table-responsive">
-                    <table class="table table-bordered" id="tableBarang">
+                    <table id="tableBarang" class="table table-bordered table-hover" style="width:100%">
                         <thead>
                             <tr>
                                 <th>ID Barang</th>
@@ -50,8 +55,7 @@
                                 <th>Harga</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            </tbody>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -59,34 +63,33 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalBarang" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<!-- Modal sama seperti di atas -->
+<div class="modal fade" id="modalBarang" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Detail / Ubah Barang</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title" id="modalLabel">Detail & Ubah Barang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="formModal">
-                    <div class="form-group">
-                        <label>ID Barang :</label>
+                    <div class="mb-3">
+                        <label class="form-label">ID Barang :</label>
                         <input type="text" id="modal_id" class="form-control" readonly>
                     </div>
-                    <div class="form-group">
-                        <label>Nama Barang :</label>
+                    <div class="mb-3">
+                        <label class="form-label">Nama Barang :</label>
                         <input type="text" id="modal_nama" class="form-control" required>
                     </div>
-                    <div class="form-group">
-                        <label>Harga Barang :</label>
-                        <input type="number" id="modal_harga" class="form-control" required>
+                    <div class="mb-3">
+                        <label class="form-label">Harga Barang :</label>
+                        <input type="number" id="modal_harga" class="form-control" required min="1">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" id="btnHapus" class="btn btn-danger">Hapus</button>
-                <button type="button" id="btnUbah" class="btn btn-primary">Ubah</button>
+                <button type="button" id="btnUbah" class="btn btn-success">Ubah</button>
             </div>
         </div>
     </div>
@@ -94,88 +97,100 @@
 @endsection
 
 @section('js-page')
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.3.7/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
-    let selectedRow = null;
+const table = $('#tableBarang').DataTable({
+    paging: true,
+    searching: true,
+    ordering: true,
+    info: true,
+    language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json' }
+});
 
-    // CREATE: Tambah Barang
-    document.getElementById('btnSubmit').addEventListener('click', function () {
-        const form = document.getElementById('formBarang');
-        const btn = this;
-        const originalText = btn.innerHTML;
+function formatRp(value) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+}
 
-        if (!form.checkValidity()) { form.reportValidity(); return; }
+let currentRowIndex = null;
 
-        // Ketentuan: Loader
-        btn.disabled = true;
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Menyimpan...`;
+// Tambah data
+document.getElementById('btnSubmit').addEventListener('click', function () {
+    const form = document.getElementById('formBarang');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
 
-        setTimeout(() => {
-            const nama = document.getElementById('nama_barang').value;
-            const harga = document.getElementById('harga_barang').value;
-            const idRandom = 'BRG-' + Math.floor(Math.random() * 10000);
+    // setButtonLoading(this, 'Menyimpan...');
 
-            const row = `<tr>
-                <td>${idRandom}</td>
-                <td>${nama}</td>
-                <td data-raw="${harga}">${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(harga)}</td>
-            </tr>`;
-            
-            document.querySelector('#tableBarang tbody').insertAdjacentHTML('beforeend', row);
-            
-            // Ketentuan: Input menjadi kosong
-            form.reset();
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-        }, 800);
-    });
+    const nama = document.getElementById('nama_barang').value.trim();
+    const harga = document.getElementById('harga_barang').value;
+    const id = 'BRG-' + Date.now().toString().slice(-6);
 
-    // READ: Klik row untuk buka modal
-    $(document).on('click', '#tableBarang tbody tr', function() {
-        selectedRow = $(this);
-        const id = selectedRow.find('td:eq(0)').text();
-        const nama = selectedRow.find('td:eq(1)').text();
-        const harga = selectedRow.find('td:eq(2)').attr('data-raw');
+    table.row.add([id, nama, formatRp(harga)]).draw(false);
 
-        $('#modal_id').val(id);
-        $('#modal_nama').val(nama);
-        $('#modal_harga').val(harga);
-        $('#modalBarang').modal('show');
-    });
+    // Simpan raw harga di node
+    const addedNode = table.row(table.rows().count() - 1).node();
+    addedNode.dataset.rawHarga = harga;
 
-    // UPDATE: Ubah data di row
-    $('#btnUbah').on('click', function() {
-        const btn = $(this);
-        if (!document.getElementById('formModal').checkValidity()) { 
-            document.getElementById('formModal').reportValidity(); 
-            return; 
+    form.reset();
+    // resetButtonLoading(this);
+});
+
+// Klik row
+$('#tableBarang tbody').on('click', 'tr', function () {
+    if ($(this).hasClass('selected')) {
+        $(this).removeClass('selected');
+    } else {
+        table.$('tr.selected').removeClass('selected');
+        $(this).addClass('selected');
+
+        const data = table.row(this).data();
+        const node = table.row(this).node();
+
+        $('#modal_id').val(data[0]);
+        $('#modal_nama').val(data[1]);
+        $('#modal_harga').val(node.dataset.rawHarga || data[2].replace(/[^0-9]/g, ''));
+
+        currentRowIndex = table.row(this).index();
+
+        const modal = new bootstrap.Modal($('#modalBarang')[0]);
+        modal.show();
+    }
+});
+
+// Ubah
+$('#btnUbah').on('click', function () {
+    const form = document.getElementById('formModal');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    const namaBaru = $('#modal_nama').val().trim();
+    const hargaBaru = $('#modal_harga').val();
+
+    if (currentRowIndex !== null) {
+        const row = table.row(currentRowIndex);
+        const node = row.node();
+
+        row.data([row.data()[0], namaBaru, formatRp(hargaBaru)]).draw(false);
+        node.dataset.rawHarga = hargaBaru;
+    }
+
+    bootstrap.Modal.getInstance($('#modalBarang')[0]).hide();
+});
+
+// Hapus
+$('#btnHapus').on('click', function () {
+    if (confirm('Yakin hapus barang ini?')) {
+        if (currentRowIndex !== null) {
+            table.row(currentRowIndex).remove().draw();
         }
-
-        btn.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm"></span> Loading...`);
-
-        setTimeout(() => {
-            const newNama = $('#modal_nama').val();
-            const newHarga = $('#modal_harga').val();
-
-            selectedRow.find('td:eq(1)').text(newNama);
-            selectedRow.find('td:eq(2)')
-                .attr('data-raw', newHarga)
-                .text(new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(newHarga));
-
-            $('#modalBarang').modal('hide'); // Ketentuan: Tutup modal
-            btn.prop('disabled', false).html('Ubah');
-        }, 800);
-    });
-
-    // DELETE: Hapus row
-    $('#btnHapus').on('click', function() {
-        const btn = $(this);
-        btn.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm"></span> Loading...`);
-
-        setTimeout(() => {
-            selectedRow.remove();
-            $('#modalBarang').modal('hide'); // Ketentuan: Tutup modal
-            btn.prop('disabled', false).html('Hapus');
-        }, 800);
-    });
+        bootstrap.Modal.getInstance($('#modalBarang')[0]).hide();
+    }
+});
 </script>
 @endsection

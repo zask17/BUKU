@@ -28,6 +28,8 @@ use App\Http\Controllers\Visitor\BukuVisitorController;
 
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\KotaController;
+
 
 
 // --- RUTE UMUM ---
@@ -83,6 +85,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     // Barang Baru
     Route::get('/barang-baru', [BarangController::class, 'barangBaru'])->name('admin.barang.baru');
     Route::get('/barang-baru-datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
+
+    // Cari bagian ini di web.php dan ubah:
+    Route::get('/kota', [KotaController::class, 'index'])->name('admin.kota.index');
+    // Route::get('/barang-baru-datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
 });
 
 

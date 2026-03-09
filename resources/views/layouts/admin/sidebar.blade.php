@@ -1,6 +1,5 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <ul class="nav">
-        <!-- Profile -->
         <li class="nav-item nav-profile">
             <a href="#" class="nav-link">
                 <div class="nav-profile-image">
@@ -15,7 +14,6 @@
             </a>
         </li>
 
-        <!-- Dashboard -->
         <li class="nav-item {{ Request::routeIs('admin.dashboard') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.dashboard') }}">
                 <span class="menu-title">Dashboard</span>
@@ -23,7 +21,6 @@
             </a>
         </li>
 
-        <!-- Pengguna -->
         <li class="nav-item {{ Request::routeIs('admin.pengguna.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.pengguna') }}">
                 <span class="menu-title">Pengguna</span>
@@ -31,7 +28,6 @@
             </a>
         </li>
 
-        <!-- Kategori -->
         <li class="nav-item {{ Request::routeIs('admin.kategori.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.kategori.index') }}">
                 <span class="menu-title">Kategori Buku</span>
@@ -39,7 +35,6 @@
             </a>
         </li>
 
-        <!-- Buku -->
         <li class="nav-item {{ Request::routeIs('admin.buku.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.buku.index') }}">
                 <span class="menu-title">Manajemen Buku</span>
@@ -47,7 +42,6 @@
             </a>
         </li>
 
-        <!-- Generate PDF -->
         <li class="nav-item {{ Request::routeIs('pdf.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('pdf.index') }}">
                 <span class="menu-title">Generate PDF</span>
@@ -55,7 +49,6 @@
             </a>
         </li>
 
-        <!-- Harga Barang (DB) -->
         <li class="nav-item {{ Request::routeIs('barang.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('barang.index') }}">
                 <span class="menu-title">Harga Barang (Database)</span>
@@ -63,19 +56,24 @@
             </a>
         </li>
 
-        <!-- Manajemen Barang Baru -->
         <li class="nav-item {{ Request::routeIs('admin.barang.baru') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.barang.baru') }}">
-                <span class="menu-title">Barang Baru (Form)</span>
+                <span class="menu-title">Barang Baru (HTML)</span>
                 <i class="mdi mdi-plus-box menu-icon"></i>
             </a>
         </li>
 
-        <!-- Barang Baru DataTable -->
         <li class="nav-item {{ Request::routeIs('admin.barang.datatable') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.barang.datatable') }}">
                 <span class="menu-title">Barang Baru (DataTable)</span>
                 <i class="mdi mdi-table-large menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.kota.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.kota.index') }}">
+                <span class="menu-title">Manajemen Kota</span>
+                <i class="mdi mdi-city menu-icon"></i>
             </a>
         </li>
 
