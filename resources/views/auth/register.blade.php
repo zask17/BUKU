@@ -13,7 +13,7 @@
                 <h4 class="text-center">Baru di sini?</h4>
                 <h6 class="font-weight-light text-center">Mendaftar itu mudah. Hanya butuh beberapa langkah.</h6>
                 
-                <form class="pt-3" method="POST" action="{{ route('register') }}">
+                <form class="pt-3" id="registerForm" method="POST" action="{{ route('register') }}">
                     @csrf
                     <div class="form-group mb-3">
                         <input type="text" name="name" class="form-control form-control-lg @error('name') is-invalid @enderror" id="name" placeholder="Nama Lengkap" value="{{ old('name') }}" required autocomplete="name" autofocus>

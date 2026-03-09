@@ -13,14 +13,7 @@
                 <h4 class="text-center">Halo! Mari kita mulai</h4>
                 <h6 class="font-weight-light text-center">Masuk untuk melanjutkan.</h6>
 
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-
-                <form class="pt-3" method="POST" action="{{ route('login') }}">
+                <form class="pt-3" id="loginForm" method="POST" action="{{ route('login') }}">
                     @csrf
                     <div class="form-group mb-3">
                         <input type="email" name="email" class="form-control form-control-lg @error('email') is-invalid @enderror" placeholder="Email" value="{{ old('email') }}" required autofocus>

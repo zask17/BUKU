@@ -3,11 +3,9 @@
 <head>
     @include('layouts.guest.head')
     <style>
-        /* Memastikan container-scroller mengambil seluruh tinggi layar */
         .container-scroller, .page-body-wrapper {
             min-height: 100vh !important;
         }
-        /* Menghilangkan padding default yang sering ada di template dashboard */
         .content-wrapper {
             background: #f2edf3;
             width: 100%;
@@ -29,5 +27,27 @@
     <script src="{{ asset('assets/js/misc.js') }}"></script>
     <script src="{{ asset('assets/js/settings.js') }}"></script>
     <script src="{{ asset('assets/js/todolist.js') }}"></script>
+
+    <script>
+        function setButtonLoading(button, loadingText = 'Memproses...') {
+            button.disabled = true;
+            button.dataset.originalHtml = button.innerHTML;
+            button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${loadingText}`;
+            button.style.opacity = '0.8';
+        }
+
+        // Fungsi otomatis pasang loader ke form
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        setButtonLoading(submitBtn);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

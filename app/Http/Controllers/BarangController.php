@@ -100,4 +100,15 @@ class BarangController extends Controller
 
         return $pdf->stream('tag-harga-tnj108.pdf');
     }
+
+    public function barangBaru()
+    {
+        return view('admin.barang.barang_baru');
+    }
+
+    public function barangBaruDatatable()
+    {
+        return view('admin.barang.barang_baru_datatable');
+    }
+    
 }

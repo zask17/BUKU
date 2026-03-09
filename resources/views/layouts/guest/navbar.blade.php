@@ -29,12 +29,12 @@
                 </a>
             </li>
 
-            <!-- Menu Buku -->
+            {{-- <!-- Menu Buku -->
             <li class="nav-item">
                 <a class="nav-link" href="#">
                     Buku
                 </a>
-            </li>
+            </li> --}}
 
             <!-- Login -->
             @guest

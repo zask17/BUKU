@@ -71,7 +71,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/kategori/{id}/edit', [KategoriAdminController::class, 'edit'])->name('admin.kategori.edit');
     Route::put('/kategori/{id}/update', [KategoriAdminController::class, 'update'])->name('admin.kategori.update');
     Route::delete('/kategori/{id}/destroy', [KategoriAdminController::class, 'destroy'])->name('admin.kategori.destroy');
-    
+
     // Buku
     Route::get('/buku', [BukuAdminController::class, 'index'])->name('admin.buku.index');
     Route::get('/buku/create', [BukuAdminController::class, 'create'])->name('admin.buku.create');
@@ -79,6 +79,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/buku/{id}/edit', [BukuAdminController::class, 'edit'])->name('admin.buku.edit');
     Route::put('/buku/{id}/update', [BukuAdminController::class, 'update'])->name('admin.buku.update');
     Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('admin.buku.destroy');
+
+    // Barang Baru
+    Route::get('/barang-baru', [BarangController::class, 'barangBaru'])->name('admin.barang.baru');
+    Route::get('/barang-baru-datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
 });
 
 
