@@ -98,13 +98,13 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/week4', [WeekEmpatController::class, 'index'])->name('admin.week4.index');
     Route::post('/week4/ajax_submit', [WeekEmpatController::class, 'submit'])->name('week4.ajax_submit');
 
-    // Rute untuk konsep Axios
+    // Rute untuk Axios
     Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('admin.wilayah.index_axios');
 
-    // Rute untuk konsep Ajax (jQuery)
+    // Rute untuk Ajax (jQuery)
     Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('admin.wilayah.index_ajax');
 
-    // RUte API digunakan Axios dan Ajax
+    // Rute API Axios dan Ajax
     Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('admin.wilayah.getKota');
     Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('admin.wilayah.getKecamatan');
     Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('admin.wilayah.getKelurahan');
@@ -116,7 +116,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/pos/ajax', [PosController::class, 'indexAjax'])->name('admin.pos.index_ajax');
 
     // Rute Store (Digunakan oleh keduanya)
+    Route::post('/pos/cek-barang', [PosController::class, 'cekBarang'])->name('admin.pos.cek_barang');
     Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
+    // Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
 });
 
 
