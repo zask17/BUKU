@@ -10,6 +10,7 @@ class WilayahController extends Controller
 {
     // Base URL dari API Wilayah Indonesia
     private $baseUrl = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+    // private $baseUrl = 'https://raw.githubusercontent.com/guzfirdaus/Wilayah-Administrasi-Indonesia/master/api';
 
     private function getLayout() {
         return (Auth::user()->idrole == 1) ? 'layouts.admin.main' : 'layouts.visitor.main';

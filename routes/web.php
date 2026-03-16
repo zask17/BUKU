@@ -88,8 +88,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('admin.buku.destroy');
 
     // Barang Baru
-    Route::get('/barang-baru', [BarangController::class, 'barangBaru'])->name('admin.barang.baru');
-    Route::get('/barang-baru-datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
+    Route::get('/barang-baru/html', [BarangController::class, 'barangBaru'])->name('admin.barang.baru');
+    Route::get('/barang-baru/datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
 
     // Kota
     Route::get('/kota', [KotaController::class, 'index'])->name('admin.kota.index');
@@ -109,10 +109,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('admin.wilayah.getKecamatan');
     Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('admin.wilayah.getKelurahan');
 
-    // // Ajax Barang
-    // Route::get('/pos', [PosController::class, 'index'])->name('admin.pos.index');
-    // Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
-
     // Rute untuk POS versi Axios
     Route::get('/pos/axios', [PosController::class, 'indexAxios'])->name('admin.pos.index_axios');
 
@@ -120,7 +116,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/pos/ajax', [PosController::class, 'indexAjax'])->name('admin.pos.index_ajax');
 
     // Rute Store (Digunakan oleh keduanya)
-Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
+    Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
 });
 
 
