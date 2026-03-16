@@ -7,172 +7,230 @@
 @endsection
 
 @section('content')
-<style>
-    #tableBarang tbody tr {
-        cursor: pointer;
-        transition: background-color 0.15s;
-    }
-    #tableBarang tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-</style>
+    <style>
+        /* Efek hover agar row terlihat clickable */
+        #tableBarang tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
 
-<div class="row">
-    <div class="col-md-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <form id="formBarang">
-                    <div class="form-group">
-                        <label>Nama Barang :</label>
-                        <input type="text" id="nama_barang" class="form-control" required placeholder="Masukkan nama barang">
-                    </div>
-                    <div class="form-group">
-                        <label>Harga Barang :</label>
-                        <input type="number" id="harga_barang" class="form-control" required min="1" placeholder="Masukkan harga">
-                    </div>
-                    <div class="text-end">
-                        <button type="button" id="btnSubmit" class="btn btn-success">Submit</button>
-                    </div>
-                </form>
+        #tableBarang tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+
+    <div class="row">
+        <!-- Card Form Tambah Barang -->
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Form Tambah Barang Baru (Lokal)</h5>
+                    <form id="formBarang">
+                        <div class="form-group">
+                            <label>Nama Barang :</label>
+                            <input type="text" id="nama_barang" class="form-control" required
+                                placeholder="Masukkan nama barang">
+                        </div>
+                        <div class="form-group">
+                            <label>Harga Barang :</label>
+                            <input type="number" id="harga_barang" class="form-control" required min="1"
+                                placeholder="Masukkan harga">
+                        </div>
+                        <div class="text-end">
+                            <button type="button" id="btnSubmit" class="btn btn-success">Submit</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">Daftar Barang</h4>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover" id="tableBarang">
-                        <thead>
-                            <tr>
-                                <th>ID Barang</th>
-                                <th>Nama</th>
-                                <th>Harga</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+        <!-- Card Tabel Daftar Barang -->
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Daftar Barang</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="tableBarang">
+                            <thead>
+                                <tr>
+                                    <th>ID Barang</th>
+                                    <th>Nama</th>
+                                    <th>Harga</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal Bootstrap 5 -->
-<div class="modal fade" id="modalBarang" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel">Detail & Ubah Barang</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formModal">
-                    <div class="mb-3">
-                        <label class="form-label">ID Barang :</label>
-                        <input type="text" id="modal_id" class="form-control" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nama Barang :</label>
-                        <input type="text" id="modal_nama" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Harga Barang :</label>
-                        <input type="number" id="modal_harga" class="form-control" required min="1">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="btnHapus" class="btn btn-danger">Hapus</button>
-                <button type="button" id="btnUbah" class="btn btn-success">Ubah</button>
+    <!-- Modal Edit & Hapus Barang -->
+    <div class="modal fade" id="modalBarang" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Detail & Ubah Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formModal">
+                        <div class="mb-3">
+                            <label class="form-label">ID Barang :</label>
+                            <input type="text" id="modal_id" class="form-control" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nama Barang :</label>
+                            <input type="text" id="modal_nama" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Harga Barang :</label>
+                            <input type="number" id="modal_harga" class="form-control" required min="1">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnHapus" class="btn btn-danger">Hapus</button>
+                    <button type="button" id="btnUbah" class="btn btn-success">Ubah</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @section('js-page')
-<script>
-// Format harga helper
-function formatRp(value) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
-}
+    <script>
+        // =============================================
+        // Fungsi loader universal untuk semua tombol
+        // =============================================
+        function setButtonLoading(btn, text = 'Memproses...') {
+            btn.disabled = true;
+            btn.setAttribute('data-original-text', btn.innerHTML);
 
-let currentRow = null;
+            // Buat isi tombol menjadi spinner + teks
+            btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                ${text}
+            `;
+        }
 
-// Tambah barang
-document.getElementById('btnSubmit').addEventListener('click', function () {
-    const form = document.getElementById('formBarang');
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
+        function resetButtonLoading(btn) {
+            btn.disabled = false;
+            const originalText = btn.getAttribute('data-original-text') || 'Submit';
+            btn.innerHTML = originalText;
+        }
 
-    // setButtonLoading(this, 'Menyimpan...'); // uncomment jika ada fungsi global
+        // =============================================
+        // Format harga helper
+        // =============================================
+        function formatRp(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(value);
+        }
 
-    const nama = document.getElementById('nama_barang').value.trim();
-    const harga = document.getElementById('harga_barang').value;
-    const id = 'BRG-' + Date.now().toString().slice(-6);
+        let currentRow = null;
 
-    const tbody = document.querySelector('#tableBarang tbody');
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${id}</td>
-        <td>${nama}</td>
-        <td data-raw="${harga}">${formatRp(harga)}</td>
-    `;
-    tbody.appendChild(tr);
+        // =============================================
+        // Tambah barang baru
+        // =============================================
+        document.getElementById('btnSubmit').addEventListener('click', function () {
+            const form = document.getElementById('formBarang');
 
-    form.reset();
-    // resetButtonLoading(this);
-});
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
 
-// Klik row → modal
-document.addEventListener('click', function(e) {
-    const tr = e.target.closest('#tableBarang tbody tr');
-    if (!tr) return;
+            setButtonLoading(this, 'Menyimpan...');
 
-    currentRow = tr;
+            setTimeout(() => {
+                const nama = document.getElementById('nama_barang').value.trim();
+                const harga = document.getElementById('harga_barang').value;
+                const id = 'BRG-' + Date.now().toString().slice(-6);
 
-    const id    = tr.cells[0].textContent;
-    const nama  = tr.cells[1].textContent;
-    const harga = tr.cells[2].dataset.raw;
+                const tbody = document.querySelector('#tableBarang tbody');
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${id}</td>
+                    <td>${nama}</td>
+                    <td data-raw="${harga}">${formatRp(harga)}</td>
+                `;
+                tbody.appendChild(tr);
 
-    document.getElementById('modal_id').value    = id;
-    document.getElementById('modal_nama').value  = nama;
-    document.getElementById('modal_harga').value = harga;
+                form.reset();
+                resetButtonLoading(this);
+            }, 600); // 0.6 detik delay (bisa diatur 0 jika tidak ingin delay)
+        });
 
-    const modal = new bootstrap.Modal(document.getElementById('modalBarang'));
-    modal.show();
-});
+        // =============================================
+        // Klik row → buka modal
+        // =============================================
+        document.addEventListener('click', function (e) {
+            const tr = e.target.closest('#tableBarang tbody tr');
+            if (!tr) return;
 
-// Ubah
-document.getElementById('btnUbah').addEventListener('click', function() {
-    const form = document.getElementById('formModal');
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
+            currentRow = tr;
 
-    const namaBaru  = document.getElementById('modal_nama').value.trim();
-    const hargaBaru = document.getElementById('modal_harga').value;
+            const id = tr.cells[0].textContent;
+            const nama = tr.cells[1].textContent;
+            const harga = tr.cells[2].dataset.raw;
 
-    if (currentRow) {
-        currentRow.cells[1].textContent = namaBaru;
-        currentRow.cells[2].dataset.raw = hargaBaru;
-        currentRow.cells[2].textContent = formatRp(hargaBaru);
-    }
+            document.getElementById('modal_id').value = id;
+            document.getElementById('modal_nama').value = nama;
+            document.getElementById('modal_harga').value = harga;
 
-    bootstrap.Modal.getInstance(document.getElementById('modalBarang')).hide();
-});
+            const modal = new bootstrap.Modal(document.getElementById('modalBarang'));
+            modal.show();
+        });
 
-// Hapus
-document.getElementById('btnHapus').addEventListener('click', function() {
-    if (confirm('Yakin ingin menghapus barang ini?')) {
-        if (currentRow) currentRow.remove();
-        bootstrap.Modal.getInstance(document.getElementById('modalBarang')).hide();
-    }
-});
-</script>
+        // =============================================
+        // Tombol Ubah di modal
+        // =============================================
+        document.getElementById('btnUbah').addEventListener('click', function () {
+            const form = document.getElementById('formModal');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            setButtonLoading(this, 'Memperbarui...');
+
+            setTimeout(() => {
+                const namaBaru = document.getElementById('modal_nama').value.trim();
+                const hargaBaru = document.getElementById('modal_harga').value;
+
+                if (currentRow) {
+                    currentRow.cells[1].textContent = namaBaru;
+                    currentRow.cells[2].dataset.raw = hargaBaru;
+                    currentRow.cells[2].textContent = formatRp(hargaBaru);
+                }
+
+                bootstrap.Modal.getInstance(document.getElementById('modalBarang')).hide();
+                resetButtonLoading(this);
+            }, 500);
+        });
+
+        // =============================================
+        // Tombol Hapus di modal
+        // =============================================
+        document.getElementById('btnHapus').addEventListener('click', function () {
+            if (!confirm('Yakin ingin menghapus barang ini?')) {
+                return;
+            }
+
+            setButtonLoading(this, 'Menghapus...');
+
+            setTimeout(() => {
+                if (currentRow) {
+                    currentRow.remove();
+                }
+                bootstrap.Modal.getInstance(document.getElementById('modalBarang')).hide();
+                resetButtonLoading(this);
+            }, 500);
+        });
+    </script>
 @endsection

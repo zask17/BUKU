@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\SiteController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\HomeController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -21,6 +22,9 @@ use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\PenggunaAdminController;
 use App\Http\Controllers\Admin\KategoriAdminController;
 use App\Http\Controllers\Admin\BukuAdminController;
+use App\Http\Controllers\Admin\KotaController;
+use App\Http\Controllers\Admin\WeekEmpatController;
+use App\Http\Controllers\Admin\PosController;
 
 use App\Http\Controllers\Visitor\DashboardVisitorController;
 use App\Http\Controllers\Visitor\KategoriVisitorController;
@@ -28,14 +32,15 @@ use App\Http\Controllers\Visitor\BukuVisitorController;
 
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\BarangController;
-use App\Http\Controllers\KotaController;
+use App\Http\Controllers\WilayahController;
 
 
 
 // --- RUTE UMUM ---
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+Route::get('/', [HomeController::class, 'welcome'])->name('welcome');   
 
 Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('site.cek-koneksi');
 
@@ -86,9 +91,36 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/barang-baru', [BarangController::class, 'barangBaru'])->name('admin.barang.baru');
     Route::get('/barang-baru-datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
 
-    // Cari bagian ini di web.php dan ubah:
+    // Kota
     Route::get('/kota', [KotaController::class, 'index'])->name('admin.kota.index');
-    // Route::get('/barang-baru-datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
+
+    // Ajax Week4
+    Route::get('/week4', [WeekEmpatController::class, 'index'])->name('admin.week4.index');
+    Route::post('/week4/ajax_submit', [WeekEmpatController::class, 'submit'])->name('week4.ajax_submit');
+
+    // Rute untuk konsep Axios
+    Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('admin.wilayah.index_axios');
+
+    // Rute untuk konsep Ajax (jQuery)
+    Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('admin.wilayah.index_ajax');
+
+    // RUte API digunakan Axios dan Ajax
+    Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('admin.wilayah.getKota');
+    Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('admin.wilayah.getKecamatan');
+    Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('admin.wilayah.getKelurahan');
+
+    // // Ajax Barang
+    // Route::get('/pos', [PosController::class, 'index'])->name('admin.pos.index');
+    // Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
+
+    // Rute untuk POS versi Axios
+    Route::get('/pos/axios', [PosController::class, 'indexAxios'])->name('admin.pos.index_axios');
+
+    // Rute untuk POS versi Ajax (jQuery)
+    Route::get('/pos/ajax', [PosController::class, 'indexAjax'])->name('admin.pos.index_ajax');
+
+    // Rute Store (Digunakan oleh keduanya)
+Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
 });
 
 

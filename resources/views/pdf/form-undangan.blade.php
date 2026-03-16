@@ -13,7 +13,7 @@
         <div class="col-md-5 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title text-primary"><i class="mdi mdi-certificate me-2"></i>Input Data Undangan</h4>
+                    <h4 class="card-title text-primary"><i class="mdi mdi-email me-2"></i>Input Data Undangan</h4>
                     <p class="card-description"> Lengkapi detail surat undangan resmi di bawah ini </p>
 
                     <form class="forms-sample" action="{{ route('pdf.undangan') }}" method="POST" target="undanganFrame">

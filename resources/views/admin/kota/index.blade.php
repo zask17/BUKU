@@ -1,4 +1,4 @@
-@extends('layouts.admin.main')
+@extends($layout)
 
 @section('title-page', 'Manajemen Kota')
 

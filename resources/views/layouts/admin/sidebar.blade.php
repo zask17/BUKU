@@ -77,5 +77,41 @@
             </a>
         </li>
 
+        <li class="nav-item {{ Request::routeIs('admin.wilayah.index_axios') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.wilayah.index_axios') }}">
+                <span class="menu-title">Manajemen Wilayah Axios</span>
+                <i class="mdi mdi-country menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.wilayah.index_ajax') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.wilayah.index_ajax') }}">
+                <span class="menu-title">Manajemen Wilayah Ajax</span>
+                <i class="mdi mdi-country menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.pos.index_axios') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.pos.index_axios') }}">
+                <span class="menu-title">Point Of Sale Axios</span>
+                <i class="mdi mdi-cashier menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.pos.index_ajax') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.pos.index_ajax') }}">
+                <span class="menu-title">Point Of Sale Ajax</span>
+                <i class="mdi mdi-cashier menu-icon"></i>
+            </a>
+        </li>
+
+
+        <li class="nav-item {{ Request::routeIs('admin.week4.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.week4.index') }}">
+                <span class="menu-title">Week 4</span>
+                <i class="mdi mdi-calendar menu-icon"></i>
+            </a>
+        </li>
+
     </ul>
 </nav>
