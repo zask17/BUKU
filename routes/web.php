@@ -56,6 +56,29 @@ Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('w
 Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('wilayah.getKecamatan');
 Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('wilayah.getKelurahan');
 
+// --- PDF Routes (bisa diakses semua pengguna) ---
+// Route::middleware(['auth', 'role:1,2'])->group(function () {
+    // Index (menu pilihan sertifikat & undangan)
+    Route::get('/generate-pdf', [PdfController::class, 'index'])->name('pdf.index');
+
+    // Form & Proses Sertifikat
+    Route::get('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatForm'])->name('pdf.sertifikat.form');
+    Route::post('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatPreview'])->name('pdf.sertifikat');
+
+    // Form & Proses Undangan
+    Route::get('/generate-pdf/undangan', [PdfController::class, 'undanganForm'])->name('pdf.undangan.form');
+    Route::post('/generate-pdf/undangan', [PdfController::class, 'undanganPreview'])->name('pdf.undangan');
+
+    // Preview & Download
+    Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview');
+    Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
+
+    // Cetak PDF Label TnJ 108
+    Route::resource('barang', BarangController::class);
+    Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
+// });
+
+
 // --- AUTHENTICATION ---
 Auth::routes();
 
@@ -119,17 +142,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     // Rute Store (Digunakan oleh keduanya)
     Route::post('/pos/cek-barang', [PosController::class, 'cekBarang'])->name('admin.pos.cek_barang');
     Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
-
-    // // Rute untuk Wilayah Axios
-    // Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('admin.wilayah.index_axios');
-
-    // // Rute untuk Wilayah Ajax (jQuery)
-    // Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('admin.wilayah.index_ajax');
-
-    // // Rute API Wilayah
-    // Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('admin.wilayah.getKota');
-    // Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('admin.wilayah.getKecamatan');
-    // Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('admin.wilayah.getKelurahan');
 });
 
 
@@ -143,27 +155,4 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
 
     // Buku
     Route::get('/buku', [BukuVisitorController::class, 'index'])->name('visitor.buku');
-});
-
-
-// --- PDF Routes (bisa diakses admin & visitor) ---
-Route::middleware(['auth', 'role:1,2'])->group(function () {
-    // Index (menu pilihan sertifikat & undangan)
-    Route::get('/generate-pdf', [PdfController::class, 'index'])->name('pdf.index');
-
-    // Form & Proses Sertifikat
-    Route::get('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatForm'])->name('pdf.sertifikat.form');
-    Route::post('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatPreview'])->name('pdf.sertifikat');
-
-    // Form & Proses Undangan
-    Route::get('/generate-pdf/undangan', [PdfController::class, 'undanganForm'])->name('pdf.undangan.form');
-    Route::post('/generate-pdf/undangan', [PdfController::class, 'undanganPreview'])->name('pdf.undangan');
-
-    // Preview & Download
-    Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview');
-    Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
-
-    // Cetak PDF Label TnJ 108
-    Route::resource('barang', BarangController::class);
-    Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
 });

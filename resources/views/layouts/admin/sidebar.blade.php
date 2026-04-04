@@ -115,11 +115,11 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.week4.index') ? 'active' : '' }}">
+        {{-- <li class="nav-item {{ Request::routeIs('admin.week4.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.week4.index') }}">
                 <span class="menu-title">Week 4 Tasks</span>
                 <i class="mdi mdi-calendar-check menu-icon"></i>
             </a>
-        </li>
+        </li> --}}
     </ul>
 </nav>

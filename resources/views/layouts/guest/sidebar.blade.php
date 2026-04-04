@@ -43,5 +43,11 @@
                 <i class="mdi mdi-map-marker-radius menu-icon"></i>
             </a>
         </li>
+        <li class="nav-item {{ Request::routeIs('pdf.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('pdf.index') }}">
+                <span class="menu-title">Generate PDF</span>
+                <i class="mdi mdi-file-pdf-box menu-icon"></i>
+            </a>
+        </li>
     </ul>
 </nav>

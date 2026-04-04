@@ -31,7 +31,6 @@ CREATE TABLE "reg_villages" (
 
 
 
-
 create table kategori (
 	idkategori		serial	 		not null,
 	nama_kategori	varchar(100)	not null,

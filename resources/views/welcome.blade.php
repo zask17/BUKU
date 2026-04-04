@@ -2,16 +2,15 @@
 
 @section('title-page', 'Dashboard')
 
-{{-- @section('breadcrumb')
-<li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-@endsection --}}
-
 @section('style-page')
     <style>
         .stat-card-link {
             text-decoration: none;
             color: inherit;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
         .stat-card-link:hover {
@@ -21,6 +20,11 @@
         .stat-card-link:hover .card {
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
             transform: scale(1.02);
+        }
+
+        /* Memastikan card di dalam link mengisi tinggi maksimal */
+        .stat-card-link .card {
+            flex: 1;
         }
     </style>
 @endsection
@@ -41,27 +45,11 @@
         </div>
     </div>
 
-    {{-- Statistik Utama --}}
+    {{-- Statistik Utama - Baris 1 --}}
     <div class="row">
         <div class="col-md-4 stretch-card grid-margin">
-            <a href="{{ route('buku') }}" class="stat-card-link">
-                <div class="card bg-gradient-danger card-img-holder text-white"
-                    style="transition: all 0.3s ease; cursor: pointer;">
-                    <div class="card-body">
-                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
-                            alt="circle-image" />
-                        <h4 class="font-weight-normal mb-3">Total Koleksi Buku <i
-                                class="mdi mdi-book-open-page-variant mdi-24px float-end"></i></h4>
-                        <h2 class="mb-5">{{ $totalBuku ?? 0 }} Buku</h2>
-                        <h6 class="card-text">Terus bertambah setiap harinya</h6>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-4 stretch-card grid-margin">
             <a href="{{ route('kategori') }}" class="stat-card-link">
-                <div class="card bg-gradient-info card-img-holder text-white"
-                    style="transition: all 0.3s ease; cursor: pointer;">
+                <div class="card bg-gradient-info card-img-holder text-white border-0">
                     <div class="card-body">
                         <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
                             alt="circle-image" />
@@ -74,13 +62,26 @@
             </a>
         </div>
         <div class="col-md-4 stretch-card grid-margin">
-            <a href="{{ route('wilayah.index_ajax') }}" class="stat-card-link">
-                <div class="card bg-gradient-success card-img-holder text-white"
-                    style="transition: all 0.3s ease; cursor: pointer;">
+            <a href="{{ route('buku') }}" class="stat-card-link">
+                <div class="card bg-gradient-danger card-img-holder text-white border-0">
                     <div class="card-body">
                         <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
                             alt="circle-image" />
-                        <h4 class="font-weight-normal mb-3">Data Wilayah <i
+                        <h4 class="font-weight-normal mb-3">Total Koleksi Buku <i
+                                class="mdi mdi-book-open-page-variant mdi-24px float-end"></i></h4>
+                        <h2 class="mb-5">{{ $totalBuku ?? 0 }} Buku</h2>
+                        <h6 class="card-text">Terus bertambah setiap harinya</h6>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 stretch-card grid-margin">
+            <a href="{{ route('wilayah.index_ajax') }}" class="stat-card-link">
+                <div class="card bg-gradient-success card-img-holder text-white border-0">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">Data Wilayah (Ajax) <i
                                 class="mdi mdi-map-marker-radius mdi-24px float-end"></i></h4>
                         <h2 class="mb-5">{{ $totalWilayah ?? 0 }} Wilayah</h2>
                         <h6 class="card-text">Provinsi, Kota, Kecamatan, Kelurahan</h6>
@@ -88,10 +89,13 @@
                 </div>
             </a>
         </div>
-        <div>
+    </div>
+
+    {{-- Statistik Utama - Baris 2 --}}
+    <div class="row">
+        <div class="col-md-4 stretch-card grid-margin">
             <a href="{{ route('wilayah.index_axios') }}" class="stat-card-link">
-                <div class="card bg-gradient-warning card-img-holder text-white"
-                    style="transition: all 0.3s ease; cursor: pointer;">
+                <div class="card bg-gradient-warning card-img-holder text-white border-0">
                     <div class="card-body">
                         <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
                             alt="circle-image" />
@@ -103,24 +107,23 @@
                 </div>
             </a>
         </div>
-        {{-- <div class="col-md-4 stretch-card grid-margin">
-            <a href="{{ route('kategori') }}" class="stat-card-link">
-                <div class="card bg-gradient-success card-img-holder text-white"
-                    style="transition: all 0.3s ease; cursor: pointer;">
+        <div class="col-md-4 stretch-card grid-margin">
+            <a href="{{ route('pdf.index') }}" class="stat-card-link">
+                <div class="card bg-gradient-secondary card-img-holder text-white border-0">
                     <div class="card-body">
                         <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
                             alt="circle-image" />
-                        <h4 class="font-weight-normal mb-3">Total Genre <i
-                                class="mdi mdi-palette-outline mdi-24px float-end"></i></h4>
-                        <h2 class="mb-5">{{ count($kategoriStats) ?? 0 }}</h2>
-                        <h6 class="card-text">Genre menarik menanti Anda</h6>
+                        <h4 class="font-weight-normal mb-3">Generate PDF <i
+                                class="mdi mdi-file-pdf-box mdi-24px float-end"></i></h4>
+                        <h2 class="mb-5">PDF Center</h2>
+                        <h6 class="card-text">Laporan, Sertifikat, dan Undangan</h6>
                     </div>
                 </div>
             </a>
-        </div> --}}
+        </div>
     </div>
 
-    {{-- Koleksi Buku Terbaru (Grid Layout) --}}
+    {{-- Koleksi Buku Terbaru --}}
     <div class="row">
         <div class="col-12 grid-margin">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -147,11 +150,10 @@
                         </div>
                     </div>
                 @empty
-                    {{-- Dummy Data jika database kosong agar tampilan tidak jelek --}}
                     @for($i = 1; $i <= 4; $i++)
                         <div class="col-md-3 col-sm-6 grid-margin stretch-card">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-body p-3 text-center">
+                            <div class="card shadow-sm border-0 text-center">
+                                <div class="card-body p-3">
                                     <div class="bg-light rounded py-4 mb-3 text-muted">
                                         <i class="mdi mdi-book-image" style="font-size: 50px;"></i>
                                     </div>
@@ -188,24 +190,19 @@
             </div>
         </div>
     </div>
-
 @endsection
 
 @section('js-page')
     <script src="{{ asset('assets/vendors/chart.js/chart.umd.js') }}"></script>
     <script>
-        // Setup data chart untuk Distribusi Kategori (Doughnut)
+        // Data chart (sama seperti sebelumnya)
         const kategoriLabels = {!! json_encode($kategoriStats->pluck('nama') ?? ['Teknologi', 'Fiksi', 'Sains']) !!};
         const kategoriData = {!! json_encode($kategoriStats->pluck('total') ?? [40, 30, 30]) !!};
-
-        // Setup data chart untuk Pertumbuhan Koleksi (Bar/Line)
         const pertumbuhanLabels = {!! json_encode($pertumbuhanData->pluck('nama') ?? []) !!};
         const pertumbuhanValues = {!! json_encode($pertumbuhanData->pluck('total') ?? []) !!};
 
-        // Grafik Bar - Pertumbuhan Koleksi per Kategori
         if ($("#pertumbuhan-chart").length) {
-            const ptCtx = document.getElementById('pertumbuhan-chart');
-            new Chart(ptCtx, {
+            new Chart(document.getElementById('pertumbuhan-chart'), {
                 type: 'bar',
                 data: {
                     labels: pertumbuhanLabels,
@@ -220,24 +217,13 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: true, position: 'top' }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: Math.max(...pertumbuhanValues) + 5
-                        }
-                    }
+                    scales: { y: { beginAtZero: true } }
                 }
             });
         }
 
-        // Grafik Doughnut - Distribusi Kategori
         if ($("#traffic-chart").length) {
-            const ctx = document.getElementById('traffic-chart');
-            new Chart(ctx, {
+            new Chart(document.getElementById('traffic-chart'), {
                 type: 'doughnut',
                 data: {
                     datasets: [{
@@ -248,11 +234,7 @@
                 },
                 options: {
                     cutout: '70%',
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: { display: false }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }

@@ -32,11 +32,22 @@
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>
         </li>
-
-        <li class="nav-item {{ Request::is('visitor/pdf*') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::is('wilayah/axios') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('wilayah.index_axios') }}">
+                <span class="menu-title">Wilayah (Axios)</span>
+                <i class="mdi mdi-map-marker-radius menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item {{ Request::is('wilayah/ajax') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('wilayah.index_ajax') }}">
+                <span class="menu-title">Wilayah (Ajax)</span>
+                <i class="mdi mdi-map-marker-radius menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item {{ Request::routeIs('pdf.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('pdf.index') }}">
                 <span class="menu-title">Generate PDF</span>
-                <i class="mdi mdi-file menu-icon"></i>
+                <i class="mdi mdi-file-pdf-box menu-icon"></i>
             </a>
         </li>
 
@@ -46,27 +57,5 @@
                 <i class="mdi mdi-tag-multiple menu-icon"></i>
             </a>
         </li>
-
-        {{-- <li class="nav-item">
-            <a class="nav-link"
-                href="{{ Auth::user()->idrole == 1 ? route('admin.pdf.index') : route('visitor.pdf.index') }}">
-                <span class="menu-title">Generate PDF</span>
-                <i class="mdi mdi-file-pdf menu-icon"></i>
-            </a>
-        </li> --}}
-
-        {{-- <li class="nav-item">
-            <a class="nav-link" href="{{ route('pdf.sertifikat') }}" target="_blank">
-                <i class="fas fa-certificate"></i>
-                <span>Unduh Sertifikat</span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{{ route('pdf.undangan') }}" target="_blank">
-                <i class="fas fa-file-pdf"></i>
-                <span> Undangan</span>
-            </a>
-        </li> --}}
-
     </ul>
 </nav>
