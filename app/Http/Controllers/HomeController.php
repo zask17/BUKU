@@ -36,8 +36,8 @@ class HomeController extends Controller
         $totalBuku = Buku::count();
         $totalKategori = Kategori::count();
 
-        // 2. Ambil Koleksi Buku Terbaru (Ambil 4 buku terakhir)
-        // $bukuTerbaru = Buku::with('kategori')->latest()->take(4)->get();
+        // 2. Ambil Koleksi Buku Terbaru (Ambil 4 buku terakhir berdasarkan idbuku)
+        $bukuTerbaru = Buku::with('kategori')->orderBy('idbuku', 'desc')->take(4)->get();
 
         // 3. Statistik Kategori untuk Chart (Doughnut)
         // Menghitung jumlah buku per kategori
@@ -50,7 +50,19 @@ class HomeController extends Controller
                 ];
             });
 
-        return view('welcome', compact('totalBuku', 'totalKategori', 'kategoriStats'));
+        // 4. Data Pertumbuhan Koleksi per Kategori (untuk line chart)
+        // Menggunakan jumlah buku per kategori sebagai pertumbuhan
+        $pertumbuhanData = Kategori::withCount('buku')
+            ->orderBy('idkategori')
+            ->get()
+            ->map(function($k) {
+                return [
+                    'nama' => $k->nama_kategori,
+                    'total' => $k->buku_count
+                ];
+            });
+
+        return view('welcome', compact('totalBuku', 'totalKategori', 'bukuTerbaru', 'kategoriStats', 'pertumbuhanData'));
     }
 
     public function index()

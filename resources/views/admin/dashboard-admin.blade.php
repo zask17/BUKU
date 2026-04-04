@@ -8,6 +8,24 @@
 
 @section('style-page')
     <script src="{{ asset('assets/js/dashboard.js') }}" defer></script>
+    <style>
+        .stat-card-link {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .stat-card-link:hover {
+            transform: translateY(-8px);
+            text-decoration: none;
+        }
+
+        .stat-card-link:hover .card {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25) !important;
+            transform: scale(1.02);
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -29,45 +47,51 @@
     {{-- Stat Cards --}}
     <div class="row">
         <div class="col-md-4 stretch-card grid-margin">
-            <div class="card bg-gradient-danger card-img-holder text-white">
-                <div class="card-body">
-                    <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">
-                        Total Pengguna
-                        <i class="mdi mdi-account-multiple mdi-24px float-end"></i>
-                    </h4>
-                    <h2 class="mb-5">{{ $jumlahPengguna }}</h2>
-                    <h6 class="card-text">Terdaftar dalam sistem</h6>
+            <a href="{{ route('admin.pengguna') }}" class="stat-card-link">
+                <div class="card bg-gradient-danger card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">
+                            Total Pengguna
+                            <i class="mdi mdi-account-multiple mdi-24px float-end"></i>
+                        </h4>
+                        <h2 class="mb-5">{{ $jumlahPengguna }}</h2>
+                        <h6 class="card-text">Terdaftar dalam sistem</h6>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-4 stretch-card grid-margin">
-            <div class="card bg-gradient-info card-img-holder text-white">
-                <div class="card-body">
-                    <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">
-                        Total Kategori
-                        <i class="mdi mdi-format-list-bulleted mdi-24px float-end"></i>
-                    </h4>
-                    <h2 class="mb-5">{{ $jumlahKategori }}</h2>
-                    <h6 class="card-text">Novel, Biografi, Komik, dll.</h6>
+            <a href="{{ route('admin.kategori.index') }}" class="stat-card-link">
+                <div class="card bg-gradient-info card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">
+                            Total Kategori
+                            <i class="mdi mdi-format-list-bulleted mdi-24px float-end"></i>
+                        </h4>
+                        <h2 class="mb-5">{{ $jumlahKategori }}</h2>
+                        <h6 class="card-text">Novel, Biografi, Komik, dll.</h6>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col-md-4 stretch-card grid-margin">
-            <div class="card bg-gradient-success card-img-holder text-white">
-                <div class="card-body">
-                    <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">
-                        Total Buku
-                        <i class="mdi mdi-book-open-variant mdi-24px float-end"></i>
-                    </h4>
-                    <h2 class="mb-5">{{ $jumlahBuku }}</h2>
-                    <h6 class="card-text">Koleksi buku yang tersedia</h6>
+            <a href="{{ route('admin.buku.index') }}" class="stat-card-link">
+                <div class="card bg-gradient-success card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">
+                            Total Buku
+                            <i class="mdi mdi-book-open-variant mdi-24px float-end"></i>
+                        </h4>
+                        <h2 class="mb-5">{{ $jumlahBuku }}</h2>
+                        <h6 class="card-text">Koleksi buku yang tersedia</h6>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

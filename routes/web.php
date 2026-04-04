@@ -3,7 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\SiteController;
 use Illuminate\Support\Facades\Auth;
+
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Guest\BukuGuestController;
+use App\Http\Controllers\Guest\KategoriGuestController;
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -37,12 +40,21 @@ use App\Http\Controllers\WilayahController;
 
 
 // --- RUTE UMUM ---
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-Route::get('/', [HomeController::class, 'welcome'])->name('welcome');   
-
+// Route::get('/', function () {return view('welcome');});
 Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('site.cek-koneksi');
+
+Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
+Route::get('/buku', [BukuGuestController::class, 'index'])->name('buku');
+Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('kategori');
+
+// Rute Tampilan
+Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('wilayah.index_axios');
+Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('wilayah.index_ajax');
+
+// Rute API (Digunakan bersama oleh AJAX & Axios)
+Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('wilayah.getKota');
+Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('wilayah.getKecamatan');
+Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('wilayah.getKelurahan');
 
 // --- AUTHENTICATION ---
 Auth::routes();
@@ -98,17 +110,6 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     Route::get('/week4', [WeekEmpatController::class, 'index'])->name('admin.week4.index');
     Route::post('/week4/ajax_submit', [WeekEmpatController::class, 'submit'])->name('week4.ajax_submit');
 
-    // Rute untuk Axios
-    Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('admin.wilayah.index_axios');
-
-    // Rute untuk Ajax (jQuery)
-    Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('admin.wilayah.index_ajax');
-
-    // Rute API Axios dan Ajax
-    Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('admin.wilayah.getKota');
-    Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('admin.wilayah.getKecamatan');
-    Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('admin.wilayah.getKelurahan');
-
     // Rute untuk POS versi Axios
     Route::get('/pos/axios', [PosController::class, 'indexAxios'])->name('admin.pos.index_axios');
 
@@ -118,7 +119,17 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function
     // Rute Store (Digunakan oleh keduanya)
     Route::post('/pos/cek-barang', [PosController::class, 'cekBarang'])->name('admin.pos.cek_barang');
     Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
-    // Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
+
+    // // Rute untuk Wilayah Axios
+    // Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('admin.wilayah.index_axios');
+
+    // // Rute untuk Wilayah Ajax (jQuery)
+    // Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('admin.wilayah.index_ajax');
+
+    // // Rute API Wilayah
+    // Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('admin.wilayah.getKota');
+    // Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('admin.wilayah.getKecamatan');
+    // Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('admin.wilayah.getKelurahan');
 });
 
 
@@ -156,19 +167,3 @@ Route::middleware(['auth', 'role:1,2'])->group(function () {
     Route::resource('barang', BarangController::class);
     Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
 });
-
-
-// Route::get('/test-otp-email', function () {
-//     $user = \App\Models\User::where('email', 'zaskiarania5@gmail.com')->first();
-//     if ($user) {
-//         // Generate OTP
-//         $otp = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-//         $user->update(['otp' => $otp]);
-
-//         // Kirim email langsung (tanpa panggil controller)
-//         \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OtpMail($otp));
-
-//         return 'OTP telah dikirim ke: ' . $user->email . ' (kode: ' . $otp . ') - Cek Mailtrap/inbox Gmail';
-//     }
-//     return 'User tidak ditemukan';
-// });

@@ -7,14 +7,14 @@
                     <span class="login-status online"></span>
                 </div>
                 <div class="nav-profile-text d-flex flex-column">
-                    <span class="font-weight-bold mb-2">{{ Auth::user()->name ?? 'Admin User' }}</span>
-                    <span class="text-secondary text-small">Administrator</span>
+                    {{-- <span class="font-weight-bold mb-2">{{ Auth::user()->name ?? 'Admin User' }}</span> --}}
+                    <span class="text-secondary text-small">Guest</span>
                 </div>
                 <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
             </a>
         </li>
-        <li class="nav-item {{ Request::is('dashboard') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ url('/dashboard') }}">
+        <li class="nav-item {{ Request::is('/') || Request::is('dashboard') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ url('/') }}">
                 <span class="menu-title">Dashboard</span>
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
@@ -29,6 +29,18 @@
             <a class="nav-link" href="{{ url('/buku') }}">
                 <span class="menu-title">Buku</span>
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item {{ Request::is('wilayah/axios') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('wilayah.index_axios') }}">
+                <span class="menu-title">Wilayah (Axios)</span>
+                <i class="mdi mdi-map-marker-radius menu-icon"></i>
+            </a>
+        </li>
+        <li class="nav-item {{ Request::is('wilayah/ajax') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('wilayah.index_ajax') }}">
+                <span class="menu-title">Wilayah (Ajax)</span>
+                <i class="mdi mdi-map-marker-radius menu-icon"></i>
             </a>
         </li>
     </ul>

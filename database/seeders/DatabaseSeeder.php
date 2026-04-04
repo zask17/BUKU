@@ -21,5 +21,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Jalankan WilayahSeeder untuk mengisi data wilayah
+        $this->call(WilayahSeeder::class);
     }
 }
