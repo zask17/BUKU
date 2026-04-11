@@ -13,17 +13,22 @@
             text-decoration: none;
             color: inherit;
             transition: all 0.3s ease;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
         }
 
         .stat-card-link:hover {
             transform: translateY(-8px);
-            text-decoration: none;
         }
 
         .stat-card-link:hover .card {
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25) !important;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2) !important;
             transform: scale(1.02);
+        }
+
+        .stat-card-link .card {
+            flex: 1;
         }
     </style>
 @endsection
@@ -33,7 +38,8 @@
     {{-- Hero Greeting --}}
     <div class="row">
         <div class="col-12 grid-margin">
-            <div class="card" style="background: linear-gradient(to right, #19d895, #21d0f5); border: none; border-radius: 12px;">
+            <div class="card"
+                style="background: linear-gradient(to right, #19d895, #21d0f5); border: none; border-radius: 12px;">
                 <div class="card-body text-white text-center py-4">
                     <h2 class="font-weight-bold mb-2" style="color: white;">Halo Admin 👋</h2>
                     <p class="mb-0" style="color: rgba(255,255,255,0.85); font-size: 1rem;">
@@ -44,13 +50,14 @@
         </div>
     </div>
 
-    {{-- Stat Cards --}}
+    {{-- Statistik Utama - Baris 1 --}}
     <div class="row">
         <div class="col-md-4 stretch-card grid-margin">
             <a href="{{ route('admin.pengguna') }}" class="stat-card-link">
-                <div class="card bg-gradient-danger card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
+                <div class="card bg-gradient-danger card-img-holder text-white border-0">
                     <div class="card-body">
-                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
                         <h4 class="font-weight-normal mb-3">
                             Total Pengguna
                             <i class="mdi mdi-account-multiple mdi-24px float-end"></i>
@@ -63,16 +70,54 @@
         </div>
 
         <div class="col-md-4 stretch-card grid-margin">
-            <a href="{{ route('admin.kategori.index') }}" class="stat-card-link">
-                <div class="card bg-gradient-info card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
+            <a href="{{ route('admin.pengguna') }}" class="stat-card-link">
+                <div class="card bg-gradient-info card-img-holder text-white border-0">
                     <div class="card-body">
-                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">
+                            Admin
+                            <i class="mdi mdi-account-tie mdi-24px float-end"></i>
+                        </h4>
+                        <h2 class="mb-5">{{ $jumlahAdmin }}</h2>
+                        <h6 class="card-text">Pengguna Admin</h6>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 stretch-card grid-margin">
+            <a href="{{ route('admin.pengguna') }}" class="stat-card-link">
+                <div class="card bg-gradient-warning card-img-holder text-white border-0">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">
+                            Pengunjung
+                            <i class="mdi mdi-account mdi-24px float-end"></i>
+                        </h4>
+                        <h2 class="mb-5">{{ $jumlahVisitor }}</h2>
+                        <h6 class="card-text">User Pengunjung</h6>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    {{-- Statistik Utama - Baris 2 --}}
+    <div class="row">
+        <div class="col-md-4 stretch-card grid-margin">
+            <a href="{{ route('admin.kategori.index') }}" class="stat-card-link">
+                <div class="card bg-gradient-primary card-img-holder text-white border-0">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
                         <h4 class="font-weight-normal mb-3">
                             Total Kategori
                             <i class="mdi mdi-format-list-bulleted mdi-24px float-end"></i>
                         </h4>
                         <h2 class="mb-5">{{ $jumlahKategori }}</h2>
-                        <h6 class="card-text">Novel, Biografi, Komik, dll.</h6>
+                        <h6 class="card-text">Kategori tersedia</h6>
                     </div>
                 </div>
             </a>
@@ -80,15 +125,16 @@
 
         <div class="col-md-4 stretch-card grid-margin">
             <a href="{{ route('admin.buku.index') }}" class="stat-card-link">
-                <div class="card bg-gradient-success card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
+                <div class="card bg-gradient-success card-img-holder text-white border-0">
                     <div class="card-body">
-                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
                         <h4 class="font-weight-normal mb-3">
                             Total Buku
                             <i class="mdi mdi-book-open-variant mdi-24px float-end"></i>
                         </h4>
                         <h2 class="mb-5">{{ $jumlahBuku }}</h2>
-                        <h6 class="card-text">Koleksi buku yang tersedia</h6>
+                        <h6 class="card-text">Koleksi buku tersedia</h6>
                     </div>
                 </div>
             </a>
@@ -102,7 +148,8 @@
                 <div class="card-body">
                     <div class="clearfix">
                         <h4 class="card-title float-start">Statistik Kunjungan & Peminjaman</h4>
-                        <div id="visit-sale-chart-legend" class="rounded-legend legend-horizontal legend-top-right float-end"></div>
+                        <div id="visit-sale-chart-legend"
+                            class="rounded-legend legend-horizontal legend-top-right float-end"></div>
                     </div>
                     <canvas id="visit-sale-chart" class="mt-4"></canvas>
                 </div>
@@ -127,61 +174,47 @@
         <div class="col-12 grid-margin">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title">Aktivitas Terbaru</h4>
+                    <h4 class="card-title">Aktivitas Terbaru (User Baru)</h4>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>Pengguna</th>
-                                    <th>Aktivitas</th>
+                                    <th>Email</th>
                                     <th>Status</th>
-                                    <th>Tanggal</th>
+                                    <th>Tanggal Bergabung</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($aktivitasTerbaru ?? [] as $aktivitas)
+                                @forelse($aktivitasTerbaru as $user)
                                     <tr>
                                         <td>
-                                            <img src="{{ asset('assets/images/faces/face1.jpg') }}" class="me-2" alt="image"
-                                                style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                                            {{ $aktivitas->nama_pengguna ?? '-' }}
+                                            <img src="{{ asset('assets/images/faces/face1.jpg') }}" class="me-2" alt="image">
+                                            {{ $user->nama_user }}
                                         </td>
-                                        <td>{{ $aktivitas->deskripsi ?? '-' }}</td>
+                                        <td>{{ $user->email }}</td>
                                         <td>
-                                            <label class="badge badge-gradient-success">Selesai</label>
+                                            <label class="badge 
+                                            @if($user->idrole == 1) badge-gradient-primary 
+                                            @elseif($user->idrole == 2) badge-gradient-info 
+                                            @elseif($user->idrole == 3) badge-gradient-success
+                                            @else badge-gradient-secondary 
+                                            @endif">
+                                                @if($user->idrole == 1) ADMIN
+                                                @elseif($user->idrole == 2) VISITOR
+                                                @elseif($user->idrole == 3) VENDOR
+                                                @else UNKNOWN
+                                                @endif
+                                            </label>
                                         </td>
-                                        <td>{{ $aktivitas->created_at?->format('d M Y') ?? '-' }}</td>
+                                        <td>
+                                            {{-- Perbaikan Error: Cek apakah created_at tidak null sebelum format --}}
+                                            {{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td>
-                                            <img src="{{ asset('assets/images/faces/face1.jpg') }}" class="me-2" alt="image"
-                                                style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                                            Admin
-                                        </td>
-                                        <td>Menambahkan buku baru ke koleksi</td>
-                                        <td><label class="badge badge-gradient-success">SELESAI</label></td>
-                                        <td>{{ now()->format('d M Y') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <img src="{{ asset('assets/images/faces/face2.jpg') }}" class="me-2" alt="image"
-                                                style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                                            Pengguna Baru
-                                        </td>
-                                        <td>Mendaftar sebagai anggota</td>
-                                        <td><label class="badge badge-gradient-info">BARU</label></td>
-                                        <td>{{ now()->format('d M Y') }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <img src="{{ asset('assets/images/faces/face3.jpg') }}" class="me-2" alt="image"
-                                                style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                                            Pembaca
-                                        </td>
-                                        <td>Meminjam buku kategori Novel</td>
-                                        <td><label class="badge badge-gradient-warning">DIPINJAM</label></td>
-                                        <td>{{ now()->format('d M Y') }}</td>
+                                        <td colspan="4" class="text-center">Belum ada data aktivitas.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

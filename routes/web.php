@@ -33,6 +33,12 @@ use App\Http\Controllers\Visitor\DashboardVisitorController;
 use App\Http\Controllers\Visitor\KategoriVisitorController;
 use App\Http\Controllers\Visitor\BukuVisitorController;
 
+use App\Http\Controllers\Vendor\DashboardVendorController;
+use App\Http\Controllers\Vendor\MenuController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
+
+
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\WilayahController;
@@ -156,3 +162,18 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
     // Buku
     Route::get('/buku', [BukuVisitorController::class, 'index'])->name('visitor.buku');
 });
+
+// --- GRUP AKSES VENDOR (idrole = 3) ---
+Route::group(['prefix' => 'vendor', 'middleware' => ['auth', 'role:3']], function () {
+    Route::get('/dashboard', [DashboardVendorController::class, 'index'])->name('vendor.dashboard');
+    Route::resource('menu', MenuController::class);
+});
+
+// --- RUTE CUSTOMER (GUEST) ---
+Route::get('/kantin', [OrderController::class, 'index'])->name('kantin.index');
+Route::post('/kantin/order', [OrderController::class, 'checkout'])->name('kantin.checkout');
+// Callback dari Midtrans
+Route::post('/payment/callback', [PaymentController::class, 'callback']);
+Route::get('/kantin/selesai', function() { return "Pembayaran Berhasil! Pesanan Anda sedang diproses."; });
+Route::get('/kantin/pending', function() { return "Menunggu pembayaran..."; });
+Route::get('/kantin/error', function() { return "Maaf, terjadi kesalahan pembayaran."; });

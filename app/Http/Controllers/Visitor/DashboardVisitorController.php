@@ -12,6 +12,7 @@ class DashboardVisitorController extends Controller
         return [
             'jumlahKategori' => DB::table('kategori')->count(),
             'jumlahBuku'     => DB::table('buku')->count(),
+            'jumlahBukuTerbaru' => DB::table('buku')->orderBy('idbuku', 'desc')->count(),
         ];
     }
 

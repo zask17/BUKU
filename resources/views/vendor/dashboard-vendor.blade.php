@@ -1,6 +1,6 @@
-@extends('layouts.visitor.main')
+@extends('layouts.vendor.main')
 
-@section('title-page', 'Dashboard Pengunjung')
+@section('title-page', 'Dashboard Vendor')
 
 @section('breadcrumb')
     <li class="breadcrumb-item active" aria-current="page">Dashboard</li>

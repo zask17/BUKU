@@ -92,15 +92,15 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.wilayah.index_axios') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.wilayah.index_axios') }}">
+        <li class="nav-item {{ Request::routeIs('wilayah.index_axios') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('wilayah.index_axios') }}">
                 <span class="menu-title">Wilayah (Axios)</span>
                 <i class="mdi mdi-map-marker-radius menu-icon"></i>
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.wilayah.index_ajax') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.wilayah.index_ajax') }}">
+        <li class="nav-item {{ Request::routeIs('wilayah.index_ajax') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('wilayah.index_ajax') }}">
                 <span class="menu-title">Wilayah (Ajax)</span>
                 <i class="mdi mdi-map-search menu-icon"></i>
             </a>
