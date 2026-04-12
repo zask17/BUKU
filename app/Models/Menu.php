@@ -17,11 +17,25 @@ class Menu extends Model
         'idvendor'
     ];
 
+    protected $casts = [
+        'idmenu' => 'integer',
+        'harga' => 'integer',
+        'idvendor' => 'integer',
+    ];
+
     /**
      * Relasi ke model Vendor (Menu ini milik vendor siapa)
      */
     public function vendor()
     {
         return $this->belongsTo(Vendor::class, 'idvendor', 'idvendor');
+    }
+
+    /**
+     * Relasi ke model DetailPesanan (Detail pesanan untuk menu ini)
+     */
+    public function detailPesanan()
+    {
+        return $this->hasMany(DetailPesanan::class, 'idmenu', 'idmenu');
     }
 }

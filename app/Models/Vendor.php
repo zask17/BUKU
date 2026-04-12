@@ -9,19 +9,29 @@ class Vendor extends Model
 {
     use HasFactory;
 
-    // Nama tabel sesuai di SQL (Modul 6)
     protected $table = 'vendor';
 
-    // Primary key sesuai di SQL
     protected $primaryKey = 'idvendor';
 
-    // Karena di SQL tidak ada kolom created_at dan updated_at, set false
     public $timestamps = false;
 
-    // Kolom yang boleh diisi secara massal
     protected $fillable = [
         'nama_vendor',
+        'iduser',
     ];
+
+    protected $casts = [
+        'idvendor' => 'integer',
+        'iduser' => 'integer',
+    ];
+
+    /**
+     * Relasi ke model User (Satu vendor dimiliki oleh satu user)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'iduser', 'iduser');
+    }
 
     /**
      * Relasi ke model Menu (Satu vendor memiliki banyak menu)
@@ -29,5 +39,15 @@ class Vendor extends Model
     public function menus()
     {
         return $this->hasMany(Menu::class, 'idvendor', 'idvendor');
+    }
+
+    /**
+     * Get semua pesanan dari menu vendor ini
+     */
+    public function pesananFromMenus()
+    {
+        return DetailPesanan::whereIn('idmenu', $this->menus()->pluck('idmenu'))
+            ->with('pesanan')
+            ->get();
     }
 }

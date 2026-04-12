@@ -174,6 +174,11 @@ class LoginController extends Controller
                 ->with('success', 'Selamat datang Admin!');
         }
 
+        if ($user->idrole == 3) {
+            return redirect()->route('vendor.dashboard')
+                ->with('success', 'Selamat datang Vendor!');
+        }
+
         return redirect()->route('visitor.dashboard')
             ->with('success', 'Login berhasil!');
 

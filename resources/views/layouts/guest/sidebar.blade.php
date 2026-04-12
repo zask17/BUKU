@@ -31,6 +31,12 @@
                 <i class="mdi mdi-book-open-variant menu-icon"></i>
             </a>
         </li>
+        <li class="nav-item {{ Request::is('kantin') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('kantin.index') }}">
+                <span class="menu-title">Kantin</span>
+                <i class="mdi mdi-food-fork-drink menu-icon"></i>
+            </a>
+        </li>
         <li class="nav-item {{ Request::is('wilayah/axios') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('wilayah.index_axios') }}">
                 <span class="menu-title">Wilayah (Axios)</span>

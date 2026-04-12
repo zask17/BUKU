@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Alias middleware untuk handle role
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'isVendor' => \App\Http\Middleware\IsVendor::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            '/midtrans/callback', 
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -4,51 +4,94 @@ namespace App\Http\Controllers\Vendor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Menu;
-use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class MenuController extends Controller
 {
-    // Menggunakan layout khusus vendor
-    private function getLayout()
+    private function getVendor()
     {
-        return 'layouts.vendor.main'; 
+        // Mengambil data vendor yang terhubung dengan user yang sedang login
+        return Auth::user()->vendor;
     }
 
     public function index()
     {
-        // Menampilkan semua menu dengan informasi vendornya
-        $menus = Menu::with('vendor')->orderBy('idmenu', 'asc')->get();
-        $layout = $this->getLayout();
-        return view('vendor.menu.index', compact('menus', 'layout'));
+        $vendor = $this->getVendor();
+        if (!$vendor) return redirect()->back()->with('error', 'Data Vendor tidak ditemukan.');
+
+        // Filter: Hanya ambil menu milik vendor ini
+        $menus = Menu::where('idvendor', $vendor->idvendor)->orderBy('idmenu', 'desc')->get();
+        
+        return view('vendor.menu.index', compact('menus', 'vendor'));
     }
 
     public function create()
     {
-        $vendors = Vendor::all();
-        $layout = $this->getLayout();
-        return view('vendor.menu.create', compact('layout', 'vendors'));
+        $vendor = $this->getVendor();
+        return view('vendor.menu.create', compact('vendor'));
     }
 
     public function store(Request $request)
     {
+        $vendor = $this->getVendor();
         $request->validate([
             'nama_menu' => 'required|string|max:255',
             'harga'     => 'required|integer|min:500',
-            'idvendor'  => 'required|exists:vendor,idvendor',
             'gambar'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $data = $request->only('nama_menu', 'harga', 'idvendor');
+        $data = $request->only('nama_menu', 'harga');
+        $data['idvendor'] = $vendor->idvendor;
 
         if ($request->hasFile('gambar')) {
-            // Menyimpan gambar ke folder public/menu
-            $path = $request->file('gambar')->store('menu', 'public');
-            $data['path_gambar'] = $path;
+            $data['path_gambar'] = $request->file('gambar')->store('menu', 'public');
         }
 
         Menu::create($data);
+        return redirect()->route('vendor.menu.index')->with('success', 'Menu berhasil ditambahkan.');
+    }
 
-        return redirect()->route('vendor.menu.index')->with('success', 'Menu berhasil ditambahkan');
+    public function edit(Menu $menu)
+    {
+        $vendor = $this->getVendor();
+        // Keamanan: Cek apakah menu ini benar milik vendor yang login
+        if ($menu->idvendor !== $vendor->idvendor) abort(403, 'Akses Ditolak');
+
+        return view('vendor.menu.edit', compact('menu', 'vendor'));
+    }
+
+    public function update(Request $request, Menu $menu)
+    {
+        $vendor = $this->getVendor();
+        if ($menu->idvendor !== $vendor->idvendor) abort(403);
+
+        $request->validate([
+            'nama_menu' => 'required|string|max:255',
+            'harga'     => 'required|integer|min:500',
+            'gambar'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
+        ]);
+
+        $data = $request->only('nama_menu', 'harga');
+
+        if ($request->hasFile('gambar')) {
+            if ($menu->path_gambar) Storage::disk('public')->delete($menu->path_gambar);
+            $data['path_gambar'] = $request->file('gambar')->store('menu', 'public');
+        }
+
+        $menu->update($data);
+        return redirect()->route('vendor.menu.index')->with('success', 'Menu berhasil diperbarui.');
+    }
+
+    public function destroy(Menu $menu)
+    {
+        $vendor = $this->getVendor();
+        if ($menu->idvendor !== $vendor->idvendor) abort(403);
+
+        if ($menu->path_gambar) Storage::disk('public')->delete($menu->path_gambar);
+        $menu->delete();
+
+        return redirect()->route('vendor.menu.index')->with('success', 'Menu berhasil dihapus.');
     }
 }

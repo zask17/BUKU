@@ -44,4 +44,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class, 'idrole', 'idrole');
     }
+
+    // Relasi User yang merupakan vendor punya satu Vendor
+    public function vendor()
+    {
+        return $this->hasOne(Vendor::class, 'iduser', 'iduser');
+    }
 }

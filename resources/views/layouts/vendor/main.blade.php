@@ -2,15 +2,15 @@
 <html lang="en">
 
 <head>
-  @include('layouts.visitor.head')
+  @include('layouts.vendor.head')
 </head>
 
 <body>
   <div class="container-scroller">
-    @include('layouts.visitor.navbar')
+    @include('layouts.vendor.navbar')
 
     <div class="container-fluid page-body-wrapper">
-      @include('layouts.visitor.sidebar')
+      @include('layouts.vendor.sidebar')
 
       <div class="main-panel">
         <div class="content-wrapper">
@@ -18,7 +18,7 @@
             <h3 class="page-title"> @yield('title-page', 'Dashboard') </h3>
             <nav aria-label="breadcrumb">
               <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('visitor.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('vendor.dashboard') }}">Dashboard</a></li>
                 @yield('breadcrumb')
               </ol>
             </nav>
@@ -26,7 +26,7 @@
           @yield('content')
         </div>
 
-        @include('layouts.visitor.footer')
+        @include('layouts.vendor.footer')
       </div>
     </div>
   </div>

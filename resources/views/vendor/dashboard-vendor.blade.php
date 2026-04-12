@@ -1,136 +1,70 @@
 @extends('layouts.vendor.main')
 
-@section('title-page', 'Dashboard Vendor')
-
-@section('breadcrumb')
-    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-@endsection
-
-@section('style-page')
-    <style>
-        .landing-hero {
-            text-align: center;
-            padding: 60px 20px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-
-        .landing-hero h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #343a40;
-        }
-
-        .cta-section {
-            background: linear-gradient(to right, #19d895, #21d0f5);
-            color: white;
-            padding: 50px 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .cta-section h2 {
-            color: white;
-        }
-
-        .btn-outline-custom {
-            border: 2px solid #19d895;
-            color: #19d895;
-            transition: 0.3s;
-        }
-
-        .btn-outline-custom:hover {
-            background: #19d895;
-            color: white;
-        }
-
-        .stat-card-link {
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-            display: block;
-        }
-
-        .stat-card-link:hover {
-            transform: translateY(-8px);
-            text-decoration: none;
-        }
-
-        .stat-card-link:hover .card {
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25) !important;
-            transform: scale(1.02);
-        }
-    </style>
-@endsection
-
 @section('content')
-    <div class="content-wrapper">
-        <section class="landing-hero shadow-sm">
-            <div class="container">
-                <h1 class="display-4">Halo Pengunjung</h1>
-                <p class="lead text-muted mt-3">
-                    Jangan lupa makan karena gak semua punya someone buat diajak makan siang.
-                </p>
-            </div>
-        </section>
-
-        {{-- Statistik Utama --}}
-        <div class="content-wrapper">
-            <div class="row">
-                <div class="col-md-4 stretch-card grid-margin">
-                    <a href="{{ route('visitor.kategori') }}" class="stat-card-link">
-                        <div class="card bg-gradient-info card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
-                            <div class="card-body">
-                                <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
-                                    alt="circle-image" />
-                                <h4 class="font-weight-normal mb-3">Total Kategori <i
-                                        class="mdi mdi-format-list-bulleted mdi-24px float-end"></i></h4>
-                                <h2 class="mb-5">{{ $jumlahKategori }}</h2>
-                                <h6 class="card-text">Novel, Biografi, Komik, dll.</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-md-4 stretch-card grid-margin">
-                    <a href="{{ route('visitor.buku') }}" class="stat-card-link">
-                        <div class="card bg-gradient-success card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
-                            <div class="card-body">
-                                <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
-                                    alt="circle-image" />
-                                <h4 class="font-weight-normal mb-3">Total Buku <i
-                                        class="mdi mdi-book-open-variant mdi-24px float-end"></i></h4>
-                                <h2 class="mb-5">{{ $jumlahBuku }}</h2>
-                                <h6 class="card-text">Koleksi buku yang tersedia</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="col-md-4 stretch-card grid-margin">
-                    <a href="{{ route('visitor.buku') }}" class="stat-card-link">
-                        <div class="card bg-gradient-danger card-img-holder text-white" style="transition: all 0.3s ease; cursor: pointer;">
-                            <div class="card-body">
-                                <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
-                                    alt="circle-image" />
-                                <h4 class="font-weight-normal mb-3">Buku Terbaru <i
-                                        class="mdi mdi-bookmark-outline mdi-24px float-end"></i></h4>
-                                <h2 class="mb-5">{{ $jumlahBukuTerbaru }}</h2>
-                                <h6 class="card-text">Update koleksi terbaru</h6>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+<div class="row">
+    <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-info text-white">
+            <div class="card-body">
+                <h4 class="font-weight-normal mb-3">Total Pendapatan <i class="mdi mdi-cash mdi-24px float-end"></i></h4>
+                <h2 class="mb-5">Rp {{ number_format($stats['total_pendapatan'], 0, ',', '.') }}</h2>
             </div>
         </div>
-
     </div>
-@endsection
+    
+    <div class="col-md-4 stretch-card grid-margin">
+        <div class="card bg-gradient-success text-white">
+            <div class="card-body">
+                <h4 class="font-weight-normal mb-3">Pesanan Hari Ini <i class="mdi mdi-cart mdi-24px float-end"></i></h4>
+                <h2 class="mb-5">{{ $stats['pesanan_hari_ini'] }} Pesanan</h2>
+            </div>
+        </div>
+    </div>
+</div>
 
-@section('js-page')
-    <script>
-        console.log("Welcome page loaded with Purple Admin layout.");
-    </script>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h4 class="card-title">Daftar Pesanan Masuk (Lunas)</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="bg-light text-center">
+                    <tr>
+                        <th>Waktu</th>
+                        <th>Order ID</th>
+                        <th>Nama Pelanggan</th>
+                        <th>Menu Dipesan</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($pesananLunas as $idPesanan => $details)
+                        @foreach($details as $index => $d)
+                        <tr>
+                            @if($index === 0)
+                                <td rowspan="{{ $details->count() }}" class="align-middle text-center">
+                                    {{ \Carbon\Carbon::parse($d->timestamp)->format('d M H:i') }}
+                                </td>
+                                <td rowspan="{{ $details->count() }}" class="align-middle font-weight-bold text-primary">
+                                    {{ $d->pesanan->order_id_pg }}
+                                </td>
+                                <td rowspan="{{ $details->count() }}" class="align-middle">
+                                    {{ $d->pesanan->nama }}
+                                </td>
+                            @endif
+                            
+                            <td>{{ $d->menu->nama_menu }}</td>
+                            <td class="text-center">{{ $d->jumlah }}</td>
+                            <td class="text-end">Rp {{ number_format($d->subtotal, 0, ',', '.') }}</td>
+                        </tr>
+                        @endforeach
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Belum ada pesanan lunas untuk vendor Anda.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 @endsection

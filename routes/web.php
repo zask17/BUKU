@@ -8,18 +8,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Guest\BukuGuestController;
 use App\Http\Controllers\Guest\KategoriGuestController;
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\VerificationController;
-use App\Http\Controllers\Auth\ConfirmPasswordController;
-use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\ProfileController;
-use App\Http\Controllers\Auth\TwoFactorController;
-use App\Http\Controllers\Auth\SocialAuthController;
-use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\KantinController;
+use App\Http\Controllers\PaymentCallbackController;
+use App\Http\Controllers\PdfController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\WilayahController;
 
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\PenggunaAdminController;
@@ -35,13 +28,19 @@ use App\Http\Controllers\Visitor\BukuVisitorController;
 
 use App\Http\Controllers\Vendor\DashboardVendorController;
 use App\Http\Controllers\Vendor\MenuController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PaymentController;
 
-
-use App\Http\Controllers\PdfController;
-use App\Http\Controllers\BarangController;
-use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\Auth\ConfirmPasswordController;
+use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\Auth\TwoFactorController;
+use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 
 
 
@@ -53,7 +52,20 @@ Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 Route::get('/buku', [BukuGuestController::class, 'index'])->name('buku');
 Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('kategori');
 
-// Rute Tampilan
+// --- RUTE KANTIN GUEST ---
+Route::prefix('kantin')->name('kantin.')->group(function () {
+    Route::get('/', [KantinController::class, 'index'])->name('index');
+    Route::post('/checkout', [KantinController::class, 'checkout'])->name('checkout');
+    Route::get('/selesai', [KantinController::class, 'selesai'])->name('selesai');
+    Route::get('/pending', [KantinController::class, 'pending'])->name('pending');
+    Route::get('/gagal', [KantinController::class, 'gagal'])->name('gagal');
+});
+
+// Webhook Midtrans (Pastikan URL ini didaftarkan di Dashboard Midtrans: https://namadomain.com/midtrans/callback)
+// Route::post('/midtrans/callback', [KantinController::class, 'callback'])->name('midtrans.callback');
+Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
+
+// RUTE WILAYAH (Bisa diakses semua pengguna)
 Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('wilayah.index_axios');
 Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('wilayah.index_ajax');
 
@@ -164,16 +176,8 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
 });
 
 // --- GRUP AKSES VENDOR (idrole = 3) ---
-Route::group(['prefix' => 'vendor', 'middleware' => ['auth', 'role:3']], function () {
-    Route::get('/dashboard', [DashboardVendorController::class, 'index'])->name('vendor.dashboard');
+Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 'role:3']], function () {
+    Route::get('/dashboard', [DashboardVendorController::class, 'index'])->name('dashboard');
+    Route::get('/pesanan', [DashboardVendorController::class, 'pesanan'])->name('pesanan'); // Rute baru
     Route::resource('menu', MenuController::class);
 });
-
-// --- RUTE CUSTOMER (GUEST) ---
-Route::get('/kantin', [OrderController::class, 'index'])->name('kantin.index');
-Route::post('/kantin/order', [OrderController::class, 'checkout'])->name('kantin.checkout');
-// Callback dari Midtrans
-Route::post('/payment/callback', [PaymentController::class, 'callback']);
-Route::get('/kantin/selesai', function() { return "Pembayaran Berhasil! Pesanan Anda sedang diproses."; });
-Route::get('/kantin/pending', function() { return "Menunggu pembayaran..."; });
-Route::get('/kantin/error', function() { return "Maaf, terjadi kesalahan pembayaran."; });
