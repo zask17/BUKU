@@ -7,8 +7,6 @@ use App\Models\Barang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-// Tambahkan library Barcode di sini
-use Picqer\Barcode\BarcodeGeneratorHTML;
 
 class BarangController extends Controller
 {
@@ -45,6 +43,7 @@ class BarangController extends Controller
 
     public function show($id)
     {
+        // Opsional: halaman detail barang
         $barang = Barang::findOrFail($id);
         return view('barang.show', compact('barang'));
     }
@@ -78,6 +77,7 @@ class BarangController extends Controller
 
     public function cetakPdf(Request $request)
     {
+        // Validasi input
         $request->validate([
             'selected_items' => 'required|array',
             'startX'         => 'required|integer|min:1|max:5',
@@ -90,14 +90,7 @@ class BarangController extends Controller
             ->orderBy('id_barang', 'asc')
             ->get();
 
-        // Inisialisasi Generator Barcode
-        $generator = new BarcodeGeneratorHTML();
-        
-        // Tambahkan property barcode ke setiap objek barang
-        foreach ($barangs as $barang) {
-            $barang->barcode = $generator->getBarcode($barang->id_barang, $generator::TYPE_CODE_128);
-        }
-
+        // Menghitung start_index untuk grid 5x8
         $start_index = (($request->startY - 1) * 5) + ($request->startX - 1);
 
         $pdf = Pdf::loadView('barang.pdf', compact(
@@ -117,4 +110,5 @@ class BarangController extends Controller
     {
         return view('admin.barang.barang_baru_datatable');
     }
+    
 }

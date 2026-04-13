@@ -44,7 +44,7 @@ Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('katego
 // --- RUTE KANTIN GUEST ---
     Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
     Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
-    Route::get('/kantin/selesai', [KantinController::class, 'selesai'])->name('kantin.selesai');
+    Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
     Route::get('/kantin/pending', [KantinController::class, 'pending'])->name('kantin.pending');
     Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.gagal');
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\Vendor;
 use App\Models\Pesanan;
 use App\Models\DetailPesanan;
@@ -33,29 +34,48 @@ class KantinController extends Controller
         $layout = $this->getLayout();
         $vendors = Vendor::with('menus')->get();
         $pesanan = Pesanan::orderBy('timestamp', 'desc')->get();
-        
+
         return view('kantin.index', compact('vendors', 'pesanan', 'layout'));
     }
 
-    public function selesai() 
-    { 
+    // public function selesai() 
+    // { 
+    //     $layout = $this->getLayout();
+    //     return view('kantin.selesai', compact('layout')); 
+    // }
+    public function selesai($id)
+    {
         $layout = $this->getLayout();
-        return view('kantin.selesai', compact('layout')); 
+        $pesanan = Pesanan::findOrFail($id);
+        if (!$pesanan) {
+            abort(404, 'Pesanan tidak ditemukan');
+        }
+
+        // Buat URL lengkap yang akan di-encode ke QR Code
+        $url = route('kantin.selesai', $id);
+
+        // Generate QR Code berisi ID Pesanan
+        $qrcode = QrCode::size(200)
+            // ->generate($pesanan->idpesanan);
+            ->generate($url);
+
+        return view('kantin.selesai', compact('pesanan', 'qrcode', 'layout'));
     }
 
-    public function pending() 
-    { 
+    public function pending()
+    {
         $layout = $this->getLayout();
-        return view('kantin.pending', compact('layout')); 
+        return view('kantin.pending', compact('layout'));
     }
 
-    public function gagal()   
-    { 
+    public function gagal()
+    {
         $layout = $this->getLayout();
-        return view('kantin.gagal', compact('layout')); 
+        return view('kantin.gagal', compact('layout'));
     }
 
-    public function checkout(Request $request)    {
+    public function checkout(Request $request)
+    {
         $request->validate(['total_bayar' => 'required|integer|min:1', 'cart' => 'required|array|min:1']);
         try {
             DB::beginTransaction();
@@ -77,10 +97,10 @@ class KantinController extends Controller
                 'nama' => $nama,
                 'timestamp' => now(),
                 'total' => $request->total_bayar,
-                'status_bayar' => 0, 
+                'status_bayar' => 0,
                 'order_id_pg' => $orderId,
             ]);
-            
+
             foreach ($request->cart as $item) {
                 DetailPesanan::create([
                     'idpesanan' => $pesanan->idpesanan,
@@ -103,7 +123,10 @@ class KantinController extends Controller
                 'transaction_details' => ['order_id' => $orderId, 'gross_amount' => (int) $request->total_bayar],
                 'customer_details' => ['first_name' => $nama],
                 'item_details' => collect($request->cart)->map(fn($i) => [
-                    'id' => $i['idmenu'], 'price' => (int)$i['harga'], 'quantity' => (int)$i['jumlah'], 'name' => substr($i['nama'], 0, 50)
+                    'id' => $i['idmenu'],
+                    'price' => (int)$i['harga'],
+                    'quantity' => (int)$i['jumlah'],
+                    'name' => substr($i['nama'], 0, 50)
                 ])->toArray(),
             ];
 
@@ -111,7 +134,10 @@ class KantinController extends Controller
             $pesanan->update(['snap_token' => $snapToken]);
             session(['order_id' => $orderId]);
 
-            return response()->json(['snap_token' => $snapToken]);
+            return response()->json([
+                'snap_token' => $snapToken,
+                'idpesanan'  => $pesanan->idpesanan
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);

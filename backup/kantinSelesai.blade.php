@@ -1,4 +1,4 @@
-@extends($layout)
+@extends('layouts.guest.main')
 
 @section('title-page', 'Pembayaran Berhasil')
 
@@ -14,17 +14,14 @@
 
                         <h2 class="card-title font-weight-bold mb-3">Pembayaran Berhasil!</h2>
 
-                        <p>Terima kasih <strong>{{ $pesanan->nama }}</strong></p>
-                        
-                        <div class="mt-4 p-3 bg-light d-inline-block" style="border-radius: 15px;">
-                            <p class="font-weight-bold mb-2">Scan QR untuk Validasi:</p>
-                            <div class="bg-white p-2 d-inline-block shadow-sm">
-                                {!! $qrcode !!}
-                            </div>
-                            <p class="mt-2 text-muted mb-0">ID Pesanan: #{{ $pesanan->idpesanan }}</p>
+                        <p>Terima kasih {{ $pesanan->nama }}</p>
+                        <div class="mt-4">
+                            <p>Scan QR ini untuk validasi pesanan:</p>
+                            {!! $qrcode !!}
+                            <p>ID: {{ $pesanan->idpesanan }}</p>
                         </div>
 
-                        <p class="lead text-success mt-4 mb-4">
+                        <p class="lead text-success mb-4">
                             <i class="mdi mdi-information-outline"></i>
                             Pesanan Anda telah diterima dan sedang diproses
                         </p>
@@ -32,19 +29,23 @@
                         <div class="alert alert-info" role="alert">
                             <h6 class="font-weight-bold">Detail Pesanan:</h6>
                             <small>
-                                <p class="mb-1"><strong>Order ID Midtrans:</strong> <br>
-                                    {{ $pesanan->order_id_pg ?? 'N/A' }}
+                                <p class="mb-1"><strong>Order ID:</strong> <br>
+                                    @if(session('order_id'))
+                                        {{ session('order_id') }}
+                                    @else
+                                        Cek email untuk detail pesanan
+                                    @endif
                                 </p>
                                 <p class="mb-0"><strong>Status:</strong> <br>
-                                    <span class="badge badge-success">✓ Lunas / Paid</span>
+                                    <span class="badge badge-success">✓ Lunas</span>
                                 </p>
                             </small>
                         </div>
 
                         <hr>
 
-                        <p class="text-muted mb-4 small">
-                            Tunjukkan QR Code di atas kepada vendor/penjual saat mengambil makanan.
+                        <p class="text-muted mb-4">
+                            Pesanan Anda akan segera disiapkan. Silakan tunggu pengumuman dari penjual kantin.
                         </p>
 
                         <div class="row">
@@ -81,14 +82,9 @@
         .card {
             border-radius: 10px;
         }
+
         .btn-block {
             border-radius: 6px;
-            width: 100%;
-        }
-        /* Menghindari QR Code terlalu besar di layar mobile */
-        svg {
-            max-width: 150px;
-            height: auto;
         }
     </style>
 @endsection
