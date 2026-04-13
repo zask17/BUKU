@@ -8,6 +8,20 @@
 
 @section('style-page')
     <style>
+        .vendor-section { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 30px; 
+            border: 1px solid #e9ecef;
+        }
+        .vendor-title {
+            color: #343a40;
+            font-weight: bold;
+            border-left: 5px solid #9a55ff;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
         .menu-card-inner { transition: transform 0.2s; border: none; }
         .menu-card-inner:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .total-price { font-size: 1.8rem; font-weight: bold; color: #9a55ff; }
@@ -24,6 +38,8 @@
             <div class="card shadow-sm">
                 <div class="card-body">
                     <h4 class="card-title">Menu Kantin</h4>
+                    
+                    {{-- Filter Vendor --}}
                     <div class="form-group mb-4">
                         <label for="vendor-filter" class="form-label font-weight-bold">Pilih Vendor:</label>
                         <select id="vendor-filter" class="form-control">
@@ -34,34 +50,44 @@
                         </select>
                     </div>
                     <hr>
-                    <div id="menu-cards-container" class="row mt-3">
+
+                    {{-- Container Utama Menu --}}
+                    <div id="menu-cards-container">
                         @foreach($vendors as $vendor)
-                            @foreach($vendor->menus as $menu)
-                                <div class="col-md-4 mb-4 menu-item-card" data-vendor-id="{{ $menu->idvendor }}">
-                                    <div class="card shadow-sm menu-card-inner h-100">
-                                        @if($menu->path_gambar)
-                                            <img src="{{ asset('storage/' . $menu->path_gambar) }}" class="card-img-top" alt="{{ $menu->nama_menu }}" style="height: 140px; object-fit: cover;">
-                                        @else
-                                            <div class="bg-light text-center py-4" style="height: 140px;"><i class="mdi mdi-food mdi-48px text-muted"></i></div>
-                                        @endif
-                                        <div class="card-body p-3 d-flex flex-column">
-                                            <h6 class="font-weight-bold mb-1">{{ $menu->nama_menu }}</h6>
-                                            <p class="text-muted small mb-2"><i class="mdi mdi-store"></i> {{ $vendor->nama_vendor }}</p>
-                                            <h5 class="text-primary font-weight-bold mb-3">Rp {{ number_format($menu->harga, 0, ',', '.') }}</h5>
-                                            <div class="mb-3"><input type="text" id="note-{{ $menu->idmenu }}" class="form-control form-control-sm" placeholder="Catatan: pedas, dll"></div>
-                                            <button type="button" class="btn btn-gradient-primary btn-sm btn-block mt-auto" onclick="tambahItem({{ $menu->idmenu }}, '{{ addslashes($menu->nama_menu) }}', {{ $menu->harga }})">
-                                                <i class="mdi mdi-plus"></i> Tambah
-                                            </button>
+                            {{-- Div Terpisah per Vendor --}}
+                            <div class="vendor-section" data-vendor-id="{{ $vendor->idvendor }}">
+                                <h5 class="vendor-title"><i class="mdi mdi-store"></i> {{ $vendor->nama_vendor }}</h5>
+                                <div class="row">
+                                    @forelse($vendor->menus as $menu)
+                                        <div class="col-md-4 mb-4">
+                                            <div class="card shadow-sm menu-card-inner h-100">
+                                                @if($menu->path_gambar)
+                                                    <img src="{{ asset('storage/' . $menu->path_gambar) }}" class="card-img-top" alt="{{ $menu->nama_menu }}" style="height: 140px; object-fit: cover;">
+                                                @else
+                                                    <div class="bg-light text-center py-4" style="height: 140px;"><i class="mdi mdi-food mdi-48px text-muted"></i></div>
+                                                @endif
+                                                <div class="card-body p-3 d-flex flex-column">
+                                                    <h6 class="font-weight-bold mb-1">{{ $menu->nama_menu }}</h6>
+                                                    <h5 class="text-primary font-weight-bold mb-3">Rp {{ number_format($menu->harga, 0, ',', '.') }}</h5>
+                                                    <div class="mb-3"><input type="text" id="note-{{ $menu->idmenu }}" class="form-control form-control-sm" placeholder="Catatan: pedas, dll"></div>
+                                                    <button type="button" class="btn btn-gradient-primary btn-sm btn-block mt-auto" onclick="tambahItem({{ $menu->idmenu }}, '{{ addslashes($menu->nama_menu) }}', {{ $menu->harga }})">
+                                                        <i class="mdi mdi-plus"></i> Tambah
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @empty
+                                        <div class="col-12"><p class="text-muted italic ml-3">Belum ada menu untuk vendor ini.</p></div>
+                                    @endforelse
                                 </div>
-                            @endforeach
+                            </div>
                         @endforeach
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Kolom Keranjang --}}
         <div class="col-md-4">
             <div class="card shadow-sm cart-sticky border-primary">
                 <div class="card-body d-flex flex-column" style="min-height: 500px;">
@@ -81,6 +107,7 @@
         </div>
     </div>
 
+    {{-- Riwayat Transaksi --}}
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow-sm">
@@ -124,11 +151,8 @@
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 
     <script>
-        // Agar AJAX otomatis membawa token CSRF yang valid
         $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
         });
 
         $(document).ready(function() {
@@ -194,7 +218,6 @@
                 $.ajax({
                     url: "{{ route('kantin.checkout') }}", 
                     type: "POST",
-                    // _token sudah dikirim otomatis lewat $.ajaxSetup di atas
                     data: { total_bayar: grandTotal, cart: keranjang },
                     success: function(res) {
                         window.snap.pay(res.snap_token, {
@@ -214,9 +237,15 @@
                 });
             };
 
+            // Perbaikan Logika Filter untuk Vendor Section
             $('#vendor-filter').on('change', function() {
                 const v = $(this).val(); 
-                v === 'all' ? $('.menu-item-card').fadeIn() : ($('.menu-item-card').hide(), $(`.menu-item-card[data-vendor-id="${v}"]`).fadeIn());
+                if(v === 'all') {
+                    $('.vendor-section').fadeIn();
+                } else {
+                    $('.vendor-section').hide();
+                    $(`.vendor-section[data-vendor-id="${v}"]`).fadeIn();
+                }
             });
         });
 

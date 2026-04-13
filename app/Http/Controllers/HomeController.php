@@ -35,6 +35,16 @@ class HomeController extends Controller
         // 1. Ambil Total Data
         $totalBuku = Buku::count();
         $totalKategori = Kategori::count();
+        // Ambil vendor pertama yang ada di database
+        $kantin = DB::table('vendor')->first();
+
+        $menu = DB::table('menu')
+            ->join('vendor', 'menu.idvendor', '=', 'vendor.idvendor')
+            ->select('menu.*', 'vendor.nama_vendor')
+            ->get();
+
+        // Ambil semua vendor untuk keperluan filter di halaman depan
+        $vendors = DB::table('vendor')->get();
 
         // 2. Ambil Koleksi Buku Terbaru (Ambil 4 buku terakhir berdasarkan idbuku)
         $bukuTerbaru = Buku::with('kategori')->orderBy('idbuku', 'desc')->take(4)->get();
@@ -43,7 +53,7 @@ class HomeController extends Controller
         // Menghitung jumlah buku per kategori
         $kategoriStats = Kategori::withCount('buku')
             ->get()
-            ->map(function($k) {
+            ->map(function ($k) {
                 return [
                     'nama' => $k->nama_kategori,
                     'total' => $k->buku_count
@@ -55,14 +65,14 @@ class HomeController extends Controller
         $pertumbuhanData = Kategori::withCount('buku')
             ->orderBy('idkategori')
             ->get()
-            ->map(function($k) {
+            ->map(function ($k) {
                 return [
                     'nama' => $k->nama_kategori,
                     'total' => $k->buku_count
                 ];
             });
 
-        return view('welcome', compact('totalBuku', 'totalKategori', 'bukuTerbaru', 'kategoriStats', 'pertumbuhanData'));
+        return view('welcome', compact('totalBuku', 'totalKategori', 'bukuTerbaru', 'kategoriStats', 'pertumbuhanData', 'menu', 'vendors', 'kantin'));
     }
 
     public function index()

@@ -1,5 +1,11 @@
 @extends('layouts.vendor.main')
 
+@section('title-page', 'Menu')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item active" aria-current="page">Menu</li>
+@endsection
+
 @section('content')
 <div class="container mt-4">
     <div class="row mb-4">

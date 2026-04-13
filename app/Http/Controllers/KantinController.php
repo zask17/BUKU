@@ -14,7 +14,6 @@ use Midtrans\Snap;
 
 class KantinController extends Controller
 {
-    // Fungsi privat untuk menentukan layout berdasarkan status login dan role
     private function getLayout()
     {
         if (Auth::check()) {
@@ -56,26 +55,21 @@ class KantinController extends Controller
         return view('kantin.gagal', compact('layout')); 
     }
 
-    public function checkout(Request $request)
-    {
-        // ... (Logika checkout tetap sama karena returnnya JSON, tidak butuh layout)
+    public function checkout(Request $request)    {
         $request->validate(['total_bayar' => 'required|integer|min:1', 'cart' => 'required|array|min:1']);
-
         try {
             DB::beginTransaction();
-
             // 1. Ambil urutan terakhir dari tabel pesanan
             $lastOrder = Pesanan::orderBy('idpesanan', 'desc')->first();
             $nextNumber = $lastOrder ? $lastOrder->idpesanan + 1 : 1;
 
-            // 2. Format menjadi KANTIN-0000001
+            // 2. Format pesanan =  KANTIN-0000001
             $orderId = 'KANTIN-' . str_pad($nextNumber, 12, '0', STR_PAD_LEFT);
 
-            // 3. Jika Guest, format menjadi Guest_0000001
+            // 3. Format pemesan menjadi Guest_0000001 jika tidak login, atau nama_user jika login
             if (Auth::check()) {
                 $nama = Auth::user()->nama_user;
             } else {
-                // Kamu bisa menggunakan angka yang sama dengan order atau menghitung jumlah guest saja
                 $nama = 'Guest_' . str_pad($nextNumber, 12, '0', STR_PAD_LEFT);
             }
 

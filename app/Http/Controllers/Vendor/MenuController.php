@@ -22,7 +22,7 @@ class MenuController extends Controller
         if (!$vendor) return redirect()->back()->with('error', 'Data Vendor tidak ditemukan.');
 
         // Filter: Hanya ambil menu milik vendor ini
-        $menus = Menu::where('idvendor', $vendor->idvendor)->orderBy('idmenu', 'desc')->get();
+        $menus = Menu::where('idvendor', $vendor->idvendor)->orderBy('idmenu', 'asc')->get();
         
         return view('vendor.menu.index', compact('menus', 'vendor'));
     }

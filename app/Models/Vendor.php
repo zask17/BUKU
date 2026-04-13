@@ -8,13 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Vendor extends Model
 {
     use HasFactory;
-
     protected $table = 'vendor';
-
     protected $primaryKey = 'idvendor';
-
     public $timestamps = false;
-
     protected $fillable = [
         'nama_vendor',
         'iduser',

@@ -1,5 +1,12 @@
 @extends('layouts.vendor.main')
 
+@section('title-page', 'Tambah Menu')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{ route('vendor.menu.index') }}">Menu</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Tambah Menu</li>
+@endsection
+
 @section('content')
 <div class="container mt-4">
     <div class="row">

@@ -76,6 +76,20 @@
             </a>
         </div>
         <div class="col-md-4 stretch-card grid-margin">
+            <a href="{{ route('kantin.index') }}" class="stat-card-link">
+                <div class="card bg-gradient-danger card-img-holder text-white border-0">
+                    <div class="card-body">
+                        <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute"
+                            alt="circle-image" />
+                        <h4 class="font-weight-normal mb-3">Kantin <i
+                                class="mdi mdi-book-open-page-variant mdi-24px float-end"></i></h4>
+                        <h2 class="mb-5">{{ $menu->count() ?? 0 }} Menu</h2>
+                        <h6 class="card-text">Makanan pengganjal lapar</h6>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 stretch-card grid-margin">
             <a href="{{ route('wilayah.index_ajax') }}" class="stat-card-link">
                 <div class="card bg-gradient-success card-img-holder text-white border-0">
                     <div class="card-body">
@@ -89,10 +103,10 @@
                 </div>
             </a>
         </div>
-    </div>
+    {{-- </div> --}}
 
     {{-- Statistik Utama - Baris 2 --}}
-    <div class="row">
+    {{-- <div class="row"> --}}
         <div class="col-md-4 stretch-card grid-margin">
             <a href="{{ route('wilayah.index_axios') }}" class="stat-card-link">
                 <div class="card bg-gradient-warning card-img-holder text-white border-0">

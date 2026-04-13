@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pesanan extends Model
 {
     protected $table = 'pesanan';
-    protected $primaryKey = 'idpesanan'; // Sesuai pk_pesanan di SQL
+    protected $primaryKey = 'idpesanan';
     public $timestamps = false;
 
     protected $fillable = [

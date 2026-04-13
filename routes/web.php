@@ -30,17 +30,6 @@ use App\Http\Controllers\Vendor\DashboardVendorController;
 use App\Http\Controllers\Vendor\MenuController;
 
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\VerificationController;
-use App\Http\Controllers\Auth\ConfirmPasswordController;
-use App\Http\Controllers\Auth\LogoutController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\ProfileController;
-use App\Http\Controllers\Auth\TwoFactorController;
-use App\Http\Controllers\Auth\SocialAuthController;
-use App\Http\Controllers\Auth\EmailVerificationController;
 
 
 
@@ -53,16 +42,14 @@ Route::get('/buku', [BukuGuestController::class, 'index'])->name('buku');
 Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('kategori');
 
 // --- RUTE KANTIN GUEST ---
-Route::prefix('kantin')->name('kantin.')->group(function () {
-    Route::get('/', [KantinController::class, 'index'])->name('index');
-    Route::post('/checkout', [KantinController::class, 'checkout'])->name('checkout');
-    Route::get('/selesai', [KantinController::class, 'selesai'])->name('selesai');
-    Route::get('/pending', [KantinController::class, 'pending'])->name('pending');
-    Route::get('/gagal', [KantinController::class, 'gagal'])->name('gagal');
-});
+    Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
+    Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
+    Route::get('/kantin/selesai', [KantinController::class, 'selesai'])->name('kantin.selesai');
+    Route::get('/kantin/pending', [KantinController::class, 'pending'])->name('kantin.pending');
+    Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.gagal');
 
 // Webhook Midtrans (Pastikan URL ini didaftarkan di Dashboard Midtrans: https://namadomain.com/midtrans/callback)
-// Route::post('/midtrans/callback', [KantinController::class, 'callback'])->name('midtrans.callback');
+// Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback'])->name('midtrans.callback');
 Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
 
 // RUTE WILAYAH (Bisa diakses semua pengguna)
