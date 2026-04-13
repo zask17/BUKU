@@ -30,6 +30,14 @@
             </a>
         </li>
 
+        <li class="nav-item {{ Request::routeIs('admin.customer.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.customer.index') }}">
+                <span class="menu-title">Customer</span>
+                <i class="mdi mdi-account-multiple menu-icon"></i>
+            </a>
+        </li>
+
+
         <li class="nav-item-divider"></li>
 
         <li class="nav-item {{ Request::routeIs('admin.kategori.*') ? 'active' : '' }}">

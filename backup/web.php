@@ -46,4 +46,25 @@
 // Route::post('/midtrans/callback', [KantinController::class, 'callback'])
 // ->name('midtrans.callback');
 
-// ... (Rute lainnya tetap sama)
+
+// ==================== CUSTOMER ROUTES ====================
+Route::prefix('customer')->name('customer.')->group(function () {
+
+    // Daftar Customer
+    Route::get('/', [CustomerController::class, 'index'])->name('index');
+
+    // Tambah Customer 1 (Simpan foto sebagai BLOB)
+    Route::get('/tambah1', [CustomerController::class, 'create1'])->name('create1');
+    Route::post('/tambah1', [CustomerController::class, 'store1'])->name('store1');
+
+    // Tambah Customer 2 (Simpan foto sebagai File Path)
+    Route::get('/tambah2', [CustomerController::class, 'create2'])->name('create2');
+    Route::post('/tambah2', [CustomerController::class, 'store2'])->name('store2');
+
+    // Edit Customer
+    Route::get('/{id}/edit', [CustomerController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [CustomerController::class, 'update'])->name('update');
+
+    // Hapus Customer
+    Route::delete('/{id}', [CustomerController::class, 'destroy'])->name('destroy');
+});

@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\BukuAdminController;
 use App\Http\Controllers\Admin\KotaController;
 use App\Http\Controllers\Admin\WeekEmpatController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\CustomerController;
 
 use App\Http\Controllers\Visitor\DashboardVisitorController;
 use App\Http\Controllers\Visitor\KategoriVisitorController;
@@ -42,11 +43,11 @@ Route::get('/buku', [BukuGuestController::class, 'index'])->name('buku');
 Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('kategori');
 
 // --- RUTE KANTIN GUEST ---
-    Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
-    Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
-    Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
-    Route::get('/kantin/pending', [KantinController::class, 'pending'])->name('kantin.pending');
-    Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.gagal');
+Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
+Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
+Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
+Route::get('/kantin/pending', [KantinController::class, 'pending'])->name('kantin.pending');
+Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.gagal');
 
 // Webhook Midtrans (Pastikan URL ini didaftarkan di Dashboard Midtrans: https://namadomain.com/midtrans/callback)
 // Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback'])->name('midtrans.callback');
@@ -63,24 +64,24 @@ Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan']
 
 // --- PDF Routes (bisa diakses semua pengguna) ---
 // Route::middleware(['auth', 'role:1,2'])->group(function () {
-    // Index (menu pilihan sertifikat & undangan)
-    Route::get('/generate-pdf', [PdfController::class, 'index'])->name('pdf.index');
+// Index (menu pilihan sertifikat & undangan)
+Route::get('/generate-pdf', [PdfController::class, 'index'])->name('pdf.index');
 
-    // Form & Proses Sertifikat
-    Route::get('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatForm'])->name('pdf.sertifikat.form');
-    Route::post('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatPreview'])->name('pdf.sertifikat');
+// Form & Proses Sertifikat
+Route::get('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatForm'])->name('pdf.sertifikat.form');
+Route::post('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatPreview'])->name('pdf.sertifikat');
 
-    // Form & Proses Undangan
-    Route::get('/generate-pdf/undangan', [PdfController::class, 'undanganForm'])->name('pdf.undangan.form');
-    Route::post('/generate-pdf/undangan', [PdfController::class, 'undanganPreview'])->name('pdf.undangan');
+// Form & Proses Undangan
+Route::get('/generate-pdf/undangan', [PdfController::class, 'undanganForm'])->name('pdf.undangan.form');
+Route::post('/generate-pdf/undangan', [PdfController::class, 'undanganPreview'])->name('pdf.undangan');
 
-    // Preview & Download
-    Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview');
-    Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
+// Preview & Download
+Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview');
+Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
 
-    // Cetak PDF Label TnJ 108
-    Route::resource('barang', BarangController::class);
-    Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
+// Cetak PDF Label TnJ 108
+Route::resource('barang', BarangController::class);
+Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
 // });
 
 
@@ -104,49 +105,61 @@ Route::post('/otp-resend', [LoginController::class, 'resendOtp'])->name('otp.res
 
 
 // --- GRUP AKSES ADMIN (idrole = 1) ---
-Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function () {
+// Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function () {
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'role:1']], function () {
     // Dashboard
-    Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
 
     // Pengguna
-    Route::get('/pengguna', [PenggunaAdminController::class, 'index'])->name('admin.pengguna');
+    Route::get('/pengguna', [PenggunaAdminController::class, 'index'])->name('pengguna');
 
     // Kategori
-    Route::get('/kategori', [KategoriAdminController::class, 'index'])->name('admin.kategori.index');
-    Route::get('/kategori/create', [KategoriAdminController::class, 'create'])->name('admin.kategori.create');
-    Route::post('/kategori/store', [KategoriAdminController::class, 'store'])->name('admin.kategori.store');
-    Route::get('/kategori/{id}/edit', [KategoriAdminController::class, 'edit'])->name('admin.kategori.edit');
-    Route::put('/kategori/{id}/update', [KategoriAdminController::class, 'update'])->name('admin.kategori.update');
-    Route::delete('/kategori/{id}/destroy', [KategoriAdminController::class, 'destroy'])->name('admin.kategori.destroy');
+    Route::get('/kategori', [KategoriAdminController::class, 'index'])->name('kategori.index');
+    Route::get('/kategori/create', [KategoriAdminController::class, 'create'])->name('kategori.create');
+    Route::post('/kategori/store', [KategoriAdminController::class, 'store'])->name('kategori.store');
+    Route::get('/kategori/{id}/edit', [KategoriAdminController::class, 'edit'])->name('kategori.edit');
+    Route::put('/kategori/{id}/update', [KategoriAdminController::class, 'update'])->name('kategori.update');
+    Route::delete('/kategori/{id}/destroy', [KategoriAdminController::class, 'destroy'])->name('kategori.destroy');
 
     // Buku
-    Route::get('/buku', [BukuAdminController::class, 'index'])->name('admin.buku.index');
-    Route::get('/buku/create', [BukuAdminController::class, 'create'])->name('admin.buku.create');
-    Route::post('/buku/store', [BukuAdminController::class, 'store'])->name('admin.buku.store');
-    Route::get('/buku/{id}/edit', [BukuAdminController::class, 'edit'])->name('admin.buku.edit');
-    Route::put('/buku/{id}/update', [BukuAdminController::class, 'update'])->name('admin.buku.update');
-    Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('admin.buku.destroy');
+    Route::get('/buku', [BukuAdminController::class, 'index'])->name('buku.index');
+    Route::get('/buku/create', [BukuAdminController::class, 'create'])->name('buku.create');
+    Route::post('/buku/store', [BukuAdminController::class, 'store'])->name('buku.store');
+    Route::get('/buku/{id}/edit', [BukuAdminController::class, 'edit'])->name('buku.edit');
+    Route::put('/buku/{id}/update', [BukuAdminController::class, 'update'])->name('buku.update');
+    Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('buku.destroy');
 
     // Barang Baru
-    Route::get('/barang-baru/html', [BarangController::class, 'barangBaru'])->name('admin.barang.baru');
-    Route::get('/barang-baru/datatable', [BarangController::class, 'barangBaruDatatable'])->name('admin.barang.datatable');
+    Route::get('/barang-baru/html', [BarangController::class, 'barangBaru'])->name('barang.baru');
+    Route::get('/barang-baru/datatable', [BarangController::class, 'barangBaruDatatable'])->name('barang.datatable');
 
     // Kota
-    Route::get('/kota', [KotaController::class, 'index'])->name('admin.kota.index');
+    Route::get('/kota', [KotaController::class, 'index'])->name('kota.index');
 
     // Ajax Week4
-    Route::get('/week4', [WeekEmpatController::class, 'index'])->name('admin.week4.index');
+    Route::get('/week4', [WeekEmpatController::class, 'index'])->name('week4.index');
     Route::post('/week4/ajax_submit', [WeekEmpatController::class, 'submit'])->name('week4.ajax_submit');
 
     // Rute untuk POS versi Axios
-    Route::get('/pos/axios', [PosController::class, 'indexAxios'])->name('admin.pos.index_axios');
+    Route::get('/pos/axios', [PosController::class, 'indexAxios'])->name('pos.index_axios');
 
     // Rute untuk POS versi Ajax (jQuery)
-    Route::get('/pos/ajax', [PosController::class, 'indexAjax'])->name('admin.pos.index_ajax');
+    Route::get('/pos/ajax', [PosController::class, 'indexAjax'])->name('pos.index_ajax');
 
     // Rute Store (Digunakan oleh keduanya)
-    Route::post('/pos/cek-barang', [PosController::class, 'cekBarang'])->name('admin.pos.cek_barang');
-    Route::post('/pos/store', [PosController::class, 'store'])->name('admin.pos.store');
+    Route::post('/pos/cek-barang', [PosController::class, 'cekBarang'])->name('pos.cek_barang');
+    Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
+
+    Route::prefix('customer')->as('customer.')->group(function () {
+        Route::get('/', [CustomerController::class, 'index'])->name('index');
+        Route::get('/tambah1', [CustomerController::class, 'create1'])->name('create1');
+        Route::post('/tambah1', [CustomerController::class, 'store1'])->name('store1');
+        Route::get('/tambah2', [CustomerController::class, 'create2'])->name('create2');
+        Route::post('/tambah2', [CustomerController::class, 'store2'])->name('store2');
+        Route::get('/edit/{id}', [CustomerController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [CustomerController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [CustomerController::class, 'destroy'])->name('destroy');
+    });
 });
 
 

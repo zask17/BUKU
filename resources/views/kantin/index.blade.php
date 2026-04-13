@@ -8,38 +8,12 @@
 
 @section('style-page')
     <style>
-        .vendor-section { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-bottom: 30px; 
-            border: 1px solid #e9ecef;
-        }
-        .vendor-title {
-            color: #343a40;
-            font-weight: bold;
-            border-left: 5px solid #9a55ff;
-            padding-left: 15px;
-            margin-bottom: 20px;
-            font-size: 1.25rem;
-        }
-        .menu-card-inner { 
-            transition: transform 0.2s; 
-            border: none; 
-        }
-        .menu-card-inner:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-        }
-        .total-price { 
-            font-size: 1.8rem; 
-            font-weight: bold; 
-            color: #9a55ff; 
-        }
-        .cart-sticky { 
-            position: sticky; 
-            top: 70px; 
-        }
+        .vendor-section { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9ecef;}
+        .vendor-title {color: #343a40;font-weight: bold;border-left: 5px solid #9a55ff;padding-left: 15px;margin-bottom: 20px;font-size: 1.25rem;}
+        .menu-card-inner { transition: transform 0.2s; border: none; }
+        .menu-card-inner:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .total-price { font-size: 1.8rem; font-weight: bold; color: #9a55ff; }
+        .cart-sticky { position: sticky; top: 70px; }
         .badge-pending { background-color: #f6e05e; color: #856404; }
         .badge-success { background-color: #48bb78; color: #fff; }
         .badge-failed { background-color: #f56565; color: #fff; }
@@ -66,7 +40,7 @@
                     </div>
                     <hr>
 
-                    {{-- Menu yang dipisah per Vendor --}}
+                    {{-- Menu dipisah per Vendor --}}
                     <div id="menu-cards-container">
                         @foreach($vendors as $vendor)
                             <div class="vendor-section" data-vendor-id="{{ $vendor->idvendor }}">
@@ -294,7 +268,7 @@
                     });
             };
 
-            // ==================== PROSES CHECKOUT DENGAN AXIOS ====================
+            // ==================== PROSES CHECKOUT ====================
             window.prosesCheckout = function() {
                 const btn = $('#btn-bayar'); 
                 btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>...');
@@ -327,7 +301,7 @@
                 });
             };
 
-            // Filter Vendor (Script tetap seperti aslinya)
+            // Filter Vendor
             $('#vendor-filter').on('change', function() {
                 const v = $(this).val();
                 v === 'all' ? $('.menu-item-card').fadeIn() : ($('.menu-item-card').hide(), $(`.menu-item-card[data-vendor-id="${v}"]`).fadeIn());
