@@ -10,44 +10,6 @@
 @section('style-page')
     <style>
         #reader {
-            border: 3px solid #0d6efd;
-            border-radius: 10px;
-            background: #000;
-        }
-        
-        .scanner-status {
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .scanner-status.scanning {
-            display: block;
-            background: #e7f5ff;
-            color: #0d6efd;
-            border: 1px solid #0d6efd;
-        }
-        
-        .scanner-status.success {
-            display: block;
-            background: #d3f9d8;
-            color: #2f9e44;
-            border: 1px solid #2f9e44;
-        }
-        
-        .scanner-status.error {
-            display: block;
-            background: #ffe0e0;
-            color: #c92a2a;
-            border: 1px solid #c92a2a;
-        }
-
-        .result-box-success {
-            background: linear-gradient(135deg, #d3f9d8, #c3fae8) !important;
-            border: 2px solid #2f9e44 !important;
             animation: slideInUp 0.5s ease-out;
         }
 
@@ -60,14 +22,6 @@
                 opacity: 1;
                 transform: translateY(0);
             }
-        }
-
-        .barcode-format-info {
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            margin-top: 10px;
         }
     </style>
 @endsection
@@ -98,42 +52,36 @@
             </div>
 
             <!-- Status Scanner -->
-            <div id="scanner-status" class="scanner-status scanning">
+            <div id="scanner-status" class="alert alert-info d-none" role="alert">
                 <i class="mdi mdi-loading"></i> Menginisialisasi kamera... Pilih kamera terlebih dahulu
             </div>
 
             <!-- Area Kamera -->
-            <div id="reader" style="width: 100%; max-width: 600px; margin: auto; height: 400px; background: #000; border-radius: 10px;">
-            </div>
-
-            <!-- Info Format Barcode -->
-            <div class="barcode-format-info">
-                <strong>Format Barcode yang Didukung:</strong><br>
-                CODE128, EAN13, EAN8, UPC-A, UPC-E, CODE39, ITF
+            <div id="reader" style="width: 100%; max-width: 600px; margin: auto; height: 400px;" class="border-3 border border-primary rounded-3 bg-dark">
             </div>
 
             <!-- Box Hasil Scan -->
-            <div id="result-box" class="mt-4 p-4 border rounded bg-light shadow-sm" style="display:none;">
-                <div class="result-box-success">
-                    <h4 class="text-success mb-3">
+            <div id="result-box" class="mt-4 d-none" style="max-width: 600px; margin: auto;">
+                <div class="alert alert-success" role="alert">
+                    <h4 class="alert-heading mb-3">
                         <i class="mdi mdi-check-circle-outline"></i> Barang Ditemukan!
                     </h4>
-                    <table class="table table-sm table-borderless text-left d-inline-block" style="width: auto;">
+                    <table class="table table-sm table-borderless text-start mb-3 d-inline-block" style="width: auto;">
                         <tr>
-                            <th class="pr-3">ID Barang</th>
-                            <td>: <span id="res-id" class="font-weight-bold text-primary"></span></td>
+                            <th class="pe-3">ID Barang</th>
+                            <td>: <span id="res-id" class="fw-bold text-primary"></span></td>
                         </tr>
                         <tr>
-                            <th class="pr-3">Nama Barang</th>
-                            <td>: <span id="res-nama" class="font-weight-bold"></span></td>
+                            <th class="pe-3">Nama Barang</th>
+                            <td>: <span id="res-nama" class="fw-bold"></span></td>
                         </tr>
                         <tr>
-                            <th class="pr-3">Harga</th>
-                            <td>: <span class="text-success font-weight-bold">Rp <span id="res-harga"></span></span></td>
+                            <th class="pe-3">Harga</th>
+                            <td>: <span class="text-success fw-bold">Rp <span id="res-harga"></span></span></td>
                         </tr>
                         <tr>
-                            <th class="pr-3">Format Barcode</th>
-                            <td>: <span id="res-format" class="badge badge-info"></span></td>
+                            <th class="pe-3">Format Barcode</th>
+                            <td>: <span id="res-format" class="badge bg-info"></span></td>
                         </tr>
                     </table>
                     <div class="mt-3">
@@ -145,24 +93,26 @@
             </div>
 
             <!-- Error Message -->
-            <div id="error-box" class="mt-4 p-4 border rounded" style="display:none; border-color: #c92a2a; background-color: #ffe0e0;">
-                <h5 class="text-danger mb-3">
-                    <i class="mdi mdi-alert-circle-outline"></i> Barang Tidak Ditemukan
-                </h5>
-                <p id="error-message" class="text-dark mb-3"></p>
-                <button class="btn btn-primary btn-sm" onclick="resetScanner()">
-                    <i class="mdi mdi-refresh"></i> Coba Lagi
-                </button>
+            <div id="error-box" class="mt-4 d-none" style="max-width: 600px; margin: auto;">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading mb-3">
+                        <i class="mdi mdi-alert-circle-outline"></i> Barang Tidak Ditemukan
+                    </h4>
+                    <p id="error-message" class="mb-3"></p>
+                    <button class="btn btn-primary btn-sm" onclick="resetScanner()">
+                        <i class="mdi mdi-refresh"></i> Coba Lagi
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Audio untuk Beep -->
+    <!-- Audio Beep -->
     <audio id="beepAudio">
         <source src="{{ asset('audio/beep.mp3') }}" type="audio/mpeg">
     </audio>
 
-    <!-- Library untuk barcode scanning -->
+    <!-- Library barcode scanning -->
     <script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
@@ -179,7 +129,7 @@
             try {
                 console.log("📷 Starting camera detection...");
                 
-                // Request permission terlebih dahulu
+                // Request permission 
                 const stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { facingMode: "environment" } 
                 });
@@ -188,7 +138,7 @@
                 // Stop stream
                 stream.getTracks().forEach(track => track.stop());
 
-                // Dapatkan daftar device
+                // Dapat daftar device
                 const devices = await Html5Qrcode.getCameras();
                 console.log("📱 Available cameras:", devices);
                 
@@ -217,14 +167,20 @@
                         selector.disabled = false;
                         startBtn.style.display = 'block';
                         
-                        document.getElementById('scanner-status').className = 'scanner-status scanning';
-                        document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-check"></i> Kamera terdeteksi. Klik "Mulai Scanning" untuk memulai';
+                        const statusAlert = document.getElementById('scanner-status');
+                        statusAlert.classList.remove('d-none');
+                        statusAlert.classList.remove('alert-danger');
+                        statusAlert.classList.add('alert-info');
+                        statusAlert.innerHTML = '<i class="mdi mdi-check"></i> Kamera terdeteksi. Klik "Mulai Scanning" untuk memulai';
                     }
                 } else {
                     console.error('❌ No camera found');
                     alert('Tidak ada kamera yang ditemukan di perangkat ini');
-                    document.getElementById('scanner-status').className = 'scanner-status error';
-                    document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-alert-circle"></i> Tidak ada kamera terdeteksi';
+                    const statusAlert = document.getElementById('scanner-status');
+                    statusAlert.classList.remove('d-none');
+                    statusAlert.classList.remove('alert-info');
+                    statusAlert.classList.add('alert-danger');
+                    statusAlert.innerHTML = '<i class="mdi mdi-alert-circle"></i> Tidak ada kamera terdeteksi';
                 }
             } catch (error) {
                 console.error('❌ Error accessing camera:', error);
@@ -260,10 +216,13 @@
         function resetScanner() {
             console.log("🔄 Resetting scanner...");
             isScanning = true;
-            document.getElementById('result-box').style.display = 'none';
-            document.getElementById('error-box').style.display = 'none';
-            document.getElementById('scanner-status').className = 'scanner-status scanning';
-            document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-barcode-scan"></i> Siap scan... Arahkan barcode ke area scan';
+            document.getElementById('result-box').classList.add('d-none');
+            document.getElementById('error-box').classList.add('d-none');
+            const statusAlert = document.getElementById('scanner-status');
+            statusAlert.classList.remove('d-none');
+            statusAlert.classList.remove('alert-danger');
+            statusAlert.classList.add('alert-info');
+            statusAlert.innerHTML = '<i class="mdi mdi-barcode-scan"></i> Siap scan... Arahkan barcode ke area scan';
             
             if (html5BarcodeScanner) {
                 html5BarcodeScanner.resume().catch(err => {
@@ -276,8 +235,8 @@
         function stopScanning() {
             console.log("⏹️ Stopping scanner...");
             isScanning = false;
-            document.getElementById('result-box').style.display = 'none';
-            document.getElementById('error-box').style.display = 'none';
+            document.getElementById('result-box').classList.add('d-none');
+            document.getElementById('error-box').classList.add('d-none');
             
             if (html5BarcodeScanner) {
                 html5BarcodeScanner.stop().then(() => {
@@ -296,22 +255,28 @@
             document.getElementById('stop-scanner-btn').style.display = 'none';
             document.getElementById('camera-selector').disabled = false;
             
-            document.getElementById('scanner-status').className = 'scanner-status scanning';
-            document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-stop"></i> Scanning dihentikan. Klik "Mulai Scanning" untuk memulai lagi';
+            const statusAlert = document.getElementById('scanner-status');
+            statusAlert.classList.remove('d-none');
+            statusAlert.classList.remove('alert-danger');
+            statusAlert.classList.add('alert-info');
+            statusAlert.innerHTML = '<i class="mdi mdi-stop"></i> Scanning dihentikan. Klik "Mulai Scanning" untuk memulai lagi';
         }
 
         // Fungsi untuk resume scanning
         function resumeScanning() {
             console.log("▶️ Resuming scanner...");
             isScanning = true;
-            document.getElementById('result-box').style.display = 'none';
-            document.getElementById('error-box').style.display = 'none';
+            document.getElementById('result-box').classList.add('d-none');
+            document.getElementById('error-box').classList.add('d-none');
             
             if (html5BarcodeScanner) {
                 html5BarcodeScanner.resume().then(() => {
                     console.log("✅ Scanner resumed");
-                    document.getElementById('scanner-status').className = 'scanner-status scanning';
-                    document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-barcode-scan"></i> Kamera aktif... Arahkan barcode ke area scan';
+                    const statusAlert = document.getElementById('scanner-status');
+                    statusAlert.classList.remove('d-none');
+                    statusAlert.classList.remove('alert-danger');
+                    statusAlert.classList.add('alert-info');
+                    statusAlert.innerHTML = '<i class="mdi mdi-barcode-scan"></i> Kamera aktif... Arahkan barcode ke area scan';
                 }).catch(err => {
                     console.error("Error resuming scanner:", err);
                     showError('Gagal melanjutkan scanning');
@@ -330,8 +295,11 @@
             beep.play().catch(e => console.log("Audio play failed:", e));
 
             // Update status
-            document.getElementById('scanner-status').className = 'scanner-status success';
-            document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-check"></i> Barcode terdeteksi! Mencari data...';
+            const statusAlert = document.getElementById('scanner-status');
+            statusAlert.classList.remove('d-none');
+            statusAlert.classList.remove('alert-info');
+            statusAlert.classList.add('alert-success');
+            statusAlert.innerHTML = '<i class="mdi mdi-check"></i> Barcode terdeteksi! Mencari data...';
 
             // Hentikan scanner
             if (html5BarcodeScanner) {
@@ -358,6 +326,7 @@
                         console.warn("⚠️ Item not found");
                         showError(res.data.message || 'Barang tidak ditemukan');
                     }
+                    document.getElementById('result-box').classList.remove('d-none');
                 })
                 .catch(err => {
                     console.error("❌ Error fetching item:", err);
@@ -365,15 +334,18 @@
                 });
         };
 
-        // Fungsi untuk menampilkan error
+        // Fungsi menampilkan error
         function showError(message) {
             document.getElementById('error-message').innerText = message;
-            document.getElementById('error-box').style.display = 'block';
-            document.getElementById('scanner-status').className = 'scanner-status error';
-            document.getElementById('scanner-status').innerHTML = '<i class="mdi mdi-alert-circle"></i> ' + message;
+            document.getElementById('error-box').classList.remove('d-none');
+            const statusAlert = document.getElementById('scanner-status');
+            statusAlert.classList.remove('d-none');
+            statusAlert.classList.remove('alert-info');
+            statusAlert.classList.add('alert-danger');
+            statusAlert.innerHTML = '<i class="mdi mdi-alert-circle"></i> ' + message;
         }
 
-        // Fungsi untuk mendapatkan nama format barcode
+        // Fungsi mendapatkan nama format barcode
         function getFormatName(format) {
             const formats = {
                 'CODE128': 'CODE 128',
@@ -452,6 +424,11 @@
                     document.getElementById('stop-scanner-btn').style.display = 'block';
                     document.getElementById('camera-selector').disabled = true;
                     document.getElementById('start-scanner-btn').disabled = false;
+                    
+                    // Update status alert class
+                    document.getElementById('scanner-status').classList.remove('d-none');
+                    document.getElementById('scanner-status').classList.remove('alert-danger');
+                    document.getElementById('scanner-status').classList.add('alert-info');
                     isInitializing = false;
                 }).catch(err => {
                     console.error("❌ Error initializing scanner:", err);
