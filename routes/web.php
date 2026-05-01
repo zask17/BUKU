@@ -44,6 +44,8 @@ Route::get('/buku', [BukuGuestController::class, 'index'])->name('buku');
 Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('kategori');
 
 // --- RUTE KANTIN GUEST ---
+Route::get('/kantin/order-details/{idpesanan}', [App\Http\Controllers\KantinController::class, 'getOrderDetails'])
+     ->name('kantin.order.details');
 Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
 Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
 Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
@@ -181,6 +183,7 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
 // --- GRUP AKSES VENDOR (idrole = 3) ---
 Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 'role:3']], function () {
     Route::get('/dashboard', [DashboardVendorController::class, 'index'])->name('dashboard');
-    Route::get('/pesanan', [DashboardVendorController::class, 'pesanan'])->name('pesanan'); // Rute baru
+    Route::get('/pesanan', [DashboardVendorController::class, 'pesanan'])->name('pesanan');
+    Route::get('/scanner', [DashboardVendorController::class, 'scannerQRCode'])->name('scanner');
     Route::resource('menu', MenuController::class);
 });

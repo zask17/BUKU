@@ -8,15 +8,42 @@
 
 @section('style-page')
     <style>
-        .vendor-section { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9ecef;}
-        .vendor-title {color: #343a40;font-weight: bold;border-left: 5px solid #9a55ff;padding-left: 15px;margin-bottom: 20px;font-size: 1.25rem;}
-        .menu-card-inner { transition: transform 0.2s; border: none; }
-        .menu-card-inner:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .total-price { font-size: 1.8rem; font-weight: bold; color: #9a55ff; }
-        .cart-sticky { position: sticky; top: 70px; }
-        .badge-pending { background-color: #f6e05e; color: #856404; }
-        .badge-success { background-color: #48bb78; color: #fff; }
-        .badge-failed { background-color: #f56565; color: #fff; }
+        .vendor-section { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 30px; 
+            border: 1px solid #e9ecef;
+        }
+        .vendor-title {
+            color: #343a40;
+            font-weight: bold;
+            border-left: 5px solid #9a55ff;
+            padding-left: 15px;
+            margin-bottom: 20px;
+            font-size: 1.25rem;
+        }
+        .menu-card-inner { 
+            transition: transform 0.2s; 
+            border: none; 
+        }
+        .menu-card-inner:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        .total-price { 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            color: #9a55ff; 
+        }
+        .cart-sticky { 
+            position: sticky; 
+            top: 70px; 
+        }
+        .vendor-name { 
+            font-size: 0.85rem; 
+            color: #6c757d; 
+        }
     </style>
 @endsection
 
@@ -47,7 +74,6 @@
                                 <h5 class="vendor-title">
                                     <i class="mdi mdi-store"></i> {{ $vendor->nama_vendor }}
                                 </h5>
-                                
                                 <div class="row">
                                     @forelse($vendor->menus as $menu)
                                         <div class="col-md-4 mb-4 menu-item-card" data-vendor-id="{{ $vendor->idvendor }}">
@@ -76,7 +102,7 @@
                                                     </div>
                                                     <button type="button" 
                                                             class="btn btn-gradient-primary btn-sm btn-block mt-auto"
-                                                            onclick="tambahItem({{ $menu->idmenu }}, '{{ addslashes($menu->nama_menu) }}', {{ $menu->harga }})">
+                                                            onclick="tambahItem({{ $menu->idmenu }}, '{{ addslashes($menu->nama_menu) }}', {{ $menu->harga }}, '{{ addslashes($vendor->nama_vendor) }}', {{ $vendor->idvendor }})">
                                                         <i class="mdi mdi-plus"></i> Tambah
                                                     </button>
                                                 </div>
@@ -165,7 +191,7 @@
                                                     Bayar
                                                 </button>
                                             @else 
-                                                - 
+                                                -
                                             @endif
                                         </td>
                                     </tr>
@@ -182,16 +208,14 @@
         </div>
     </div>
 @endsection
+
 @section('js-page')
-    <!-- Axios CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
 
     <script>
-        // Setup Axios dengan CSRF Token (Laravel)
         axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
         axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -199,119 +223,157 @@
             let keranjang = [];
             let grandTotal = 0;
 
-            window.tambahItem = function(id, nama, harga) {
-                const catatan = $(`#note-${id}`).val().trim() || null;
-                const exist = keranjang.find(i => i.idmenu === id && i.catatan === catatan);
+            // Tambah Item ke Keranjang
+            window.tambahItem = function(idmenu, nama_menu, harga, nama_vendor, idvendor) {
+                const catatan = $(`#note-${idmenu}`).val().trim() || null;
+
+                const exist = keranjang.find(i => i.idmenu === idmenu && i.catatan === catatan);
+
                 if (exist) {
                     exist.jumlah++;
                     exist.subtotal = exist.jumlah * exist.harga;
                 } else {
-                    keranjang.push({ idmenu: id, nama: nama, harga: harga, jumlah: 1, subtotal: harga, catatan: catatan });
+                    keranjang.push({
+                        idmenu: idmenu,
+                        nama: nama_menu,
+                        harga: harga,
+                        jumlah: 1,
+                        subtotal: harga,
+                        catatan: catatan,
+                        nama_vendor: nama_vendor,
+                        idvendor: parseInt(idvendor)
+                    });
                 }
-                $(`#note-${id}`).val(''); 
+
+                $(`#note-${idmenu}`).val('');
                 renderKeranjang();
-                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Ditambahkan', showConfirmButton: false, timer: 1000 });
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Ditambahkan ke keranjang',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
             };
 
+            // Render Keranjang dengan urutan berdasarkan idvendor
             window.renderKeranjang = function() {
-                let html = ''; 
+                // Urutkan keranjang berdasarkan idvendor
+                keranjang.sort((a, b) => a.idvendor - b.idvendor);
+
+                let html = '';
                 grandTotal = 0;
+
                 if (keranjang.length === 0) {
                     html = '<li class="list-group-item text-center text-muted py-4">Belum ada barang dipilih</li>';
                 } else {
                     keranjang.forEach((item, index) => {
                         grandTotal += item.subtotal;
-                        html += `<li class="list-group-item px-0 border-bottom">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div style="width: 60%"><span class="font-weight-bold d-block text-dark">${item.nama}</span>
-                                ${item.catatan ? `<small class="text-info">"${item.catatan}"</small>` : ''}
-                                <small class="text-muted">Rp ${item.harga.toLocaleString('id-ID')}</small></div>
-                                <div class="d-flex align-items-center">
-                                    <button class="btn btn-xs btn-outline-secondary p-1" onclick="updateQty(${index}, -1)">−</button>
-                                    <span class="mx-2 font-weight-bold">${item.jumlah}</span>
-                                    <button class="btn btn-xs btn-outline-secondary p-1" onclick="updateQty(${index}, 1)">+</button>
+                        html += `
+                            <li class="list-group-item px-0 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div style="width: 65%">
+                                        <small class="vendor-name">${item.nama_vendor}</small>
+                                        <span class="font-weight-bold d-block">${item.nama}</span>
+                                        ${item.catatan ? `<small class="text-info">"${item.catatan}"</small>` : ''}
+                                        <small class="text-muted">Rp ${item.harga.toLocaleString('id-ID')}</small>
+                                    </div>
+                                    <div class="text-center" style="width: 20%">
+                                        <button class="btn btn-xs btn-outline-secondary p-1" onclick="updateQty(${index}, -1)">−</button>
+                                        <span class="mx-2 font-weight-bold">${item.jumlah}</span>
+                                        <button class="btn btn-xs btn-outline-secondary p-1" onclick="updateQty(${index}, 1)">+</button>
+                                    </div>
+                                    <div class="text-end" style="width: 25%">
+                                        <span class="d-block font-weight-bold">Rp ${item.subtotal.toLocaleString('id-ID')}</span>
+                                        <button class="btn btn-link text-danger p-0 small" onclick="hapusItem(${index})">Hapus</button>
+                                    </div>
                                 </div>
-                                <div class="text-right" style="width: 25%"><span class="d-block font-weight-bold">Rp ${item.subtotal.toLocaleString('id-ID')}</span>
-                                <button class="btn btn-link text-danger p-0 small" onclick="hapusItem(${index})">Hapus</button></div>
-                            </div></li>`;
+                            </li>`;
                     });
                 }
+
                 $('#keranjang-list').html(html);
                 $('#total-text').text('Rp ' + grandTotal.toLocaleString('id-ID'));
                 $('#btn-bayar').prop('disabled', keranjang.length === 0);
             };
 
             window.updateQty = function(index, delta) {
-                const item = keranjang[index]; 
+                const item = keranjang[index];
                 item.jumlah += delta;
-                if (item.jumlah < 1) { 
-                    hapusItem(index); 
-                } else { 
-                    item.subtotal = item.jumlah * item.harga; 
-                    renderKeranjang(); 
+                if (item.jumlah < 1) {
+                    hapusItem(index);
+                } else {
+                    item.subtotal = item.jumlah * item.harga;
+                    renderKeranjang();
                 }
             };
 
-            window.hapusItem = function(index) { 
-                keranjang.splice(index, 1); 
-                renderKeranjang(); 
+            window.hapusItem = function(index) {
+                keranjang.splice(index, 1);
+                renderKeranjang();
             };
 
             window.batalkanTransaksi = function() {
                 if (keranjang.length === 0) return;
-                Swal.fire({ title: 'Kosongkan?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya' })
-                    .then((r) => { 
-                        if (r.isConfirmed) { 
-                            keranjang = []; 
-                            renderKeranjang(); 
-                        } 
-                    });
+                Swal.fire({
+                    title: 'Kosongkan keranjang?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, kosongkan'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        keranjang = [];
+                        renderKeranjang();
+                    }
+                });
             };
 
-            // ==================== PROSES CHECKOUT ====================
             window.prosesCheckout = function() {
-                const btn = $('#btn-bayar'); 
-                btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i>...');
-                
+                const btn = $('#btn-bayar');
+                btn.prop('disabled', true).html('<i class="mdi mdi-loading mdi-spin"></i> Memproses...');
+
                 axios.post("{{ route('kantin.checkout') }}", {
                     total_bayar: grandTotal,
                     cart: keranjang
                 })
                 .then(function(res) {
                     window.snap.pay(res.data.snap_token, {
-                        onSuccess: function(result) { 
-                            window.location.href = "/kantin/selesai/" + res.data.idpesanan; 
+                        onSuccess: function() {
+                            window.location.href = "/kantin/selesai/" + res.data.idpesanan;
                         },
-                        onPending: function() { 
-                            window.location.href = "{{ route('kantin.pending') }}"; 
+                        onPending: function() {
+                            window.location.href = "{{ route('kantin.pending') }}";
                         },
-                        onClose: function() { 
-                            btn.prop('disabled', false).html('<i class="mdi mdi-cash-multiple"></i> BAYAR'); 
+                        onClose: function() {
+                            btn.prop('disabled', false).html('<i class="mdi mdi-cash-multiple"></i> BAYAR SEKARANG');
                         }
                     });
                 })
                 .catch(function(error) {
                     const xhr = error.response;
-                    if (xhr && xhr.status === 419) {
-                        Swal.fire('Sesi Habis', 'Halaman akan dimuat ulang...', 'info').then(() => location.reload());
-                    } else {
-                        Swal.fire('Gagal', (xhr && xhr.data && xhr.data.error) || 'Sistem error', 'error');
-                        btn.prop('disabled', false).html('BAYAR');
-                    }
+                    Swal.fire('Gagal', (xhr && xhr.data && xhr.data.error) || 'Terjadi kesalahan', 'error');
+                    btn.prop('disabled', false).html('<i class="mdi mdi-cash-multiple"></i> BAYAR SEKARANG');
                 });
             };
 
             // Filter Vendor
             $('#vendor-filter').on('change', function() {
                 const v = $(this).val();
-                v === 'all' ? $('.menu-item-card').fadeIn() : ($('.menu-item-card').hide(), $(`.menu-item-card[data-vendor-id="${v}"]`).fadeIn());
+                if (v === 'all') {
+                    $('.menu-item-card').fadeIn();
+                } else {
+                    $('.menu-item-card').hide();
+                    $(`.menu-item-card[data-vendor-id="${v}"]`).fadeIn();
+                }
             });
         });
 
         function bayarLagi(token, id) {
             window.snap.pay(token, {
-                onSuccess: function() { 
-                    window.location.href = "/kantin/selesai/" + id; 
+                onSuccess: function() {
+                    window.location.href = "/kantin/selesai/" + id;
                 }
             });
         }

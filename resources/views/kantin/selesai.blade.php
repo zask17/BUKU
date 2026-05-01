@@ -5,89 +5,80 @@
 @section('content')
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="card text-center shadow-lg" style="border-top: 5px solid #28a745;">
                     <div class="card-body py-5">
                         <div class="mb-4">
-                            <i class="mdi mdi-check-circle" style="font-size: 4rem; color: #28a745;"></i>
+                            <i class="mdi mdi-check-circle" style="font-size: 4.5rem; color: #28a745;"></i>
                         </div>
 
                         <h2 class="card-title font-weight-bold mb-3">Pembayaran Berhasil!</h2>
+                        <p class="lead">Terima kasih, <strong>{{ $pesanan->nama }}</strong></p>
 
-                        <p>Terima kasih <strong>{{ $pesanan->nama }}</strong></p>
-                        
-                        <div class="mt-4 p-3 bg-light d-inline-block" style="border-radius: 15px;">
-                            <p class="font-weight-bold mb-2">Scan QR untuk Validasi:</p>
-                            <div class="bg-white p-2 d-inline-block shadow-sm">
+                        <div class="mt-4 p-3 bg-light rounded">
+                            <p class="font-weight-bold mb-2">Scan QR untuk Validasi di Vendor:</p>
+                            <div class="bg-white p-3 d-inline-block shadow-sm rounded">
                                 {!! $qrcode !!}
                             </div>
-                            <p class="mt-2 text-muted mb-0">ID Pesanan: #{{ $pesanan->idpesanan }}</p>
-                        </div>
-
-                        <p class="lead text-success mt-4 mb-4">
-                            <i class="mdi mdi-information-outline"></i>
-                            Pesanan Anda telah diterima dan sedang diproses
-                        </p>
-
-                        <div class="alert alert-info" role="alert">
-                            <h6 class="font-weight-bold">Detail Pesanan:</h6>
-                            <small>
-                                <p class="mb-1"><strong>Order ID Midtrans:</strong> <br>
-                                    {{ $pesanan->order_id_pg ?? 'N/A' }}
-                                </p>
-                                <p class="mb-0"><strong>Status:</strong> <br>
-                                    <span class="badge badge-success">✓ Lunas / Paid</span>
-                                </p>
-                            </small>
+                            <p class="mt-2 text-muted">ID Pesanan: <strong>#{{ $pesanan->idpesanan }}</strong></p>
                         </div>
 
                         <hr>
 
-                        <p class="text-muted mb-4 small">
-                            Tunjukkan QR Code di atas kepada vendor/penjual saat mengambil makanan.
+                        <h5 class="text-start mb-3">Detail Pesanan Anda:</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Vendor</th>
+                                        <th>Menu</th>
+                                        <th>Jumlah</th>
+                                        <th>Harga</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($pesanan->details as $detail)
+                                    <tr>
+                                        <td>
+                                            <strong>
+                                                {{ $detail->menu->vendor->nama_vendor ?? 'Umum' }}
+                                            </strong>
+                                        </td>
+                                        <td>{{ $detail->menu->nama_menu }}</td>
+                                        <td class="text-center">{{ $detail->jumlah }}</td>
+                                        <td class="text-end">Rp {{ number_format($detail->harga, 0, ',', '.') }}</td>
+                                        <td class="text-end fw-bold">Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-info mt-4">
+                            <strong>Total Bayar: Rp {{ number_format($pesanan->total, 0, ',', '.') }}</strong><br>
+                            Status: <span class="badge badge-success">Lunas</span>
+                        </div>
+
+                        <p class="text-muted small mt-3">
+                            Tunjukkan QR Code ini kepada vendor terkait saat mengambil pesanan.
                         </p>
 
-                        <div class="row">
+                        <div class="row mt-4">
                             <div class="col-6">
                                 <a href="{{ route('kantin.index') }}" class="btn btn-outline-primary btn-block">
                                     <i class="mdi mdi-arrow-left"></i> Pesan Lagi
                                 </a>
                             </div>
                             <div class="col-6">
-                                <a href="{{ route('welcome') }}" class="btn btn-gradient-primary btn-block">
-                                    <i class="mdi mdi-home"></i> Beranda
+                                <a href="{{ route('welcome') }}" class="btn btn-primary btn-block">
+                                    <i class="mdi mdi-home"></i> Kembali ke Beranda
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="card mt-3" style="border-left: 4px solid #ffc107;">
-                    <div class="card-body">
-                        <h6 class="font-weight-bold text-warning mb-2">
-                            <i class="mdi mdi-clock-outline"></i> Waktu Penerimaan
-                        </h6>
-                        <p class="mb-0 text-muted small">
-                            Pesanan biasanya siap dalam <strong>10-15 menit</strong>.
-                            Anda akan menerima notifikasi saat pesanan siap diambil.
-                        </p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
-
-    <style>
-        .card {
-            border-radius: 10px;
-        }
-        .btn-block {
-            border-radius: 6px;
-            width: 100%;
-        }
-        svg {
-            max-width: 150px;
-            height: auto;
-        }
-    </style>
 @endsection

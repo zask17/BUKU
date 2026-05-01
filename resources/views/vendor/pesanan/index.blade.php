@@ -2,6 +2,10 @@
 
 @section('title-page', 'Pesanan Management')
 
+@section('breadcrumb')
+    <li class="breadcrumb-item active" aria-current="page">Menu</li>
+@endsection
+
 @section('content')
     <div id="notification-container"></div>
 
@@ -11,12 +15,18 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="card-title mb-0">Manajemen Pesanan Masuk</h4>
+                        
+                        <!-- Tombol Scanner QR Code -->
+                        <a href="{{ route('vendor.scanner') }}" class="btn btn-primary">
+                            <i class="mdi mdi-qrcode-scan"></i> Scan QR Code
+                        </a>
                     </div>
+                    
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th width="5%">No</th>
+                                    {{-- <th width="5%">No</th> --}}
                                     <th width="15%">Order ID</th>
                                     <th width="15%">Nama Pelanggan</th>
                                     <th width="20%">Menu</th>
@@ -29,7 +39,7 @@
                             <tbody>
                                 @forelse ($orders as $row)
                                     <tr>
-                                        <td>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</td>
+                                        {{-- <td>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</td> --}}
                                         <td><small class="font-weight-bold text-primary">{{ $row->pesanan->order_id_pg }}</small></td>
                                         <td>{{ $row->pesanan->nama }}</td>
                                         <td>{{ $row->menu->nama_menu }}</td>

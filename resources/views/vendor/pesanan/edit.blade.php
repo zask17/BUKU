@@ -1,5 +1,12 @@
 @extends('layouts.vendor.main')
 
+@section('title-page', 'Edit Pesanan')
+
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{ route('vendor.pesanan.index') }}">Pesanan</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Edit Pesanan</li>
+@endsection
+
 @section('content')
 <div class="container mt-4">
     <div class="row">
