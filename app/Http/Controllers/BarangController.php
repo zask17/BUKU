@@ -107,6 +107,7 @@ class BarangController extends Controller
         return $pdf->stream('tag-harga-tnj108.pdf');
     }
 
+
     public function scannerPage()
     {
         $layout = $this->getLayout();
@@ -115,7 +116,7 @@ class BarangController extends Controller
 
     public function cekBarangScan($id)
     {
-        $barang = Barang::where('id_barang', $id)->first();
+        $barang = Barang::where('id_barang', $id)->first(); //[cite: 15]
         if ($barang) {
             return response()->json([
                 'success' => true,

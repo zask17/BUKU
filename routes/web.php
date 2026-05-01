@@ -82,11 +82,10 @@ Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.downl
 
 // Cetak PDF Label TnJ 108
 Route::get('/barang/scanner', [BarangController::class, 'scannerPage'])->name('barang.scanner');
+// Rute API untuk memproses hasil scan barcode (POST)
+Route::post('/barang/cek-scan/{id}', [BarangController::class, 'cekBarangScan'])->name('barang.cek_scan');
 Route::resource('barang', BarangController::class);
 Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
-// Rute API untuk memproses hasil scan barcode (POST)
-Route::post('/admin/barang/cek-scan/{id}', [BarangController::class, 'cekBarangScan'])->name('barang.cek_scan');
-
 // });
 
 
