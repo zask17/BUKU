@@ -85,7 +85,6 @@
             border-radius: 6px;
             width: 100%;
         }
-        /* Menghindari QR Code terlalu besar di layar mobile */
         svg {
             max-width: 150px;
             height: auto;

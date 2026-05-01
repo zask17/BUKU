@@ -30,7 +30,7 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.customer.*') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('admin.customer.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.customer.index') }}">
                 <span class="menu-title">Customer</span>
                 <i class="mdi mdi-account-multiple menu-icon"></i>
@@ -40,14 +40,14 @@
 
         <li class="nav-item-divider"></li>
 
-        <li class="nav-item {{ Request::routeIs('admin.kategori.*') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('admin.kategori.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.kategori.index') }}">
                 <span class="menu-title">Kategori Buku</span>
                 <i class="mdi mdi-format-list-bulleted-type menu-icon"></i>
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.buku.*') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('admin.buku.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.buku.index') }}">
                 <span class="menu-title">Manajemen Buku</span>
                 <i class="mdi mdi-book-multiple menu-icon"></i>
@@ -56,14 +56,14 @@
 
         <li class="nav-item-divider"></li>
 
-        <li class="nav-item {{ Request::routeIs('barang.*') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('barang.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('barang.index') }}">
                 <span class="menu-title">Master Barang</span>
                 <i class="mdi mdi-database menu-icon"></i>
             </a>
         </li>
 
-                <li class="nav-item {{ Request::routeIs('admin.barang.baru') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('admin.barang.baru') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.barang.baru') }}">
                 <span class="menu-title">Barang Baru (HTML)</span>
                 <i class="mdi mdi-plus-box menu-icon"></i>
@@ -116,7 +116,7 @@
 
         <li class="nav-item-divider"></li>
 
-        <li class="nav-item {{ Request::routeIs('pdf.*') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('pdf.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('pdf.index') }}">
                 <span class="menu-title">Generate PDF</span>
                 <i class="mdi mdi-file-pdf-box menu-icon"></i>

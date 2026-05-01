@@ -102,13 +102,13 @@
         @for ($row = 0; $row < $rows; $row++)
             @for ($col = 0; $col < $cols; $col++)
                 @php
-                    // Posisi lokal di halaman ini (0-39)
+                    // Posisi lokal halaman ini
                     $pos = ($row * $cols) + $col;
 
-                    // Posisi global di seluruh dokumen
+                    // Posisi global seluruh dokumen
                     $globalPos = $pos + ($page * $labelsPerPage);
 
-                    // Koordinat presisi untuk TnJ 108 (Silakan sesuaikan sedikit angka 5, 2.5, dan 3 jika meleset saat print)
+                    // Koordinat presisi untuk TnJ 108
                     $left = 5 + ($col * (38 + 2.5));   // margin kiri 5mm + label 38mm + jarak horizontal 2.5mm
                     $top  = 5 + ($row * (18 + 0.5));   // margin atas 5mm + label 18mm + jarak vertikal 0.5mm
 

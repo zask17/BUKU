@@ -12,6 +12,7 @@ use App\Http\Controllers\KantinController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\BarangBaruController;
 use App\Http\Controllers\WilayahController;
 
 use App\Http\Controllers\Admin\DashboardAdminController;
@@ -80,8 +81,12 @@ Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview
 Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
 
 // Cetak PDF Label TnJ 108
+Route::get('/barang/scanner', [BarangController::class, 'scannerPage'])->name('barang.scanner');
 Route::resource('barang', BarangController::class);
 Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
+// Rute API untuk memproses hasil scan barcode (POST)
+Route::post('/admin/barang/cek-scan/{id}', [BarangController::class, 'cekBarangScan'])->name('barang.cek_scan');
+
 // });
 
 
@@ -130,8 +135,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
     Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('buku.destroy');
 
     // Barang Baru
-    Route::get('/barang-baru/html', [BarangController::class, 'barangBaru'])->name('barang.baru');
-    Route::get('/barang-baru/datatable', [BarangController::class, 'barangBaruDatatable'])->name('barang.datatable');
+    Route::get('/barang-baru/html', [BarangBaruController::class, 'barangBaru'])->name('barang.baru');
+    Route::get('/barang-baru/datatable', [BarangBaruController::class, 'barangBaruDatatable'])->name('barang.datatable');
 
     // Kota
     Route::get('/kota', [KotaController::class, 'index'])->name('kota.index');

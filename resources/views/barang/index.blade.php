@@ -35,11 +35,15 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
-            
+
             <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
                         <a href="{{ route('barang.create') }}" class="btn btn-primary mb-3">+ Tambah Barang</a>
+                        <!-- Cek file barang/index.blade.php[cite: 19] -->
+                        <a href="{{ route('barang.scanner') }}" class="btn btn-dark mb-3">
+                            <i class="mdi mdi-barcode-scan"></i> Scanner Barcode
+                        </a>
 
                         <form id="formCetak" action="{{ route('barang.cetak') }}" method="POST">
                             @csrf

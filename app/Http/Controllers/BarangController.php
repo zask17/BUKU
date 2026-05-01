@@ -7,7 +7,6 @@ use App\Models\Barang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-// Tambahkan library Barcode di sini
 use Picqer\Barcode\BarcodeGeneratorHTML;
 
 class BarangController extends Controller
@@ -92,7 +91,7 @@ class BarangController extends Controller
 
         // Inisialisasi Generator Barcode
         $generator = new BarcodeGeneratorHTML();
-        
+
         // Tambahkan property barcode ke setiap objek barang
         foreach ($barangs as $barang) {
             $barang->barcode = $generator->getBarcode($barang->id_barang, $generator::TYPE_CODE_128);
@@ -108,13 +107,25 @@ class BarangController extends Controller
         return $pdf->stream('tag-harga-tnj108.pdf');
     }
 
-    public function barangBaru()
+    public function scannerPage()
     {
-        return view('admin.barang.barang_baru');
+        $layout = $this->getLayout();
+        return view('barang.scanner', compact('layout'));
     }
 
-    public function barangBaruDatatable()
+    public function cekBarangScan($id)
     {
-        return view('admin.barang.barang_baru_datatable');
+        $barang = Barang::where('id_barang', $id)->first();
+        if ($barang) {
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $barang->id_barang,
+                    'nama' => $barang->nama,
+                    'harga' => number_format($barang->harga, 0, ',', '.')
+                ]
+            ]);
+        }
+        return response()->json(['success' => false, 'message' => 'Barang tidak ditemukan']);
     }
 }

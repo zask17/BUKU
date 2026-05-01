@@ -113,7 +113,6 @@ class CustomerController extends Controller
     public function update(Request $request, $id)
     {
         $customer = Customer::findOrFail($id);
-
         $request->validate([
             'nama_customer' => 'required|string|max:255',
             'kode_pos'      => 'required|string|size:5',
@@ -122,7 +121,6 @@ class CustomerController extends Controller
             'id_kecamatan'  => 'required',
             'id_kelurahan'  => 'required',
         ]);
-
         $dataUpdate = [
             'nama_customer' => $request->nama_customer,
             'alamat'        => $request->alamat,
@@ -132,7 +130,6 @@ class CustomerController extends Controller
             'id_kelurahan'  => $request->id_kelurahan,
             'kode_pos'      => $request->kode_pos,
         ];
-
         if ($request->filled('image')) {
             $img = $request->image;
             $img = str_replace('data:image/png;base64,', '', $img);
@@ -143,12 +140,9 @@ class CustomerController extends Controller
                 Storage::disk('public')->delete($customer->foto_path);
                 $dataUpdate['foto_path'] = null;
             }
-
             $dataUpdate['foto_blob'] = '\\x' . bin2hex($binaryData);
         }
-
         $customer->update($dataUpdate);
-
         return redirect()->route('admin.customer.index')->with('success', 'Data customer berhasil diperbarui');
     }
 
