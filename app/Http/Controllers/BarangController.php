@@ -116,7 +116,7 @@ class BarangController extends Controller
 
     public function cekBarangScan($id)
     {
-        $barang = Barang::where('id_barang', $id)->first(); //[cite: 15]
+        $barang = Barang::where('id_barang', $id)->first();
         if ($barang) {
             return response()->json([
                 'success' => true,

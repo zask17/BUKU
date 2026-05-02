@@ -26,7 +26,7 @@
         </div>
         
         <div class="card-body text-center">
-            <!-- Camera Selection -->
+            <!-- Pilih Kamera -->
             <div class="mb-4" style="max-width: 600px; margin: auto;">
                 <label class="form-label font-weight-bold">Pilih Kamera:</label>
                 <div class="input-group">
@@ -43,7 +43,7 @@
                 <small class="text-muted">Pilih kamera kemudian klik "Mulai Scanning"</small>
             </div>
 
-            <!-- Status -->
+            <!-- Status Kamera -->
             <div id="scanner-status" class="alert alert-info d-none">
                 <i class="mdi mdi-loading"></i> Menginisialisasi kamera...
             </div>

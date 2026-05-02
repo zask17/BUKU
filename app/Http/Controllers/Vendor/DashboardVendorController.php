@@ -71,9 +71,6 @@ class DashboardVendorController extends Controller
         return view('vendor.pesanan.index', compact('orders'));
     }
 
-    /**
-     * Halaman Scanner QRCode untuk Vendor
-     */
     public function scannerQRCode()
     {
         $vendor = $this->getVendor();
@@ -82,6 +79,6 @@ class DashboardVendorController extends Controller
             return redirect()->back()->with('error', 'Data Vendor tidak ditemukan.');
         }
 
-        return view('vendor.pesanan.scanner-qrcode', compact('vendor'));   // ← Pastikan nama view benar
+        return view('vendor.pesanan.scanner-qrcode', compact('vendor'));
     }
 }

@@ -37,20 +37,39 @@ class KantinController extends Controller
 
         return view('kantin.index', compact('vendors', 'pesanan', 'layout'));
     }
+    // public function selesai($id)
+    // {
+    //     $layout = $this->getLayout();
+    //     $pesanan = Pesanan::with('details.menu')->findOrFail($id);
+
+    //     // Pastikan hanya pesanan yang sudah LUNAS yang boleh menampilkan QR
+    //     if ($pesanan->status_bayar != 1) {
+    //         return redirect()->route('kantin.pending')->with('error', 'Pembayaran belum selesai.');
+    //     }
+
+    //     // Generate QR Code yang berisi ID Pesanan (bukan URL)
+    //     $qrcode = QrCode::size(300)
+    //         ->format('svg')           // lebih bagus untuk web
+    //         ->generate($pesanan->idpesanan);
+
+    //     return view('kantin.selesai', compact('pesanan', 'qrcode', 'layout'));
+    // }
 
     public function selesai($id)
     {
         $layout = $this->getLayout();
 
         $pesanan = Pesanan::with([
-            'details.menu.vendor'
+            'details.menu.vendor'   // ← Ini yang penting!
         ])->findOrFail($id);
 
+        // Pastikan hanya pesanan yang sudah lunas
         if ($pesanan->status_bayar != 1) {
             return redirect()->route('kantin.pending')
                 ->with('error', 'Pembayaran belum selesai.');
         }
 
+        // Buat QR Code berisi ID Pesanan
         $qrcode = QrCode::size(300)
             ->format('svg')
             ->generate($pesanan->idpesanan);
@@ -114,6 +133,105 @@ class KantinController extends Controller
             return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan'], 404);
         }
     }
+
+    // public function getOrderDetails($idpesanan)
+    // {
+    //     try {
+    //         $pesanan = Pesanan::with(['details.menu'])->findOrFail($idpesanan);
+
+    //         $vendor = Auth::user()->vendor;
+
+    //         if (!$vendor) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Anda tidak terdaftar sebagai vendor'
+    //             ], 403);
+    //         }
+
+    //         // Filter hanya detail pesanan yang menu-nya milik vendor ini
+    //         $filteredDetails = $pesanan->details->filter(function ($detail) use ($vendor) {
+    //             return $detail->menu && $detail->menu->idvendor === $vendor->idvendor;
+    //         });
+
+    //         if ($filteredDetails->isEmpty()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Pesanan ini tidak mengandung menu dari vendor Anda'
+    //             ], 403);
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => [
+    //                 'idpesanan'        => $pesanan->idpesanan,
+    //                 'nama'             => $pesanan->nama,
+    //                 'total'            => number_format($pesanan->total, 0, ',', '.'),
+    //                 'status_bayar'     => $pesanan->status_bayar,
+    //                 'status_bayar_text' => $pesanan->getStatusNama(),
+    //                 'timestamp'        => $pesanan->timestamp->format('d/m/Y H:i'),
+    //                 'items' => $filteredDetails->map(function ($detail) {
+    //                     return [
+    //                         'nama_menu' => $detail->menu->nama_menu ?? 'Unknown',
+    //                         'jumlah'    => $detail->jumlah,
+    //                         'harga'     => number_format($detail->harga, 0, ',', '.'),
+    //                         'subtotal'  => number_format($detail->subtotal, 0, ',', '.'),
+    //                         'catatan'   => $detail->catatan ?? '-'
+    //                     ];
+    //                 })
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Pesanan tidak ditemukan atau tidak valid'
+    //         ], 404);
+    //     }
+    // }
+
+    // LAMA BANGET
+    // public function getOrderDetails($idpesanan)
+    // {
+    //     try {
+    //         $pesanan = Pesanan::with('details.menu')->findOrFail($idpesanan);
+
+    //         // Optional: Validasi apakah pesanan ini mengandung menu dari vendor yang sedang login
+    //         $vendor = Auth::user()->vendor;
+    //         if ($vendor) {
+    //             $vendorMenuIds = $vendor->menus()->pluck('idmenu');
+    //             $pesananHasVendorMenu = $pesanan->details()->whereIn('idmenu', $vendorMenuIds)->exists();
+
+    //             if (!$pesananHasVendorMenu) {
+    //                 return response()->json(['success' => false, 'message' => 'Pesanan tidak untuk vendor ini'], 403);
+    //             }
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => [
+    //                 'idpesanan' => $pesanan->idpesanan,
+    //                 'nama' => $pesanan->nama,
+    //                 'total' => number_format($pesanan->total, 0, ',', '.'),
+    //                 'status_bayar' => $pesanan->status_bayar,
+    //                 'status_bayar_text' => $pesanan->getStatusNama(),
+    //                 'timestamp' => $pesanan->timestamp->format('d/m/Y H:i'),
+    //                 'items' => $pesanan->details->map(function ($detail) {
+    //                     return [
+    //                         'nama_menu' => $detail->menu->nama_menu ?? 'Unknown',
+    //                         'jumlah' => $detail->jumlah,
+    //                         'harga' => number_format($detail->harga, 0, ',', '.'),
+    //                         'subtotal' => number_format($detail->subtotal, 0, ',', '.'),
+    //                         'catatan' => $detail->catatan ?? '-'
+    //                     ];
+    //                 })
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Pesanan tidak ditemukan atau tidak valid'
+    //         ], 404);
+    //     }
+    // }
 
     public function checkout(Request $request)
     {
