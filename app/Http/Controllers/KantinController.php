@@ -71,7 +71,7 @@ class KantinController extends Controller
     }
 
     /**
-     * API: Mendapatkan detail pesanan khusus untuk vendor yang sedang login
+     * API: Mendapatkan detail pesanan khusus untuk vendor
      */
 
     public function getOrderDetails($idpesanan)
@@ -90,7 +90,7 @@ class KantinController extends Controller
                 ], 403);
             }
 
-            // FILTER: Hanya ambil detail menu yang dimiliki oleh vendor yang sedang scan
+            // FILTER mengambil detail menu oleh vendor yang sedang scan
             $filteredDetails = $pesanan->details->filter(function ($detail) use ($vendor) {
                 return $detail->menu && $detail->menu->idvendor === $vendor->idvendor;
             });
