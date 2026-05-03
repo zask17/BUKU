@@ -123,7 +123,7 @@ class KantinController extends Controller
                             'subtotal'  => number_format($detail->subtotal, 0, ',', '.'),
                             'catatan'   => $detail->catatan ?? '-'
                         ];
-                    })
+                    })->values()
                 ]
             ]);
         } catch (\Exception $e) {
@@ -133,55 +133,6 @@ class KantinController extends Controller
             ], 404);
         }
     }
-
-    // public function getOrderDetails($idpesanan)
-    // {
-    //     try {
-    //         // Load pesanan beserta relasi menu dan vendor
-    //         $pesanan = Pesanan::with(['details.menu.vendor'])->findOrFail($idpesanan);
-    //         $vendor = Auth::user()->vendor;
-
-    //         if (!$vendor) {
-    //             return response()->json(['success' => false, 'message' => 'Anda tidak terdaftar sebagai vendor'], 403);
-    //         }
-
-    //         // Filter menu hanya untuk vendor yang sedang login
-    //         $filteredDetails = $pesanan->details->filter(function ($detail) use ($vendor) {
-    //             return $detail->menu && $detail->menu->idvendor === $vendor->idvendor;
-    //         });
-
-    //         if ($filteredDetails->isEmpty()) {
-    //             return response()->json(['success' => false, 'message' => 'Pesanan ini tidak berisi menu dari vendor Anda'], 403);
-    //         }
-
-    //         // Hitung subtotal khusus untuk vendor ini
-    //         $subtotalVendor = $filteredDetails->sum('subtotal');
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => [
-    //                 'idpesanan'         => $pesanan->idpesanan,
-    //                 'nama'              => $pesanan->nama,
-    //                 'nama_vendor'       => $vendor->nama_vendor,
-    //                 'total_seluruhnya'  => number_format($pesanan->total, 0, ',', '.'),
-    //                 'total_vendor'      => number_format($subtotalVendor, 0, ',', '.'), // Subtotal khusus vendor ini
-    //                 'status_bayar_text' => $pesanan->status_bayar == 1 ? 'Lunas / Paid' : 'Pending',
-    //                 'items' => $filteredDetails->map(function ($detail) {
-    //                     return [
-    //                         'nama_menu' => $detail->menu->nama_menu,
-    //                         'jumlah'    => $detail->jumlah,
-    //                         'harga'     => number_format($detail->harga, 0, ',', '.'),
-    //                         'subtotal'  => number_format($detail->subtotal, 0, ',', '.'),
-    //                         'catatan'   => $detail->catatan ?? '-'
-    //                     ];
-    //                 })
-    //             ]
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['success' => false, 'message' => 'Data pesanan tidak ditemukan'], 404);
-    //     }
-    // }
-
     public function checkout(Request $request)
     {
         $request->validate(['total_bayar' => 'required|integer|min:1', 'cart' => 'required|array|min:1']);

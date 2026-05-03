@@ -88,7 +88,7 @@
         sound.play().catch(() => {});
         qrScanner.pause();
         
-        // Panggilan API via Axios[cite: 56]
+        // Panggilan API via Axios
         axios.get(`/kantin/order-details/${text.trim()}`)
             .then(res => {
                 if(res.data.success) renderOrder(res.data.data);

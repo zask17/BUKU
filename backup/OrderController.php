@@ -23,14 +23,14 @@ class OrderController extends Controller
 
     public function checkout(Request $request)
     {
-        // 1. Logika User Guest Otomatis (Guest_0000001) [cite: 4]
+        // 1. Logika User Guest Otomatis (Guest_0000001)
         $latestOrder = Pesanan::orderBy('idpesanan', 'desc')->first();
         $nextId = $latestOrder ? $latestOrder->idpesanan + 1 : 1;
         $guestName = "Guest_" . str_pad($nextId, 7, '0', STR_PAD_LEFT);
 
         DB::beginTransaction();
         try {
-            // 2. Simpan Header Pesanan [cite: 11]
+            // 2. Simpan Header Pesanan
             $pesanan = Pesanan::create([
                 'nama'         => $guestName,
                 'total'        => $request->total_bayar,
@@ -38,7 +38,7 @@ class OrderController extends Controller
                 'order_id_pg'  => 'KANTIN-' . time() . '-' . $nextId
             ]);
 
-            // 3. Simpan Detail Pesanan [cite: 11]
+            // 3. Simpan Detail Pesanan
             // Simpan Detail Pesanan di OrderController
             foreach ($request->cart as $item) {
                 DetailPesanan::create([
@@ -52,7 +52,7 @@ class OrderController extends Controller
             }
             DB::commit();
 
-            // 4. Konfigurasi Midtrans [cite: 1, 13]
+            // 4. Konfigurasi Midtrans
             Config::$serverKey = config('midtrans.server_key');
             Config::$isProduction = config('midtrans.is_production');
             Config::$isSanitized = config('midtrans.is_sanitized');
