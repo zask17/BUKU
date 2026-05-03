@@ -71,49 +71,116 @@ class KantinController extends Controller
     }
 
     /**
-     * API: Dapat detail pesanan lewat ID untuk menampilkan menu yang dipesan saat vendor scan QRcode
+     * API: Mendapatkan detail pesanan khusus untuk vendor yang sedang login
      */
 
     public function getOrderDetails($idpesanan)
     {
         try {
-            $pesanan = Pesanan::with(['details.menu'])->findOrFail($idpesanan);
+            // Load pesanan dengan relasi menu dan vendor
+            $pesanan = Pesanan::with(['details.menu.vendor'])->findOrFail($idpesanan);
+            
+            // Ambil profil vendor dari user yang sedang login
             $vendor = Auth::user()->vendor;
 
             if (!$vendor) {
-                return response()->json(['success' => false, 'message' => 'Vendor tidak ditemukan'], 403);
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Akun Anda tidak terdaftar sebagai vendor resmi'
+                ], 403);
             }
 
-            // Filter item hanya untuk vendor yang login
+            // FILTER: Hanya ambil detail menu yang dimiliki oleh vendor yang sedang scan
             $filteredDetails = $pesanan->details->filter(function ($detail) use ($vendor) {
                 return $detail->menu && $detail->menu->idvendor === $vendor->idvendor;
             });
 
+            // Jika pesanan ada tapi tidak ada menu milik vendor ini
             if ($filteredDetails->isEmpty()) {
-                return response()->json(['success' => false, 'message' => 'Pesanan ini tidak berisi menu Anda'], 403);
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Tidak ada pesanan untuk vendor ini' . $vendor->nama_vendor
+                ], 403);
             }
+
+            // Hitung subtotal khusus untuk porsi vendor ini
+            $subtotalVendor = $filteredDetails->sum('subtotal');
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'idpesanan' => $pesanan->idpesanan,
-                    'nama' => $pesanan->nama,
-                    'total' => number_format($pesanan->total, 0, ',', '.'),
-                    'status_bayar_text' => $pesanan->status_bayar == 1 ? 'Lunas' : 'Pending',
+                    'idpesanan'         => $pesanan->idpesanan,
+                    'nama_customer'     => $pesanan->nama,
+                    'nama_vendor'       => $vendor->nama_vendor,
+                    'total_transaksi'   => number_format($pesanan->total, 0, ',', '.'),
+                    'subtotal_vendor'   => number_format($subtotalVendor, 0, ',', '.'),
+                    'status_bayar_text' => $pesanan->status_bayar == 1 ? 'Lunas / Paid' : 'Pending',
                     'items' => $filteredDetails->map(function ($detail) {
                         return [
                             'nama_menu' => $detail->menu->nama_menu,
-                            'jumlah' => $detail->jumlah,
-                            'harga' => number_format($detail->harga, 0, ',', '.'),
-                            'subtotal' => number_format($detail->subtotal, 0, ',', '.'),
+                            'jumlah'    => $detail->jumlah,
+                            'harga'     => number_format($detail->harga, 0, ',', '.'),
+                            'subtotal'  => number_format($detail->subtotal, 0, ',', '.'),
+                            'catatan'   => $detail->catatan ?? '-'
                         ];
                     })
                 ]
             ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan'], 404);
+            return response()->json([
+                'success' => false, 
+                'message' => 'Data pesanan tidak ditemukan di sistem'
+            ], 404);
         }
     }
+
+    // public function getOrderDetails($idpesanan)
+    // {
+    //     try {
+    //         // Load pesanan beserta relasi menu dan vendor
+    //         $pesanan = Pesanan::with(['details.menu.vendor'])->findOrFail($idpesanan);
+    //         $vendor = Auth::user()->vendor;
+
+    //         if (!$vendor) {
+    //             return response()->json(['success' => false, 'message' => 'Anda tidak terdaftar sebagai vendor'], 403);
+    //         }
+
+    //         // Filter menu hanya untuk vendor yang sedang login
+    //         $filteredDetails = $pesanan->details->filter(function ($detail) use ($vendor) {
+    //             return $detail->menu && $detail->menu->idvendor === $vendor->idvendor;
+    //         });
+
+    //         if ($filteredDetails->isEmpty()) {
+    //             return response()->json(['success' => false, 'message' => 'Pesanan ini tidak berisi menu dari vendor Anda'], 403);
+    //         }
+
+    //         // Hitung subtotal khusus untuk vendor ini
+    //         $subtotalVendor = $filteredDetails->sum('subtotal');
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => [
+    //                 'idpesanan'         => $pesanan->idpesanan,
+    //                 'nama'              => $pesanan->nama,
+    //                 'nama_vendor'       => $vendor->nama_vendor,
+    //                 'total_seluruhnya'  => number_format($pesanan->total, 0, ',', '.'),
+    //                 'total_vendor'      => number_format($subtotalVendor, 0, ',', '.'), // Subtotal khusus vendor ini
+    //                 'status_bayar_text' => $pesanan->status_bayar == 1 ? 'Lunas / Paid' : 'Pending',
+    //                 'items' => $filteredDetails->map(function ($detail) {
+    //                     return [
+    //                         'nama_menu' => $detail->menu->nama_menu,
+    //                         'jumlah'    => $detail->jumlah,
+    //                         'harga'     => number_format($detail->harga, 0, ',', '.'),
+    //                         'subtotal'  => number_format($detail->subtotal, 0, ',', '.'),
+    //                         'catatan'   => $detail->catatan ?? '-'
+    //                     ];
+    //                 })
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['success' => false, 'message' => 'Data pesanan tidak ditemukan'], 404);
+    //     }
+    // }
 
     public function checkout(Request $request)
     {

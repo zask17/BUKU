@@ -1,197 +1,135 @@
 @extends('layouts.vendor.main')
 
-@section('title-page', 'Scanner QR Code Pesanan')
-
-@section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('vendor.pesanan') }}">Manajemen Pesanan</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Scanner QR Code</li>
-@endsection
+@section('title-page', 'Scanner Validasi Pesanan')
 
 @section('style-page')
     <style>
         #reader {
-            width: 100% !important;
-            max-width: 580px;
-            height: 420px;
-            margin: 20px auto;
-            border: 5px solid #9a55ff;
-            border-radius: 12px;
-            background: #1a1a1a;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100% !important; max-width: 550px; height: 400px; margin: 15px auto;
+            border: 4px solid #9a55ff; border-radius: 15px; background: #000;
+            overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
-        .scanner-container { max-width: 620px; margin: 0 auto; }
-        .result-box { max-width: 620px; margin: 25px auto; animation: fadeIn 0.5s ease-in-out; }
+        .result-card { animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .vendor-total-section { background-color: #f8f9fa; border-radius: 8px; padding: 15px; border-left: 5px solid #9a55ff; }
+        .vendor-info-box { background: #f0f0ff; border-left: 5px solid #6f42c1; padding: 15px; border-radius: 5px; }
     </style>
 @endsection
 
 @section('content')
-    <div class="container-fluid">
-        <div class="row justify-content-center">
-            <div class="col-lg-10 col-xl-8">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-primary text-white py-3">
-                        <h4 class="mb-0"><i class="mdi mdi-qrcode-scan"></i> Scanner QR Code Pesanan</h4>
-                    </div>
-                    
-                    <div class="card-body scanner-container">
-                        <!-- Camera Selection -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Pilih Kamera:</label>
-                            <div class="input-group">
-                                <select id="camera-selector" class="form-control">
-                                    <option value="">-- Memuat daftar kamera --</option>
-                                </select>
-                                <div class="input-group-append">
-                                    <button type="button" class="btn btn-primary" id="start-scanner-btn" style="display:none;">
-                                        <i class="mdi mdi-play"></i> Mulai Scanning
-                                    </button>
-                                    <button type="button" class="btn btn-danger" id="stop-scanner-btn" style="display:none;">
-                                        <i class="mdi mdi-stop"></i> Stop Scanning
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="scanner-status" class="alert alert-info d-none mb-3"></div>
-                        <div id="reader"></div>
-
-                        <!-- Hasil Scan Sukses -->
-                        <div id="result-box" class="result-box d-none">
-                            <div class="alert alert-success border-0 shadow-sm text-dark">
-                                <h4 class="alert-heading mb-4 text-center text-success font-weight-bold">
-                                    <i class="mdi mdi-check-circle-outline"></i> Pesanan Terverifikasi!
-                                </h4>
-                                <div id="order-info" class="bg-white p-3 rounded border"></div>
-                                <div class="mt-4 text-center">
-                                    <button class="btn btn-warning btn-lg px-5 font-weight-bold shadow" onclick="resumeScanning()">
-                                        <i class="mdi mdi-refresh"></i> SCAN PESANAN LAIN
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Error Box -->
-                        <div id="error-box" class="result-box d-none">
-                            <div class="alert alert-danger border-0 shadow-sm text-center">
-                                <h4 class="alert-heading mb-3"><i class="mdi mdi-alert-circle-outline"></i> Gagal Validasi</h4>
-                                <p id="error-message" class="mb-3"></p>
-                                <button class="btn btn-primary" onclick="resetScanner()"><i class="mdi mdi-refresh"></i> Coba Lagi</button>
-                            </div>
+<div class="container-fluid">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-gradient-primary text-white py-3">
+            <h5 class="mb-0"><i class="mdi mdi-qrcode-scan"></i> Scanner Pesanan Multi-Vendor</h5>
+        </div>
+        <div class="card-body">
+            <!-- Pilihan Kamera -->
+            <div class="row mb-4">
+                <div class="col-md-6 offset-md-3">
+                    <label class="font-weight-bold">Pilih Kamera:</label>
+                    <div class="input-group">
+                        <select id="camera-selector" class="form-control"></select>
+                        <div class="input-group-append">
+                            <button id="btn-start" class="btn btn-primary">Mulai</button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div id="status-msg" class="alert alert-secondary d-none"></div>
+            <div id="reader"></div>
+
+            <!-- Box Hasil Validasi -->
+            <div id="result-box" class="result-card d-none mt-4">
+                <div class="alert alert-success border-0 shadow-sm">
+                    <h4 class="text-center font-weight-bold mb-4">PESANAN TERVERIFIKASI</h4>
+                    <div id="order-content" class="bg-white p-3 rounded border"></div>
+                    <button class="btn btn-warning btn-block mt-4 font-weight-bold" onclick="resetScanner()">SCAN BERIKUTNYA</button>
+                </div>
+            </div>
+
+            <!-- Box Error -->
+            <div id="error-box" class="result-card d-none mt-4">
+                <div class="alert alert-danger border-0 text-center shadow-sm">
+                    <h5 class="font-weight-bold">Akses Ditolak</h5>
+                    <p id="err-msg"></p>
+                    <button class="btn btn-dark" onclick="resetScanner()">Coba Lagi</button>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-    <audio id="beepAudio"><source src="{{ asset('audio/beep.mp3') }}" type="audio/mpeg"></audio>
+<audio id="beep"><source src="{{ asset('audio/beep.mp3') }}" type="audio/mpeg"></audio>
 
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    <script>
-        let scanner = null;
-        const beep = document.getElementById('beepAudio');
-        let isScanning = true;
-        let selectedCameraId = null;
+<script>
+    let qrScanner = null;
+    const sound = document.getElementById('beep');
+    let camId = null;
 
-        async function loadCameras() {
-            try {
-                const devices = await Html5Qrcode.getCameras();
-                const select = document.getElementById('camera-selector');
-                if (devices.length > 0) {
-                    select.innerHTML = '<option value="">-- Pilih Kamera --</option>';
-                    devices.forEach((device, i) => select.add(new Option(device.label || `Kamera ${i+1}`, device.id)));
-                    selectedCameraId = devices[0].id;
-                    select.value = selectedCameraId;
-                    document.getElementById('start-scanner-btn').style.display = 'inline-block';
-                }
-            } catch (err) { showStatus('Gagal akses kamera. Izinkan izin kamera.', 'danger'); }
+    // Load kamera saat halaman siap
+    Html5Qrcode.getCameras().then(devices => {
+        if (devices.length > 0) {
+            const select = document.getElementById('camera-selector');
+            devices.forEach((d, i) => select.add(new Option(d.label || `Cam ${i+1}`, d.id)));
+            camId = devices[0].id;
         }
+    });
 
-        function showStatus(msg, type = 'info') {
-            const el = document.getElementById('scanner-status');
-            el.className = `alert alert-${type} mb-3 shadow-sm`;
-            el.innerHTML = `<i class="mdi mdi-information"></i> ${msg}`;
-            el.classList.remove('d-none');
-        }
+    document.getElementById('btn-start').addEventListener('click', () => {
+        qrScanner = new Html5Qrcode("reader");
+        qrScanner.start(camId, { fps: 10, qrbox: 250 }, onScan);
+        document.getElementById('btn-start').disabled = true;
+    });
 
-        document.getElementById('start-scanner-btn').addEventListener('click', () => {
-            if (scanner) scanner.stop().catch(() => {});
-            scanner = new Html5Qrcode("reader");
-            scanner.start(selectedCameraId, { fps: 12, qrbox: 280 }, onScanSuccess)
-                .then(() => {
-                    document.getElementById('start-scanner-btn').style.display = 'none';
-                    document.getElementById('stop-scanner-btn').style.display = 'inline-block';
-                    showStatus('Scanner Aktif. Arahkan ke QR Code.', 'info');
-                });
-        });
-
-        function onScanSuccess(decodedText) {
-            if (!isScanning) return;
-            isScanning = false;
-            beep.play().catch(() => {});
-            scanner.pause();
-
-            const idPesanan = decodedText.trim(); 
-
-            axios.get(`/kantin/order-details/${idPesanan}`)
-                .then(res => {
-                    if (res.data.success) showOrderDetails(res.data.data);
-                    else showError(res.data.message);
-                })
-                .catch(err => showError(err.response?.data?.message || 'Terjadi kesalahan sistem'));
-        }
-
-        function showOrderDetails(order) {
-            let itemsHtml = '<ul class="list-group list-group-flush border-top mt-3">';
-            order.items.forEach(item => {
-                itemsHtml += `
-                    <li class="list-group-item px-0 d-flex justify-content-between">
-                        <div><strong>${item.nama_menu}</strong><br><small>${item.jumlah} x Rp ${item.harga}</small></div>
-                        <span class="font-weight-bold">Rp ${item.subtotal}</span>
-                    </li>`;
+    function onScan(text) {
+        sound.play().catch(() => {});
+        qrScanner.pause();
+        
+        // Panggilan API via Axios[cite: 56]
+        axios.get(`/kantin/order-details/${text.trim()}`)
+            .then(res => {
+                if(res.data.success) renderOrder(res.data.data);
+            })
+            .catch(err => {
+                document.getElementById('err-msg').innerText = err.response?.data?.message || 'Error Jaringan';
+                document.getElementById('error-box').classList.remove('d-none');
             });
-            itemsHtml += '</ul>';
+    }
 
-            document.getElementById('order-info').innerHTML = `
-                <table class="table table-borderless table-sm mb-3">
-                    <tr><th>ID Pesanan</th><td>: #${order.idpesanan}</td></tr>
-                    <tr><th>Customer</th><td>: ${order.nama}</td></tr>
-                    <tr><th>Status</th><td>: <span class="badge badge-success">Lunas</span></td></tr>
-                </table>
-                <div class="vendor-total-section mb-3">
-                    <div class="d-flex justify-content-between"><span>Total Pesanan:</span><span>Rp ${order.total}</span></div>
-                </div>
-                <h6 class="font-weight-bold text-primary mb-2">Menu untuk Vendor Anda:</h6>
-                ${itemsHtml}`;
-            
-            document.getElementById('result-box').classList.remove('d-none');
-            document.getElementById('scanner-status').classList.add('d-none');
-        }
-
-        function showError(msg) {
-            document.getElementById('error-message').innerText = msg;
-            document.getElementById('error-box').classList.remove('d-none');
-            document.getElementById('result-box').classList.add('d-none');
-        }
-
-        function resumeScanning() {
-            isScanning = true;
-            document.getElementById('result-box').classList.add('d-none');
-            document.getElementById('error-box').classList.add('d-none');
-            if (scanner) scanner.resume();
-        }
-
-        function resetScanner() { resumeScanning(); }
-
-        document.getElementById('stop-scanner-btn').addEventListener('click', () => {
-            if (scanner) scanner.stop().then(() => location.reload());
+    function renderOrder(d) {
+        let items = '<ul class="list-group list-group-flush mt-2">';
+        d.items.forEach(i => {
+            items += `<li class="list-group-item d-flex justify-content-between small">
+                <span><strong>${i.jumlah}x</strong> ${i.nama_menu}</span>
+                <span class="text-primary font-weight-bold">Rp ${i.subtotal}</span>
+            </li>`;
         });
+        items += '</ul>';
 
-        document.addEventListener('DOMContentLoaded', loadCameras);
-    </script>
+        document.getElementById('order-content').innerHTML = `
+            <div class="vendor-info-box mb-3">
+                <h6 class="mb-1 font-weight-bold text-dark">Vendor: ${d.nama_vendor}</h6>
+                <div class="d-flex justify-content-between">
+                    <span>Subtotal Anda:</span><span class="h5 mb-0 text-primary font-weight-bold">Rp ${d.subtotal_vendor}</span>
+                </div>
+            </div>
+            <table class="table table-sm table-borderless mb-0 small">
+                <tr><td width="40%">ID Pesanan</td><td>: #${d.idpesanan}</td></tr>
+                <tr><td>Pelanggan</td><td>: ${d.nama_customer}</td></tr>
+                <tr><td>Total Transaksi</td><td>: Rp ${d.total_transaksi}</td></tr>
+            </table>
+            ${items}`;
+        
+        document.getElementById('result-box').classList.remove('d-none');
+    }
+
+    function resetScanner() {
+        document.getElementById('result-box').classList.add('d-none');
+        document.getElementById('error-box').classList.add('d-none');
+        if(qrScanner) qrScanner.resume();
+    }
+</script>
 @endsection
