@@ -3,6 +3,75 @@
 @section('title-page', 'Register')
 
 @section('content')
+<div class="content-wrapper d-flex align-items-center auth vh-100">
+    <div class="row w-100 mx-0 flex-grow">
+        <div class="col-lg-4 mx-auto">
+            <div class="auth-form-light text-left p-5 shadow-sm rounded-4 position-relative">
+                
+                <div class="position-absolute" style="top: 25px; left: 25px;">
+                    <a href="{{ route('welcome') }}" class="text-muted text-decoration-none small d-flex align-items-center">
+                        <i class="mdi mdi-arrow-left me-1"></i> Kembali
+                    </a>
+                </div>
+
+                <div class="brand-logo text-center mb-4">
+                    <img src="{{ asset('assets/images/logo.svg') }}" alt="logo">
+                </div>
+                <h4 class="text-center">Baru di sini?</h4>
+                <h6 class="font-weight-light text-center mb-4">Mendaftar itu mudah. Hanya butuh beberapa langkah.</h6>
+                
+                <form class="pt-3" id="registerForm" method="POST" action="{{ route('register') }}">
+                    @csrf
+                    <div class="form-group mb-3">
+                        <label class="form-label small fw-semibold text-muted">Nama Lengkap</label>
+                        <input type="text" name="name" class="form-control form-control-lg border-2 @error('name') is-invalid @enderror" placeholder="Nama Lengkap" value="{{ old('name') }}" required autofocus>
+                        @error('name')
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label small fw-semibold text-muted">Alamat Email</label>
+                        <input type="email" name="email" class="form-control form-control-lg border-2 @error('email') is-invalid @enderror" placeholder="Email" value="{{ old('email') }}" required>
+                        @error('email')
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label small fw-semibold text-muted">Kata Sandi</label>
+                        <input type="password" name="password" class="form-control form-control-lg border-2 @error('password') is-invalid @enderror" placeholder="Password" required>
+                        @error('password')
+                            <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                        @enderror
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label small fw-semibold text-muted">Konfirmasi Kata Sandi</label>
+                        <input type="password" name="password_confirmation" class="form-control form-control-lg border-2" placeholder="Konfirmasi Password" required>
+                    </div>
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <label class="form-check-label text-muted small">
+                                <input type="checkbox" class="form-check-input" required> Saya setuju dengan Syarat & Ketentuan 
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mt-3 d-grid gap-2">
+                        <button type="submit" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn">DAFTAR</button>
+                    </div>
+                    <div class="text-center mt-4 pt-2 border-top"> 
+                        <p class="text-muted mb-0 small">Sudah punya akun? <a href="{{ route('login') }}" class="text-primary fw-bold text-decoration-none">Login</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+{{-- @extends('layouts.guest.main-auth')
+
+@section('title-page', 'Register')
+
+@section('content')
 <div class="content-wrapper d-flex align-items-center auth">
     <div class="row flex-grow">
         <div class="col-lg-4 mx-auto">
@@ -52,4 +121,4 @@
         </div>
     </div>
 </div>
-@endsection
+@endsection --}}

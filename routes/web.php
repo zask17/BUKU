@@ -14,6 +14,8 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\BarangBaruController;
 use App\Http\Controllers\WilayahController;
+use App\Http\Controllers\SalesController;
+use App\Http\Controllers\TokoController;
 
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\PenggunaAdminController;
@@ -186,4 +188,21 @@ Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 
     Route::get('/pesanan', [DashboardVendorController::class, 'pesanan'])->name('pesanan');
     Route::get('/scanner', [DashboardVendorController::class, 'scannerQRCode'])->name('scanner');
     Route::resource('menu', MenuController::class);
+});
+
+// --- GRUP AKSES ADMIN (idrole = 1) UNTUK MANAJEMEN TOKO ---
+Route::group(['prefix' => 'toko', 'as' => 'toko.', 'middleware' => ['auth', 'role:1']], function () {
+    Route::get('/', [TokoController::class, 'index'])->name('list');
+    Route::get('/create', [TokoController::class, 'create'])->name('create');
+    Route::post('/store', [TokoController::class, 'store'])->name('store');
+    Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
+    Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
+    Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
+});
+
+// --- GRUP AKSES SALES (idrole = 4) UNTUK KUNJUNGAN ---
+Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:4']], function () {
+    Route::get('/dashboard', [SalesController::class, 'dashboard'])->name('dashboard');
+    Route::post('/store', [SalesController::class, 'store'])->name('store');
+    Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
 });
