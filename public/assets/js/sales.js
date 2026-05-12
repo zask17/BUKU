@@ -1,24 +1,28 @@
 // =====================
-// Config (sama seperti barcode.js)
+// Config & State
 // =====================
 let html5QrcodeScanner = null;
 let lastScannedCode = null;
 let scannerObserver = null;
+let salesPosition = null;
+let tokoData = null;
 
+const THRESHOLD = 300; // Jarak maksimum standar dalam meter
 const barcodeConfig = window.barcodeScannerConfig || {};
-const beepSound = barcodeConfig.beepUrl ? new Audio(barcodeConfig.beepUrl) : new Audio();
+const salesConfig = window.salesConfig || {};
+const beepSound = document.getElementById('beepAudio') || (barcodeConfig.beepUrl ? new Audio(barcodeConfig.beepUrl) : null);
 
 function getEl(id) {
     return document.getElementById(id);
 }
 
 // =====================
-// Scanner UI Fixes (sama seperti barcode.js)
+// Scanner UI Fixes
 // =====================
 function applyScannerUIFixes() {
     scannerObserver = new MutationObserver(() => {
-        const btnStart    = getEl('html5-qrcode-button-camera-start');
-        const btnStop     = getEl('html5-qrcode-button-camera-stop');
+        const btnStart     = getEl('html5-qrcode-button-camera-start');
+        const btnStop      = getEl('html5-qrcode-button-camera-stop');
         const selectCamera = getEl('html5-qrcode-select-camera');
 
         if (btnStart && !btnStart.classList.contains('btn')) {
@@ -49,40 +53,17 @@ function startScanner() {
 
     html5QrcodeScanner = new Html5QrcodeScanner('reader', {
         fps: 10,
-        qrbox: { width: 300, height: 100 },
+        qrbox: { width: 300, height: 150 },
         rememberLastUsedCamera: true,
-        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-        formatsToSupport: [
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.EAN_8,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODABAR,
-            Html5QrcodeSupportedFormats.ITF,
-        ]
+        supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
     }, false);
 
     html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     applyScannerUIFixes();
 }
 
-function stopScanner() {
-    if (scannerObserver) {
-        scannerObserver.disconnect();
-        scannerObserver = null;
-    }
-    if (!html5QrcodeScanner) return Promise.resolve();
-    return html5QrcodeScanner.clear().then(() => {
-        html5QrcodeScanner = null;
-    }).catch(error => {
-        console.error('Failed to clear html5QrcodeScanner', error);
-    });
-}
-
 // =====================
-// Geolocation
+// Geolocation & Math
 // =====================
 function getAccuratePosition(targetAccuracy = 50, maxWait = 20000) {
     return new Promise((resolve, reject) => {
@@ -99,7 +80,7 @@ function getAccuratePosition(targetAccuracy = 50, maxWait = 20000) {
                 if (Date.now() - startTime >= maxWait) {
                     navigator.geolocation.clearWatch(watchId);
                     if (bestResult) resolve(bestResult);
-                    else reject(new Error('Timeout, tidak dapat posisi'));
+                    else reject(new Error('Timeout, tidak dapat posisi akurat'));
                 }
             },
             (error) => reject(error),
@@ -108,27 +89,19 @@ function getAccuratePosition(targetAccuracy = 50, maxWait = 20000) {
     });
 }
 
-// =====================
-// Haversine
-// =====================
 function haversine(lat1, lng1, lat2, lng2) {
+    const R = 6371000;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
     const a = Math.sin(dLat / 2) ** 2 +
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLng / 2) ** 2;
-    return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
 }
 
 // =====================
-// State
-// =====================
-let salesPosition = null;
-let tokoData = null;
-const THRESHOLD = 300;
-
-// =====================
-// Loading helper
+// UI Helpers
 // =====================
 function setLoading(show, text = 'Memproses...') {
     const loading     = getEl('scan-loading');
@@ -140,112 +113,109 @@ function setLoading(show, text = 'Memproses...') {
 }
 
 // =====================
-// onScanSuccess
+// Scan Core Logic
 // =====================
-function onScanSuccess(decodedText) {
-    if (decodedText === lastScannedCode) return;
+async function onScanSuccess(decodedText) {
+    decodedText = decodedText?.toString().trim();
+    if (!decodedText || decodedText === lastScannedCode) return;
     lastScannedCode = decodedText;
-    beepSound.play();
+    beepSound?.play?.().catch(() => {});
 
     setLoading(true, '🔍 Mencari data toko...');
 
     const lookupUrl = `${barcodeConfig.lookupUrl}/${encodeURIComponent(decodedText)}`;
 
-    fetch(lookupUrl)
-        .then(res => res.json())
-        .then(async data => {
-            if (!data.success) {
-                setLoading(false);
-                alert(data.message || 'Toko tidak ditemukan');
-                return;
-            }
+    try {
+        const response = await fetch(lookupUrl);
+        const data = await response.json();
 
-            tokoData = data.data;
-            const content = getEl('scan-result-content');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="alert alert-secondary text-start mb-2">
-                            <strong>Nama Toko:</strong> ${tokoData.nama_toko}<br>
-                            <strong>Latitude:</strong> ${tokoData.latitude}<br>
-                            <strong>Longitude:</strong> ${tokoData.longtitude}<br>
-                            <strong>Accuracy Toko:</strong> ${tokoData.accuracy} meter
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div id="validasi-result" class="d-none">
-                            <div id="validasi-alert" class="alert mb-0"></div>
-                        </div>
-                    </div>
-                </div>
-                <div id="btn-kirim-wrapper" class="mt-2 d-none">
-                    <button type="button" id="btn-kirim-kunjungan" class="btn btn-primary">
-                        <i class="mdi mdi-check-circle"></i> Kirim Kunjungan
-                    </button>
-                </div>
-            `;
-
-            getEl('btn-kirim-kunjungan').addEventListener('click', kirimKunjungan);
-
-            if (!salesPosition) {
-                setLoading(true, '📡 Mengambil lokasi GPS...');
-                try { salesPosition = await getAccuratePosition(50, 20000); }
-                catch (err) {
-                    setLoading(false);
-                    alert('Gagal mengambil lokasi sales: ' + err.message);
-                    return;
-                }
-            }
-
-            setLoading(true, '📐 Menghitung jarak...');
-            await new Promise(r => setTimeout(r, 500));
-
-            const jarak = haversine(
-                salesPosition.coords.latitude, salesPosition.coords.longitude,
-                parseFloat(tokoData.latitude), parseFloat(tokoData.longtitude)
-            );
-            const thresholdEfektif = THRESHOLD + parseFloat(tokoData.accuracy) + salesPosition.coords.accuracy;
-            const diterima = jarak <= thresholdEfektif;
-            const status   = diterima ? 'diterima' : 'ditolak';
-
+        if (!data.success) {
             setLoading(false);
-
-            const validasiAlert = getEl('validasi-alert');
-            validasiAlert.className = `alert ${diterima ? 'alert-success' : 'alert-danger'} text-start mb-0`;
-            validasiAlert.innerHTML = `
-                <strong>${diterima ? '✅ DITERIMA' : '❌ DITOLAK'}</strong><br>
-                Jarak: <strong>${Math.round(jarak)} meter</strong><br>
-                Threshold efektif: ${Math.round(thresholdEfektif)} meter
-                (${THRESHOLD} + ${Math.round(tokoData.accuracy)} + ${Math.round(salesPosition.coords.accuracy)})<br>
-                Akurasi sales: ${salesPosition.coords.accuracy.toFixed(1)} meter
-            `;
-            getEl('validasi-result').classList.remove('d-none');
-            getEl('btn-kirim-wrapper').classList.remove('d-none');
-
-            // Reset lastScannedCode agar bisa scan ulang
+            alert(data.message || 'Toko tidak ditemukan');
             lastScannedCode = null;
+            return;
+        }
 
-            tokoData._kunjungan = {
-                idtoko    : tokoData.idtoko,
-                latitude  : salesPosition.coords.latitude,
-                longitude : salesPosition.coords.longitude,
-                accuracy  : salesPosition.coords.accuracy,
-                jarak     : Math.round(jarak),
-                status    : status,
-                waktu     : new Date().toISOString(),
-            };
-        })
-        .catch(err => {
-            setLoading(false);
-            console.error(err);
-            alert('Terjadi kesalahan saat mencari toko');
-        });
+        tokoData = data.data;
+        const content = getEl('scan-result-content');
+        
+        // Render Hasil UI
+        content.innerHTML = `
+            <div class="row text-start">
+                <div class="col-md-6">
+                    <div class="alert alert-secondary mb-2">
+                        <strong>Nama Toko:</strong> ${tokoData.nama_toko}<br>
+                        <strong>Koordinat:</strong> ${tokoData.latitude}, ${tokoData.longtitude}<br>
+                        <strong>Akurasi Toko:</strong> ${tokoData.accuracy} meter
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="validasi-result" class="d-none">
+                        <div id="validasi-alert" class="alert mb-0"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="btn-kirim-wrapper" class="mt-2 d-none">
+                <button type="button" id="btn-kirim-kunjungan" class="btn btn-gradient-primary btn-fw">
+                    <i class="mdi mdi-check-circle"></i> Kirim Kunjungan
+                </button>
+            </div>
+        `;
+
+        getEl('btn-kirim-kunjungan').addEventListener('click', kirimKunjungan);
+
+        // Ambil Lokasi Sales
+        setLoading(true, '📡 Mengambil lokasi GPS akurat...');
+        salesPosition = await getAccuratePosition(50, 15000);
+
+        // Hitung Jarak
+        const jarak = haversine(
+            salesPosition.coords.latitude, salesPosition.coords.longitude,
+            parseFloat(tokoData.latitude), parseFloat(tokoData.longtitude)
+        );
+
+        // Threshold Efektif = Jarak Maks + Akurasi Toko + Akurasi Sales
+        const thresholdEfektif = THRESHOLD + parseFloat(tokoData.accuracy) + salesPosition.coords.accuracy;
+        const diterima = jarak <= thresholdEfektif;
+        const status   = diterima ? 'diterima' : 'ditolak';
+
+        setLoading(false);
+
+        // Update UI Validasi
+        const validasiAlert = getEl('validasi-alert');
+        validasiAlert.className = `alert ${diterima ? 'alert-success' : 'alert-danger'} mb-0`;
+        validasiAlert.innerHTML = `
+            <strong>${diterima ? '✅ LOKASI VALID' : '❌ LOKASI DITOLAK'}</strong><br>
+            Jarak Aktual: <strong>${Math.round(jarak)} m</strong><br>
+            Threshold: ${Math.round(thresholdEfektif)} m<br>
+            Akurasi Anda: ${salesPosition.coords.accuracy.toFixed(1)} m
+        `;
+        
+        getEl('validasi-result').classList.remove('d-none');
+        getEl('btn-kirim-wrapper').classList.remove('d-none');
+
+        // Persiapkan data untuk dikirim
+        tokoData._kunjungan = {
+            idtoko    : tokoData.idtoko,
+            latitude  : salesPosition.coords.latitude,
+            longitude : salesPosition.coords.longitude,
+            accuracy  : salesPosition.coords.accuracy,
+            jarak     : Math.round(jarak),
+            status    : status
+        };
+
+    } catch (err) {
+        setLoading(false);
+        console.error(err);
+        alert('Terjadi kesalahan sistem');
+        lastScannedCode = null;
+    }
 }
 
 function onScanFailure() {}
 
 // =====================
-// Kirim Kunjungan
+// POST Data
 // =====================
 function kirimKunjungan() {
     if (!tokoData || !tokoData._kunjungan) return;
@@ -254,81 +224,74 @@ function kirimKunjungan() {
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mengirim...';
 
-    fetch(window.salesConfig.storeSalesUrl, {
+    fetch(salesConfig.storeSalesUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': window.salesConfig.csrfToken
+            'X-CSRF-TOKEN': salesConfig.csrfToken
         },
         body: JSON.stringify(tokoData._kunjungan)
     })
     .then(res => res.json())
     .then(data => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="mdi mdi-check-circle"></i> Kirim Kunjungan';
-
         if (data.success) {
-            getEl('scan-result-content').innerHTML =
-                '<p class="text-muted">Belum ada scan. Arahkan kamera ke barcode toko.</p>';
+            // Reset UI
+            getEl('scan-result-content').innerHTML = '<p class="text-muted">Kunjungan berhasil dicatat. Silakan scan toko berikutnya.</p>';
+            getEl('btn-kirim-wrapper').classList.add('d-none');
             lastScannedCode = null;
 
+            // Tampilkan Notif
             const notif = getEl('notification-container');
-            notif.innerHTML = `<div class="alert alert-success alert-dismissible fade show">
-                Kunjungan berhasil dicatat!
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>`;
-            setTimeout(() => notif.innerHTML = '', 5000);
+            if (notif) {
+                notif.innerHTML = `<div class="alert alert-success alert-dismissible fade show">
+                    Kunjungan Toko <strong>${tokoData.nama_toko}</strong> Berhasil!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+                setTimeout(() => notif.innerHTML = '', 5000);
+            }
 
-            tambahRiwayat(
+            // Update Tabel Riwayat secara realtime
+            tambahRiwayatManual(
                 tokoData.nama_toko,
                 tokoData._kunjungan.jarak,
                 tokoData._kunjungan.accuracy,
                 tokoData._kunjungan.status
             );
         } else {
-            alert(data.message || 'Gagal menyimpan kunjungan');
+            alert(data.message || 'Gagal menyimpan');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="mdi mdi-check-circle"></i> Kirim Kunjungan';
         }
     })
     .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="mdi mdi-check-circle"></i> Kirim Kunjungan';
         console.error(err);
-        alert('Terjadi kesalahan saat mengirim kunjungan');
+        alert('Kesalahan koneksi');
+        btn.disabled = false;
     });
 }
 
-// =====================
-// Riwayat
-// =====================
-function tambahRiwayat(namaToko, jarak, akurasiSales, status) {
+function tambahRiwayatManual(namaToko, jarak, akurasi, status) {
     const tbody = getEl('riwayat-tbody');
     const empty = getEl('riwayat-empty');
     if (empty) empty.remove();
 
     const count = tbody.querySelectorAll('tr').length + 1;
-    const badgeClass  = status === 'diterima' ? 'badge bg-success' : 'badge bg-danger';
-    const statusLabel = status === 'diterima' ? '✅ Diterima' : '❌ Ditolak';
-    const waktu       = new Date().toLocaleTimeString('id-ID');
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
+    const isDiterima = status === 'diterima';
+    const row = document.createElement('tr');
+    
+    row.innerHTML = `
         <td>${String(count).padStart(2, '0')}</td>
         <td>${namaToko}</td>
         <td>${jarak} meter</td>
-        <td>${akurasiSales.toFixed(1)} meter</td>
-        <td><span class="${badgeClass}">${statusLabel}</span></td>
-        <td>${waktu}</td>
+        <td><span class="badge ${isDiterima ? 'bg-success' : 'bg-danger'}">${isDiterima ? '✅ Diterima' : '❌ Ditolak'}</span></td>
+        <td>${new Date().toLocaleTimeString('id-ID')}</td>
     `;
-    tbody.insertBefore(tr, tbody.firstChild);
+    tbody.insertBefore(row, tbody.firstChild);
 }
 
 // =====================
 // Init
 // =====================
-window.addEventListener('load', function () {
-    getAccuratePosition(50, 20000)
-        .then(pos => { salesPosition = pos; })
-        .catch(err => { console.warn('Gagal ambil lokasi awal:', err.message); });
-
+window.addEventListener('load', () => {
     startScanner();
 });

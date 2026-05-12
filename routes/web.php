@@ -201,8 +201,8 @@ Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 
 });
 
 
-// --- GRUP AKSES SALES (idrole = 4) UNTUK KUNJUNGAN ---
-Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:4']], function () {
+// --- GRUP AKSES SALES (idrole = 5) ---
+Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:5']], function () {
     Route::get('/dashboard', [SalesController::class, 'dashboard'])->name('dashboard');
     Route::post('/store', [SalesController::class, 'store'])->name('store');
     Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');

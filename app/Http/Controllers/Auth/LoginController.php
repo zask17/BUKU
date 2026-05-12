@@ -179,9 +179,13 @@ class LoginController extends Controller
                 ->with('success', 'Selamat datang Vendor!');
         }
 
+        // TAMBAHKAN INI UNTUK SALES
+        if ($user->idrole == 5) {
+            return redirect()->route('sales.dashboard')->with('success', 'Selamat datang Sales!');
+        }
+
         return redirect()->route('visitor.dashboard')
             ->with('success', 'Login berhasil!');
-
     }
 
     /**
