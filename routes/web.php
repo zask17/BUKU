@@ -47,7 +47,7 @@ Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('katego
 
 // --- RUTE KANTIN GUEST ---
 Route::get('/kantin/order-details/{idpesanan}', [App\Http\Controllers\KantinController::class, 'getOrderDetails'])
-     ->name('kantin.order.details');
+    ->name('kantin.order.details');
 Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
 Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
 Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
@@ -136,6 +136,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
     Route::put('/buku/{id}/update', [BukuAdminController::class, 'update'])->name('buku.update');
     Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('buku.destroy');
 
+    // Manajemen Toko (Modul 9 Geolocation)
+    Route::prefix('toko')->as('toko.')->group(function () {
+        Route::get('/', [TokoController::class, 'index'])->name('list');
+        Route::get('/create', [TokoController::class, 'create'])->name('create');
+        Route::post('/store', [TokoController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
+    });
+
     // Barang Baru
     Route::get('/barang-baru/html', [BarangBaruController::class, 'barangBaru'])->name('barang.baru');
     Route::get('/barang-baru/datatable', [BarangBaruController::class, 'barangBaruDatatable'])->name('barang.datatable');
@@ -190,15 +200,6 @@ Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 
     Route::resource('menu', MenuController::class);
 });
 
-// --- GRUP AKSES ADMIN (idrole = 1) UNTUK MANAJEMEN TOKO ---
-Route::group(['prefix' => 'toko', 'as' => 'toko.', 'middleware' => ['auth', 'role:1']], function () {
-    Route::get('/', [TokoController::class, 'index'])->name('list');
-    Route::get('/create', [TokoController::class, 'create'])->name('create');
-    Route::post('/store', [TokoController::class, 'store'])->name('store');
-    Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
-    Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
-    Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
-});
 
 // --- GRUP AKSES SALES (idrole = 4) UNTUK KUNJUNGAN ---
 Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:4']], function () {
@@ -206,3 +207,13 @@ Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'r
     Route::post('/store', [SalesController::class, 'store'])->name('store');
     Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
 });
+
+// --- GRUP AKSES ADMIN (idrole = 1) UNTUK MANAJEMEN TOKO ---
+// Route::group(['prefix' => 'toko', 'as' => 'toko.', 'middleware' => ['auth', 'role:1']], function () {
+//     Route::get('/', [TokoController::class, 'index'])->name('list');
+//     Route::get('/create', [TokoController::class, 'create'])->name('create');
+//     Route::post('/store', [TokoController::class, 'store'])->name('store');
+//     Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
+//     Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
+//     Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
+// });

@@ -14,17 +14,18 @@ class TokoController extends Controller
         $generator = new BarcodeGeneratorPNG();
 
         $toko->transform(function ($item) use ($generator) {
+            // Menggunakan ID Toko sebagai data barcode
             $barcodeBiner = $generator->getBarcode($item->idtoko, $generator::TYPE_CODE_128);
             $item->barcode_base64 = base64_encode($barcodeBiner);
             return $item;
         });
 
-        return view("admin.toko.toko", compact('toko'));
+        return view("admin.toko.index", compact('toko'));
     }
 
     public function create()
     {
-        return view('admin.toko.create-toko');
+        return view('admin.toko.create');
     }
 
     public function store(Request $request)
@@ -36,58 +37,67 @@ class TokoController extends Controller
             'accuracy'   => 'required|numeric',
         ]);
 
-        $toko = Toko::where('nama_toko', $validated['nama_toko'])->first();
+        $exists = Toko::where('nama_toko', $validated['nama_toko'])->exists();
 
-        if ($toko) {
-            session()->flash('error', 'Toko dengan nama yang sama sudah ada. Silakan coba lagi.');
-
-            $notificationHTML = view('components.notification')->render();
-
-            \Log::info('Notification HTML: ' . $notificationHTML);
-
-            return response()->json([
-                'success' => false,
-                'notification' => $notificationHTML
-            ], 500);
+        if ($exists) {
+            return response()->json(['success' => false, 'message' => 'Toko dengan nama yang sama sudah ada.'], 422);
         }
 
-        $result = Toko::create([
-            'nama_toko'  => $validated['nama_toko'],
-            'latitude'   => $validated['latitude'],
-            'longtitude' => $validated['longtitude'],
-            'accuracy'   => $validated['accuracy'],
-        ]);
+        $result = Toko::create($validated);
 
         if ($result) {
-            session()->flash('success', 'Toko berhasil ditambahkan!');
-
-            $notificationHTML = view('components.notification')->render();
-
-            \Log::info('Notification HTML: ' . $notificationHTML);
-
             return response()->json([
                 'success' => true,
-                'notification' => $notificationHTML,
-                'redirect' => route('toko-list')
+                'message' => 'Toko berhasil ditambahkan!',
+                'redirect' => route('admin.toko.list')
             ]);
-        } else {
-            session()->flash('error', 'Gagal menambahkan toko. Silakan coba lagi.');
-
-            $notificationHTML = view('components.notification')->render();
-
-            \Log::info('Notification HTML: ' . $notificationHTML);
-
-            return response()->json([
-                'success' => false,
-                'notification' => $notificationHTML
-            ], 500);
         }
+
+        return response()->json(['success' => false, 'message' => 'Gagal menyimpan data.'], 500);
     }
+
+    // public function edit($id)
+    // {
+    //     $toko = Toko::where('idtoko', $id)->firstOrFail();
+    //     return view('admin.toko.edit', compact('toko'));
+    // }
+
+    // public function update(Request $request, $id)
+    // {
+    //     $validated = $request->validate([
+    //         'nama_toko'  => 'required|string|max:255',
+    //         'latitude'   => 'required|numeric',
+    //         'longtitude' => 'required|numeric',
+    //         'accuracy'   => 'required|numeric',
+    //     ]);
+
+    //     $toko = Toko::where('idtoko', $id)->update($validated);
+
+    //     if ($toko) {
+    //         return response()->json([
+    //             'success' => true, 
+    //             'message' => 'Toko berhasil diperbarui!',
+    //             'redirect' => route('admin.toko.list')
+    //         ]);
+    //     }
+
+    //     return response()->json(['success' => false, 'message' => 'Gagal memperbarui data.'], 500);
+    // }
+
+    // public function edit($id)
+    // {
+    //     // Menggunakan first() agar mendapatkan objek tunggal, bukan koleksi
+    //     $toko = Toko::where('idtoko', $id)->firstOrFail();
+    //     return view('admin.toko.edit', compact('toko'));
+    // }
 
     public function edit($id)
     {
-        $toko = Toko::where('idtoko', $id)->get();
-        return view('admin.toko.update-toko', compact('toko'));
+        // Mengambil satu data toko, bukan koleksi
+        $toko = Toko::where('idtoko', $id)->firstOrFail();
+
+        // Pastikan nama file di sini 'edit' (resources/views/admin/toko/edit.blade.php)
+        return view('admin.toko.edit', compact('toko'));
     }
 
     public function update(Request $request, $id)
@@ -99,45 +109,30 @@ class TokoController extends Controller
             'accuracy'   => 'required|numeric',
         ]);
 
-        $result = Toko::where('idtoko', $id)->update([
-            'nama_toko'  => $validated['nama_toko'],
-            'latitude'   => $validated['latitude'],
-            'longtitude' => $validated['longtitude'],
-            'accuracy'   => $validated['accuracy'],
-        ]);
+        $toko = Toko::findOrFail($id);
+
+        $result = $toko->update($validated);
 
         if ($result) {
-            session()->flash('success', 'Toko berhasil diperbarui!');
-
-            $notificationHTML = view('components.notification')->render();
-
-            \Log::info('Notification HTML: ' . $notificationHTML);
-
             return response()->json([
                 'success' => true,
-                'notification' => $notificationHTML,
-                'redirect' => route('toko-list')
+                'message' => 'Toko berhasil diperbarui!',
+                'redirect' => route('admin.toko.list') // Pastikan nama route ini benar di web.php
             ]);
-        } else {
-            session()->flash('error', 'Gagal memperbarui toko. Silakan coba lagi.');
-
-            $notificationHTML = view('components.notification')->render();
-
-            \Log::info('Notification HTML: ' . $notificationHTML);
-
-            return response()->json([
-                'success' => false,
-                'notification' => $notificationHTML
-            ], 500);
         }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal memperbarui toko.'
+        ], 500);
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
         $toko = Toko::findOrFail($id);
-        $toko->delete();
-
-        return redirect()->route('toko-list')
-            ->with('success', 'Toko berhasil dihapus!');
+        if ($toko->delete()) {
+            return response()->json(['success' => true, 'message' => 'Toko berhasil dihapus!']);
+        }
+        return response()->json(['success' => false, 'message' => 'Gagal menghapus toko.'], 500);
     }
 }

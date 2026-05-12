@@ -37,7 +37,6 @@
             </a>
         </li>
 
-
         <li class="nav-item-divider"></li>
 
         <li class="nav-item {{ Request::routeIs('admin.kategori.index') ? 'active' : '' }}">
@@ -51,6 +50,13 @@
             <a class="nav-link" href="{{ route('admin.buku.index') }}">
                 <span class="menu-title">Manajemen Buku</span>
                 <i class="mdi mdi-book-multiple menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.toko.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.toko.list') }}">
+                <span class="menu-title">Manajemen Toko</span>
+                <i class="mdi mdi-store menu-icon"></i>
             </a>
         </li>
 
