@@ -1,257 +1,242 @@
 @extends('layouts.sales.main')
 
-@section('title-page', 'Dashboard Kunjungan')
-
-@section('breadcrumb')
-    <li class="breadcrumb-item active" aria-current="page">Kunjungan Toko</li>
+@section('style-page')
+    <style>
+        #reader {
+            animation: slideInUp 0.5s ease-out;
+            overflow: hidden;
+        }
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 @endsection
 
 @section('content')
-    <div id="notification-container"></div>
+<div class="container mt-4">
+    <h2>Kunjungan Toko</h2>
+    <hr>
 
     <div class="row">
-        {{-- Statistik Kunjungan --}}
-        <div class="col-md-4 stretch-card grid-margin">
-            <div class="card bg-gradient-danger card-img-holder text-white">
-                <div class="card-body">
-                    <img src="{{ asset('assets/images/dashboard/circle.svg') }}" class="card-img-absolute" alt="circle-image" />
-                    <h4 class="font-weight-normal mb-3">Kunjungan Hari Ini <i class="mdi mdi-map-marker-check mdi-24px float-right"></i></h4>
-                    <h2 class="mb-5">{{ $riwayat->count() }}</h2>
+        <div class="col-md-6">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="mdi mdi-barcode-scan"></i> Identifikasi Toko
                 </div>
-            </div>
-        </div>
-
-        {{-- Status GPS --}}
-        <div class="col-md-8 grid-margin stretch-card">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">Akurasi GPS Sales</h4>
-                    <div id="location-status" class="alert alert-info">
-                        <i class="mdi mdi-crosshairs-gps"></i> Menunggu GPS...
-                    </div>
-                    <button onclick="getLocation()" class="btn btn-gradient-primary btn-sm btn-icon-text">
-                        <i class="mdi mdi-refresh btn-icon-prepend"></i> Perbarui GPS
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row align-items-stretch">
-        {{-- Area Scanner (Sesuai Contoh Terbaru) --}}
-        <div class="col-md-5 grid-margin d-flex">
-            <div class="card w-100 shadow-sm border-primary" style="border-top: 3px solid;">
                 <div class="card-body text-center">
-                    <h4 class="card-title text-start"><i class="mdi mdi-barcode-scan"></i> Scanner Toko</h4>
-                    
-                    <div class="mb-3 text-start">
-                        <label class="form-label small font-weight-bold">Pilih Kamera:</label>
-                        <div class="input-group input-group-sm">
-                            <select id="camera-selector" class="form-control text-dark">
-                                <option value="">-- Memuat kamera... --</option>
-                            </select>
-                            <button type="button" class="btn btn-gradient-primary btn-xs" id="start-scanner-btn" style="display:none;">
-                                <i class="mdi mdi-play"></i> Mulai
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Pilih Kamera:</label>
+                        <select id="camera-selector" class="form-control mb-2">
+                            <option value="">-- Memuat kamera... --</option>
+                        </select>
+                        <div class="btn-group w-100">
+                            <button type="button" class="btn btn-outline-primary" id="start-scanner-btn" style="display:none;">
+                                <i class="mdi mdi-camera"></i> Buka Kamera
                             </button>
-                            <button type="button" class="btn btn-danger btn-xs" id="stop-scanner-btn" style="display:none;">
-                                <i class="mdi mdi-stop"></i> Stop
+                            <button type="button" class="btn btn-outline-danger" id="stop-scanner-btn" style="display:none;">
+                                <i class="mdi mdi-camera-off"></i> Tutup Kamera
                             </button>
                         </div>
                     </div>
 
-                    <div id="reader" class="bg-dark rounded-3 border border-secondary" style="width: 100%; min-height: 250px;"></div>
-                    
-                    <div id="scanner-status" class="badge badge-info mt-2 d-none"></div>
+                    <div id="reader" style="width: 100%; max-width: 400px; margin: auto;" 
+                         class="border border-primary rounded bg-dark d-none"></div>
+
+                    <div class="mt-3">
+                        <h5>Masukkan ID Toko Manual / Hasil Scan</h5>
+                        <div class="input-group mb-2">
+                            <input type="text" id="barcode_input" class="form-control" placeholder="ID Toko (Contoh: 1)">
+                            <button class="btn btn-success" onclick="startProcess()">
+                                <i class="mdi mdi-map-marker-check"></i> Kunjungi Toko
+                            </button>
+                        </div>
+                        <small class="text-muted">Pastikan GPS aktif untuk akurasi terbaik.</small>
+                    </div>
                 </div>
             </div>
+
+            <div id="status_area" class="alert alert-warning" style="display:none;"></div>
         </div>
 
-        {{-- Hasil Validasi & Riwayat --}}
-        <div class="col-md-7 grid-margin d-flex flex-column">
-            {{-- Hasil Validasi Lokasi --}}
-            <div class="card mb-3 shadow-sm">
-                <div class="card-body">
-                    <h4 class="card-title">Hasil Validasi Geolocation</h4>
-                    
-                    {{-- Loading State --}}
-                    <div id="scan-loading" class="text-center d-none py-3">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <p class="mt-2 text-muted mb-0" id="scan-loading-text">Memproses...</p>
-                    </div>
-
-                    {{-- Konten Hasil --}}
-                    <div id="scan-result-content">
-                        <p class="text-muted text-center py-4">Silakan pilih kamera dan scan barcode toko.</p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Tabel Riwayat --}}
-            <div class="card flex-grow-1 shadow-sm">
-                <div class="card-body">
-                    <h4 class="card-title">Riwayat Terkini</h4>
-                    <div class="table-responsive">
-                        <table class="table" id="tabel-riwayat">
-                            <thead>
-                                <tr>
-                                    <th>No</th>
-                                    <th>Toko</th>
-                                    <th>Jarak</th>
-                                    <th>Status</th>
-                                    <th>Waktu</th>
-                                </tr>
-                            </thead>
-                            <tbody id="riwayat-tbody">
-                                @forelse ($riwayat as $index => $row)
-                                    <tr>
-                                        <td>{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
-                                        <td>{{ $row->toko->nama_toko ?? 'Unknown' }}</td>
-                                        <td>{{ $row->jarak }}m</td>
-                                        <td>
-                                            @if (trim($row->status) === 'diterima')
-                                                <span class="badge badge-success">✅ Diterima</span>
-                                            @else
-                                                <span class="badge badge-danger">❌ Ditolak</span>
-                                            @endif
-                                        </td>
-                                        <td>{{ \Carbon\Carbon::parse($row->waktu)->format('H:i:s') }}</td>
-                                    </tr>
-                                @empty
-                                    <tr id="riwayat-empty">
-                                        <td colspan="5" class="text-center text-muted py-3">Belum ada kunjungan hari ini</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">List Toko Tersedia</div>
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nama Toko</th>
+                                <th>Akurasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($listToko as $t)
+                            <tr>
+                                <td><code>{{ $t->idtoko }}</code></td>
+                                <td>{{ $t->nama_toko }}</td>
+                                <td>{{ $t->accuracy }}m</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    {{-- Beep Sound --}}
-    <audio id="beepAudio">
-        <source src="https://www.soundjay.com/buttons/beep-07.mp3" type="audio/mpeg">
-    </audio>
-@endsection
+<audio id="beepAudio">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" type="audio/mpeg">
+</audio>
 
-@section('style-page')
-<style>
-    #reader video { border-radius: 8px !important; width: 100% !important; object-fit: cover; }
-    .badge { font-size: 11px; padding: 5px 10px; }
-    .btn-xs { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
-</style>
-@endsection
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-@section('js-page')
-    {{-- Libraries --}}
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
-    <script>
-        // Config Global untuk sales.js
-        window.barcodeScannerConfig = {
-            lookupUrl: '{{ url('sales/barcode') }}',
-            beepUrl: '{{ asset('assets/sounds/beep-07.mp3') }}'
-        };
-        
-        window.salesConfig = {
-            storeSalesUrl: '{{ route('sales.store') }}',
-            csrfToken: '{{ csrf_token() }}'
-        };
+<script>
+let scanner;
+const beep = document.getElementById('beepAudio');
+let selectedCameraId = null;
 
-        let html5QrCode;
-        let selectedCameraId;
+// --- FUNGSI SCANNER BARCODE ---
+async function loadCameras() {
+    try {
+        const devices = await Html5Qrcode.getCameras();
+        const select = document.getElementById('camera-selector');
+        const startBtn = document.getElementById('start-scanner-btn');
 
-        // 1. Load Kamera
-        async function loadCameras() {
-            try {
-                const devices = await Html5Qrcode.getCameras();
-                const select = document.getElementById('camera-selector');
-                const startBtn = document.getElementById('start-scanner-btn');
+        select.innerHTML = '<option value="">-- Pilih Kamera --</option>';
 
-                if (devices && devices.length > 0) {
-                    select.innerHTML = '<option value="">-- Pilih Kamera --</option>';
-                    devices.forEach((device, i) => {
-                        const label = device.label || `Kamera ${i + 1}`;
-                        select.add(new Option(label, device.id));
-                    });
-                    
-                    // Default kamera belakang jika ada
-                    const backCamera = devices.find(d => d.label.toLowerCase().includes('back'));
-                    selectedCameraId = backCamera ? backCamera.id : devices[0].id;
-                    select.value = selectedCameraId;
-                    
-                    startBtn.style.display = 'block';
-                    document.getElementById('scanner-status').classList.remove('d-none');
-                    document.getElementById('scanner-status').innerHTML = 'Siap Scanning';
-                }
-            } catch (err) {
-                console.error("Gagal kamera:", err);
-            }
-        }
-
-        // 2. Pilih Kamera
-        document.getElementById('camera-selector').addEventListener('change', e => {
-            selectedCameraId = e.target.value;
-        });
-
-        // 3. Start Scanner
-        document.getElementById('start-scanner-btn').addEventListener('click', () => {
-            if (!selectedCameraId) return alert('Pilih kamera dahulu');
-            
-            html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 250, height: 150 } };
-
-            html5QrCode.start(
-                selectedCameraId, 
-                config, 
-                onScanSuccess
-            ).then(() => {
-                document.getElementById('start-scanner-btn').style.display = 'none';
-                document.getElementById('stop-scanner-btn').style.display = 'block';
-                document.getElementById('scanner-status').innerHTML = 'Kamera Aktif';
+        if (devices.length > 0) {
+            devices.forEach((device, i) => {
+                const opt = new Option(device.label || `Kamera ${i+1}`, device.id);
+                select.add(opt);
             });
+            selectedCameraId = devices[0].id;
+            select.value = selectedCameraId;
+            startBtn.style.display = 'block';
+        }
+    } catch (err) {
+        console.error("Gagal akses kamera", err);
+    }
+}
+
+document.getElementById('camera-selector').addEventListener('change', e => {
+    selectedCameraId = e.target.value;
+});
+
+document.getElementById('start-scanner-btn').addEventListener('click', () => {
+    if (selectedCameraId) {
+        document.getElementById('reader').classList.remove('d-none');
+        initScanner();
+    }
+});
+
+document.getElementById('stop-scanner-btn').addEventListener('click', stopScanning);
+
+function initScanner() {
+    if (scanner) scanner.stop().catch(() => {});
+    scanner = new Html5Qrcode("reader");
+
+    scanner.start(
+        { deviceId: { exact: selectedCameraId } },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+            beep.play().catch(() => {});
+            document.getElementById('barcode_input').value = decodedText;
+            stopScanning();
+            // Otomatis proses setelah scan sukses
+            startProcess();
+        },
+        () => {}
+    ).then(() => {
+        document.getElementById('start-scanner-btn').style.display = 'none';
+        document.getElementById('stop-scanner-btn').style.display = 'block';
+    });
+}
+
+function stopScanning() {
+    if (scanner) {
+        scanner.stop().then(() => {
+            document.getElementById('reader').classList.add('d-none');
+            document.getElementById('start-scanner-btn').style.display = 'block';
+            document.getElementById('stop-scanner-btn').style.display = 'none';
+        }).catch(() => {});
+    }
+}
+
+// --- FUNGSI GEOLOCATION & VISIT --- [cite: 44]
+function getAccuratePosition(targetAccuracy = 50, maxWait = 20000) {
+    return new Promise((resolve, reject) => {
+        let bestResult = null;
+        const startTime = Date.now();
+        const watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                const acc = position.coords.accuracy;
+                if (!bestResult || acc < bestResult.coords.accuracy) {
+                    bestResult = position;
+                }
+                if (acc <= targetAccuracy) {
+                    navigator.geolocation.clearWatch(watchId);
+                    resolve(bestResult);
+                }
+                if (Date.now() - startTime >= maxWait) {
+                    navigator.geolocation.clearWatch(watchId);
+                    if (bestResult) resolve(bestResult);
+                    else reject(new Error("Gagal mendapatkan sinyal GPS yang stabil."));
+                }
+            },
+            (error) => reject(error),
+            { enableHighAccuracy: true, maximumAge: 0, timeout: maxWait }
+        );
+    });
+}
+
+async function startProcess() {
+    const barcode = document.getElementById('barcode_input').value;
+    if (!barcode) return alert('Masukkan atau Scan ID Toko!');
+
+    const statusArea = document.getElementById('status_area');
+    statusArea.style.display = 'block';
+    statusArea.className = "alert alert-warning";
+    statusArea.innerHTML = "📍 <b>Sedang mengunci posisi GPS...</b><br><small>Mohon jangan pindah tempat.</small>";
+
+    try {
+        const pos = await getAccuratePosition(50); 
+        
+        statusArea.innerText = "⏳ Memvalidasi jarak ke server...";
+
+        const response = await fetch("{{ route('sales.storeVisit') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                barcode: barcode,
+                sales_lat: pos.coords.latitude,
+                sales_long: pos.coords.longitude,
+                sales_acc: pos.coords.accuracy
+            })
         });
 
-        // 4. Stop Scanner
-        document.getElementById('stop-scanner-btn').addEventListener('click', stopScanner);
-
-        function stopScanner() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    document.getElementById('start-scanner-btn').style.display = 'block';
-                    document.getElementById('stop-scanner-btn').style.display = 'none';
-                    document.getElementById('scanner-status').innerHTML = 'Scanner Berhenti';
-                });
-            }
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            statusArea.className = "alert alert-success";
+            statusArea.innerText = "✅ " + result.message;
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            statusArea.className = "alert alert-danger";
+            statusArea.innerText = "❌ " + result.message;
         }
 
-        // 5. GPS Function
-        function getLocation() {
-            const status = document.getElementById('location-status');
-            if (navigator.geolocation) {
-                status.innerHTML = `<i class="mdi mdi-loading mdi-spin"></i> Mendeteksi lokasi...`;
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    status.innerHTML = `Lat: ${pos.coords.latitude.toFixed(5)}, Lng: ${pos.coords.longitude.toFixed(5)} (Acc: ${pos.coords.accuracy.toFixed(1)}m)`;
-                    status.className = "alert alert-success";
-                    // Update global variable for sales.js if needed
-                    window.currentSalesPos = pos;
-                }, (err) => {
-                    status.innerHTML = `Gagal: ${err.message}`;
-                    status.className = "alert alert-danger";
-                }, { enableHighAccuracy: true });
-            }
-        }
+    } catch (error) {
+        statusArea.className = "alert alert-danger";
+        statusArea.innerText = "⚠️ Error: " + error.message;
+    }
+}
 
-        // 6. Init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadCameras();
-            getLocation();
-        });
-
-    </script>
-    
-    {{-- Memanggil file sales.js --}}
-    <script src="{{ asset('assets/js/sales.js') }}"></script>
+document.addEventListener('DOMContentLoaded', loadCameras);
+</script>
 @endsection

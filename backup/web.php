@@ -68,3 +68,21 @@ Route::prefix('customer')->name('customer.')->group(function () {
     // Hapus Customer
     Route::delete('/{id}', [CustomerController::class, 'destroy'])->name('destroy');
 });
+
+
+// // --- GRUP AKSES SALES (idrole = 5) ---
+// Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:5']], function () {
+//     Route::get('/dashboard', [SalesController::class, 'dashboard'])->name('dashboard');
+//     Route::post('/store', [SalesController::class, 'store'])->name('store');
+//     Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
+// });
+
+// --- GRUP AKSES ADMIN (idrole = 1) UNTUK MANAJEMEN TOKO ---
+// Route::group(['prefix' => 'toko', 'as' => 'toko.', 'middleware' => ['auth', 'role:1']], function () {
+//     Route::get('/', [TokoController::class, 'index'])->name('list');
+//     Route::get('/create', [TokoController::class, 'create'])->name('create');
+//     Route::post('/store', [TokoController::class, 'store'])->name('store');
+//     Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
+//     Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
+//     Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
+// });
