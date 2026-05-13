@@ -55,6 +55,41 @@ class TokoController extends Controller
         return response()->json(['success' => false, 'message' => 'Gagal menyimpan data.'], 500);
     }
 
+    // public function edit($id)
+    // {
+    //     $toko = Toko::where('idtoko', $id)->firstOrFail();
+    //     return view('admin.toko.edit', compact('toko'));
+    // }
+
+    // public function update(Request $request, $id)
+    // {
+    //     $validated = $request->validate([
+    //         'nama_toko'  => 'required|string|max:255',
+    //         'latitude'   => 'required|numeric',
+    //         'longtitude' => 'required|numeric',
+    //         'accuracy'   => 'required|numeric',
+    //     ]);
+
+    //     $toko = Toko::where('idtoko', $id)->update($validated);
+
+    //     if ($toko) {
+    //         return response()->json([
+    //             'success' => true, 
+    //             'message' => 'Toko berhasil diperbarui!',
+    //             'redirect' => route('admin.toko.list')
+    //         ]);
+    //     }
+
+    //     return response()->json(['success' => false, 'message' => 'Gagal memperbarui data.'], 500);
+    // }
+
+    // public function edit($id)
+    // {
+    //     // Menggunakan first() agar mendapatkan objek tunggal, bukan koleksi
+    //     $toko = Toko::where('idtoko', $id)->firstOrFail();
+    //     return view('admin.toko.edit', compact('toko'));
+    // }
+
     public function edit($id)
     {
         $toko = Toko::where('idtoko', $id)->firstOrFail();

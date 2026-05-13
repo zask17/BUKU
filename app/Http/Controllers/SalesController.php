@@ -3,100 +3,80 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Toko; // Gunakan model Toko
-use App\Models\Sales; // Gunakan model Sales
+use App\Models\Toko; 
+use App\Models\Sales; 
 use Illuminate\Support\Facades\Auth;
 
 class SalesController extends Controller
 {
     public function index()
     {
-        // Ganti 'lokasi_toko' menjadi model Toko
         $listToko = Toko::all(); 
         return view('sales.dashboard-sales', compact('listToko'));
     }
 
-    /**
-     * Lookup toko berdasarkan barcode (idtoko)
-     * Digunakan oleh AJAX saat sales scan barcode
-     */
-    public function findByBarcode($id)
-    {
-        $toko = Toko::where('idtoko', $id)->first();
-
-        if (!$toko) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Toko tidak ditemukan atau barcode tidak valid.'
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Toko ditemukan',
-            'data' => $toko
-        ]);
-    }
-
     public function storeVisit(Request $request)
     {
-        $request->validate([
-            'barcode' => 'required',
-            'sales_lat' => 'required',
-            'sales_long' => 'required',
-            'sales_acc' => 'required',
+        // 1. Tampung hasil validasi ke dalam variabel $validated
+        $validated = $request->validate([
+            'barcode'    => 'required',
+            'sales_lat'  => 'required|numeric',
+            'sales_long' => 'required|numeric',
+            'sales_acc'  => 'required|numeric',
         ]);
 
-        // Cari toko berdasarkan idtoko (barcode di sini diasumsikan sebagai idtoko atau primary key)
-        $toko = Toko::where('idtoko', $request->barcode)->first();
+        // 2. Ambil data dari array $validated (ini akan menghilangkan peringatan VS Code)
+        $barcode   = $validated['barcode'];
+        $salesLat  = (float) $validated['sales_lat'];
+        $salesLong = (float) $validated['sales_long'];
+        $salesAcc  = (float) $validated['sales_acc'];
+
+        // Cari toko berdasarkan idtoko
+        $toko = Toko::where('idtoko', $barcode)->first();
 
         if (!$toko) {
-            return response()->json(['status' => 'error', 'message' => 'Toko tidak ditemukan!']);
+            return response()->json(['status' => 'error', 'message' => 'Toko tidak ditemukan!'], 404);
         }
 
-        // Hitung jarak (Formula Haversine)
+        // 3. Hitung jarak dengan Haversine [cite: 18, 76]
         $jarakAktual = $this->haversine(
-            $request->sales_lat, $request->sales_long,
-            $toko->latitude, $toko->longtitude // Perhatikan typo 'longtitude' di model Toko Anda
+            $salesLat, 
+            $salesLong,
+            (float) $toko->latitude, 
+            (float) $toko->longtitude // Mengikuti kolom 'longtitude' di model Toko
         );
 
-        // Threshold: Radius 300m + Akurasi Toko + Akurasi Sales [cite: 89]
+        // 4. Tentukan Threshold Efektif [cite: 89]
         $radiusMax = 300; 
-        $thresholdEfektif = $radiusMax + $toko->accuracy + $request->sales_acc;
+        $thresholdEfektif = $radiusMax + (float) $toko->accuracy + $salesAcc;
 
         $isAccepted = $jarakAktual <= $thresholdEfektif;
 
-        // Simpan ke tabel sales menggunakan model Sales
+        // 5. Simpan ke database menggunakan model Sales
         Sales::create([
             'idtoko'    => $toko->idtoko,
-            'latitude'  => $request->sales_lat,
-            'longitude' => $request->sales_long,
-            'accuracy'  => $request->sales_acc,
-            'jarak'     => $jarakAktual,
+            'latitude'  => $salesLat,
+            'longitude' => $salesLong,
+            'accuracy'  => $salesAcc,
+            'jarak'     => (int) round($jarakAktual), // Konversi ke Integer untuk PostgreSQL
             'status'    => $isAccepted ? 'DITERIMA' : 'DITOLAK',
             'waktu'     => now(),
         ]);
 
-        if ($isAccepted) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Kunjungan DITERIMA. Jarak: ' . round($jarakAktual, 2) . 'm'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Kunjungan DITOLAK. Jarak: ' . round($jarakAktual, 2) . 'm (Maks: '.round($thresholdEfektif).'m)'
-            ]);
-        }
+        return response()->json([
+            'status'  => $isAccepted ? 'success' : 'error',
+            'message' => $isAccepted 
+                ? 'Kunjungan DITERIMA. Jarak: ' . round($jarakAktual, 2) . 'm'
+                : 'Kunjungan DITOLAK. Jarak: ' . round($jarakAktual, 2) . 'm'
+        ]);
     }
-
-    private function haversine($lat1, $lng1, $lat2, $lng2)
+    private function haversine(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $R = 6371000; 
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
         $a = sin($dLat/2)**2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng/2)**2;
         $c = 2 * atan2(sqrt($a), sqrt(1-$a));
-        return $R * $c;
+        return (float) ($R * $c);
     }
 }

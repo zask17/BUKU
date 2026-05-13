@@ -138,7 +138,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
 
     // Manajemen Toko (Modul 9 Geolocation)
     Route::prefix('toko')->as('toko.')->group(function () {
-        Route::get('/', [TokoController::class, 'index'])->name('list');
+        Route::get('/', [TokoController::class, 'index'])->name('index');
         Route::get('/create', [TokoController::class, 'create'])->name('create');
         Route::post('/store', [TokoController::class, 'store'])->name('store');
         Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
