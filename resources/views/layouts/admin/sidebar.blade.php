@@ -53,8 +53,8 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.toko.*') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.toko.list') }}">
+        <li class="nav-item {{ Request::routeIs('admin.toko.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.toko.index') }}">
                 <span class="menu-title">Manajemen Toko</span>
                 <i class="mdi mdi-store menu-icon"></i>
             </a>

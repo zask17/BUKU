@@ -151,7 +151,6 @@
         const beep = document.getElementById('beepAudio');
         let selectedCameraId = null;
 
-        // FUNGSI CEK LOKASI MANDIRI (FIELD TERPISAH)
         function getMyCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
@@ -159,7 +158,6 @@
                     document.getElementById('my_long').value = pos.coords.longitude;
                     document.getElementById('my_acc').value = Math.round(pos.coords.accuracy);
 
-                    // Isi juga field hidden untuk dikirim saat submit
                     document.getElementById('final_lat').value = pos.coords.latitude;
                     document.getElementById('final_long').value = pos.coords.longitude;
                     document.getElementById('final_acc').value = Math.round(pos.coords.accuracy);
@@ -169,7 +167,6 @@
             }
         }
 
-        // MANAJEMEN SCANNER
         async function loadCameras() {
             try {
                 const devices = await Html5Qrcode.getCameras();
@@ -210,7 +207,6 @@
         }
         document.getElementById('stop-scanner-btn').addEventListener('click', stopScanning);
 
-        // PROSES SUBMIT KE BACKEND (OTOMATIS MENGUNCI POSISI AKURAT LAGI)
         async function getAccuratePosition(targetAccuracy = 50, maxWait = 15000) {
             return new Promise((resolve, reject) => {
                 let bestResult = null;
@@ -219,7 +215,6 @@
                     const acc = position.coords.accuracy;
                     if (!bestResult || acc < bestResult.coords.accuracy) {
                         bestResult = position;
-                        // Update tampilan di card "Lokasi Saya" saat proses
                         document.getElementById('my_lat').value = position.coords.latitude;
                         document.getElementById('my_long').value = position.coords.longitude;
                         document.getElementById('my_acc').value = Math.round(acc);

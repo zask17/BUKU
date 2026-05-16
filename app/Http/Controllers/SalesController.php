@@ -25,7 +25,7 @@ class SalesController extends Controller
             'sales_acc'  => 'required|numeric',
         ]);
 
-        // 2. Ambil data dari array $validated (ini akan menghilangkan peringatan VS Code)
+        // 2. Ambil data dari array $validated
         $barcode   = $validated['barcode'];
         $salesLat  = (float) $validated['sales_lat'];
         $salesLong = (float) $validated['sales_long'];
@@ -33,23 +33,21 @@ class SalesController extends Controller
 
         // Cari toko berdasarkan idtoko
         $toko = Toko::where('idtoko', $barcode)->first();
-
         if (!$toko) {
             return response()->json(['status' => 'error', 'message' => 'Toko tidak ditemukan!'], 404);
         }
 
-        // 3. Hitung jarak dengan Haversine [cite: 18, 76]
+        // 3. Hitung jarak dengan Haversine
         $jarakAktual = $this->haversine(
             $salesLat, 
             $salesLong,
             (float) $toko->latitude, 
-            (float) $toko->longtitude // Mengikuti kolom 'longtitude' di model Toko
+            (float) $toko->longtitude
         );
 
-        // 4. Tentukan Threshold Efektif [cite: 89]
+        // 4. Tentukan Threshold Efektif
         $radiusMax = 300; 
         $thresholdEfektif = $radiusMax + (float) $toko->accuracy + $salesAcc;
-
         $isAccepted = $jarakAktual <= $thresholdEfektif;
 
         // 5. Simpan ke database menggunakan model Sales
@@ -58,7 +56,7 @@ class SalesController extends Controller
             'latitude'  => $salesLat,
             'longitude' => $salesLong,
             'accuracy'  => $salesAcc,
-            'jarak'     => (int) round($jarakAktual), // Konversi ke Integer untuk PostgreSQL
+            'jarak'     => (int) round($jarakAktual),
             'status'    => $isAccepted ? 'DITERIMA' : 'DITOLAK',
             'waktu'     => now(),
         ]);

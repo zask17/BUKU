@@ -1,13 +1,13 @@
 @extends('layouts.admin.main')
 @section('title-page', 'Tambah Toko')
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('admin.toko.list') }}">Daftar Toko</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.toko.index') }}">Daftar Toko</a></li>
     <li class="breadcrumb-item active" aria-current="page">Tambah</li>
 @endsection
 
 @section('content')
 <div class="row">
-    <div class="col-md-6 grid-margin stretch-card">
+    <div class="col-md-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
                 <form id="form-toko">
@@ -33,7 +33,7 @@
                     </button>
                     <hr>
                     <button type="submit" class="btn btn-primary">Simpan Toko</button>
-                    <a href="{{ route('admin.toko.list') }}" class="btn btn-light">Batal</a>
+                    <a href="{{ route('admin.toko.index') }}" class="btn btn-light">Batal</a>
                 </form>
             </div>
         </div>
@@ -53,11 +53,29 @@ function getLocation() {
     }
 }
 
+function setButtonLoading(button, loading, text) {
+    if (!button) return;
+    if (loading) {
+        button.dataset.originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>${text}`;
+    } else {
+        button.disabled = false;
+        button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+    }
+}
+
 $('#form-toko').on('submit', function(e) {
     e.preventDefault();
+    const submitButton = $(this).find('button[type=submit]')[0];
+    setButtonLoading(submitButton, true, 'Memproses...');
+
     $.post("{{ route('admin.toko.store') }}", $(this).serialize())
     .done(res => { if(res.success) window.location.href = res.redirect; })
-    .fail(err => alert(err.responseJSON.message));
+    .fail(err => {
+        alert(err.responseJSON.message);
+        setButtonLoading(submitButton, false);
+    });
 });
 </script>
 @endsection

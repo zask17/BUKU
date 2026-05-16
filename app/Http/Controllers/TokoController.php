@@ -18,7 +18,6 @@ class TokoController extends Controller
             $item->barcode_base64 = base64_encode($barcodeBiner);
             return $item;
         });
-
         return view("admin.toko.index", compact('toko'));
     }
 
@@ -51,7 +50,6 @@ class TokoController extends Controller
                 'redirect' => route('admin.toko.index')
             ]);
         }
-
         return response()->json(['success' => false, 'message' => 'Gagal menyimpan data.'], 500);
     }
 
@@ -71,7 +69,6 @@ class TokoController extends Controller
         ]);
 
         $toko = Toko::findOrFail($id);
-
         $result = $toko->update($validated);
 
         if ($result) {
