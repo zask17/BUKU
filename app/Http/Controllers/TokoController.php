@@ -23,7 +23,10 @@ class TokoController extends Controller
 
     public function create()
     {
-        return view('admin.toko.create');
+        $lastId = Toko::max('idtoko');
+        $nextId = $lastId ? $lastId + 1 : 1;
+
+        return view('admin.toko.create', compact('nextId'));
     }
 
     public function store(Request $request)

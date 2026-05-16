@@ -11,6 +11,7 @@ class SalesController extends Controller
 {
     public function index()
     {
+        
         $listToko = Toko::all(); 
         return view('sales.dashboard-sales', compact('listToko'));
     }

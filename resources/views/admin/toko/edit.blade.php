@@ -14,6 +14,10 @@
                     @csrf
                     @method('PUT')
                     <div class="form-group">
+                        <label>ID Toko</label>
+                        <input type="text" class="form-control bg-light" name="idtoko" value="{{ $toko->idtoko }}" required readonly>
+                    </div>
+                    <div class="form-group">
                         <label>Nama Toko</label>
                         <input type="text" class="form-control" name="nama_toko" value="{{ $toko->nama_toko }}" required>
                     </div>
@@ -29,7 +33,7 @@
                         <label>Akurasi Toko (Meter)</label>
                         <input type="number" class="form-control" id="acc" name="accuracy" value="{{ $toko->accuracy }}" required>
                     </div>
-                    <button type="button" class="btn btn-info btn-sm mb-3" onclick="getLocation()">
+                    <button type="button" id="btn-location" class="btn btn-info btn-sm mb-3" onclick="getLocation()">
                         <i class="mdi mdi-map-marker"></i> Ambil Lokasi Saat Ini
                     </button>
                     <hr>
@@ -44,16 +48,6 @@
 
 @section('js-page')
 <script>
-function getLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            document.getElementById('lat').value = pos.coords.latitude;
-            document.getElementById('long').value = pos.coords.longitude;
-            document.getElementById('acc').value = Math.round(pos.coords.accuracy);
-        });
-    }
-}
-
 function setButtonLoading(button, loading, text) {
     if (!button) return;
     if (loading) {
@@ -66,6 +60,36 @@ function setButtonLoading(button, loading, text) {
     }
 }
 
+function getLocation() {
+    const button = document.getElementById('btn-location');
+    setButtonLoading(button, true, 'Mencari lokasi...');
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                document.getElementById('lat').value = pos.coords.latitude;
+                document.getElementById('long').value = pos.coords.longitude;
+                document.getElementById('acc').value = Math.round(pos.coords.accuracy);
+                setButtonLoading(button, false);
+            },
+            (err) => {
+                if (err.code === err.PERMISSION_DENIED) {
+                    alert('Gagal: Izin lokasi ditolak browser.');
+                }
+                setButtonLoading(button, false);
+            },
+            { 
+                enableHighAccuracy: true, 
+                timeout: 10000, 
+                maximumAge: 0 
+            }
+        );
+    } else {
+        alert('Geolocation tidak didukung browser Anda.');
+        setButtonLoading(button, false);
+    }
+}
+
 $('#form-edit-toko').on('submit', function(e) {
     e.preventDefault();
     const submitButton = $(this).find('button[type=submit]')[0];
@@ -74,7 +98,7 @@ $('#form-edit-toko').on('submit', function(e) {
     $.post("{{ route('admin.toko.update', $toko->idtoko) }}", $(this).serialize())
     .done(res => { if(res.success) window.location.href = res.redirect; })
     .fail(err => {
-        alert(err.responseJSON.message);
+        alert(err.responseJSON.message || 'Gagal memperbarui data.');
         setButtonLoading(submitButton, false);
     });
 });

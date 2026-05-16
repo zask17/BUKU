@@ -22,9 +22,11 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
+                                <th>ID Toko</th>
                                 <th>Barcode</th>
                                 <th>Nama Toko</th>
-                                <th>Koordinat (Lat, Long)</th>
+                                <th>Koordinat Latitude</th>
+                                <th>Koordinat Longitude</th>
                                 <th>Akurasi</th>
                                 <th>Aksi</th>
                             </tr>
@@ -33,11 +35,14 @@
                             @forelse($toko as $item)
                             <tr>
                                 <td>
+                                    {{ $item->idtoko }}
+                                </td>
+                                <td>
                                     <img src="data:image/png;base64,{{ $item->barcode_base64 }}" alt="barcode" style="width: 100px; height: auto; border-radius: 0;">
-                                    <br><small class="text-muted">{{ $item->idtoko }}</small>
                                 </td>
                                 <td>{{ $item->nama_toko }}</td>
-                                <td><small>{{ $item->latitude }}, {{ $item->longtitude }}</small></td>
+                                <td><small>{{ $item->latitude }}</small></td>
+                                <td><small>{{ $item->longtitude }}</small></td>
                                 <td>{{ $item->accuracy }}m</td>
                                 <td>
                                     <a href="{{ route('admin.toko.edit', $item->idtoko) }}" class="btn btn-sm btn-info">Edit</a>

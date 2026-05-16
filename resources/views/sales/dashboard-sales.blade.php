@@ -52,7 +52,7 @@
                                     placeholder="0">
                             </div>
                         </div>
-                        <button type="button" class="btn btn-info btn-block mt-3" onclick="getMyCurrentLocation()">
+                        <button type="button" id="btn-get-gps" class="btn btn-info btn-block mt-3" onclick="getMyCurrentLocation()">
                             <i class="mdi mdi-crosshairs-gps"></i> Ambil Titik GPS Saya
                         </button>
                     </div>
@@ -66,12 +66,11 @@
                     </div>
                     <div class="card-body text-center">
                         <div class="mb-3">
+                            <label class="d-block text-center font-weight-bold mb-2">Scan Barcode</label>
                             <div class="input-group">
                                 <select id="camera-selector" class="form-control form-control-sm"></select>
-                                <button type="button" class="btn btn-primary btn-sm" id="start-scanner-btn"
-                                    style="display:none;">Buka Kamera</button>
-                                <button type="button" class="btn btn-danger btn-sm" id="stop-scanner-btn"
-                                    style="display:none;">Tutup</button>
+                                <button type="button" class="btn btn-primary btn-sm" id="start-scanner-btn" style="display:none;">Buka Kamera</button>
+                                <button type="button" class="btn btn-danger btn-sm" id="stop-scanner-btn" style="display:none;">Tutup</button>
                             </div>
                         </div>
 
@@ -80,14 +79,14 @@
                         <form id="form-kunjungan">
                             <div class="form-group text-left">
                                 <div>
-                                    <label class="font-weight-bold">ID Toko</label>
+                                    <label class="font-weight-bold">ID / Barcode Toko</label>
                                     <input type="text" id="barcode_input" class="form-control"
-                                        placeholder="Hasil scan barcode">
+                                        placeholder="Hasil scan barcode" oninput="autoFillStoreName(this.value)">
                                 </div>
-                                <div>
-                                    <label class="font-weight-bold"> Nama Toko</label>
-                                    <input type="text" id="nama_toko_display" class="form-control"
-                                        placeholder="Nama toko akan muncul di sini..." readonly>
+                                <div class="mt-2">
+                                    <label class="font-weight-bold">Nama Toko</label>
+                                    <input type="text" id="nama_toko_display" class="form-control bg-light"
+                                        placeholder="Nama toko otomatis terdeteksi..." readonly>
                                 </div>
                             </div>
 
@@ -95,37 +94,38 @@
                             <input type="hidden" id="final_long">
                             <input type="hidden" id="final_acc">
 
-                            <button type="button" class="btn btn-success btn-lg w-100" onclick="startProcess()">
+                            <button type="button" id="btn-submit-visit" class="btn btn-success btn-lg w-100" onclick="startProcess()">
                                 <i class="mdi mdi-check-circle"></i> KONFIRMASI KUNJUNGAN
                             </button>
                         </form>
                     </div>
                 </div>
-                <div id="status_area" class="alert alert-warning" style="display:none;"></div>
+                <div id="status_area" class="alert alert-warning" style="display:none; font-size: 0.9rem;"></div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-12">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-dark text-white">Daftar Koordinat Toko</div>
+                    <div class="card-header bg-dark text-white">Daftar Koordinat Toko Resmi</div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Nama Toko</th>
                                         <th>ID Toko</th>
+                                        <th>Nama Toko</th>
                                         <th>Latitude</th>
                                         <th>Longitude</th>
                                         <th>Akurasi Data</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($listToko as $t)
+                                    {{-- Mengurutkan daftar toko resmi berdasarkan idtoko secara ascending --}}
+                                    @foreach($listToko->sortBy('idtoko') as $t)
                                         <tr>
-                                            <td>{{ $t->nama_toko }}</td>
                                             <td><code>{{ $t->idtoko }}</code></td>
+                                            <td>{{ $t->nama_toko }}</td>
                                             <td>{{ $t->latitude }}</td>
                                             <td>{{ $t->longtitude }}</td>
                                             <td>{{ $t->accuracy }}m</td>
@@ -151,7 +151,42 @@
         const beep = document.getElementById('beepAudio');
         let selectedCameraId = null;
 
+        const storesData = @json($listToko);
+        function autoFillStoreName(barcodeValue) {
+            const trimmedValue = barcodeValue.trim();
+            const storeField = document.getElementById('nama_toko_display');
+            
+            // Mencari kecocokan idtoko
+            const matchedStore = storesData.find(store => String(store.idtoko) === trimmedValue);
+
+            if (matchedStore) {
+                storeField.value = matchedStore.nama_toko;
+            } else {
+                storeField.value = trimmedValue ? "⚠️ Toko Tidak Terdaftar" : "";
+            }
+        }
+
+        function setButtonLoading(button, loading, text) {
+            if (!button) return;
+            if (loading) {
+                button.dataset.originalHtml = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> ${text}`;
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalHtml || button.innerHTML;
+            }
+        }
+
         function getMyCurrentLocation() {
+            const gpsButton = document.getElementById('btn-get-gps');
+            const statusArea = document.getElementById('status_area');
+            
+            statusArea.style.display = 'block';
+            statusArea.className = "alert alert-info";
+            statusArea.innerText = "📍 Sedang mengunci lokasi terbaik Anda...";
+            setButtonLoading(gpsButton, true, 'Mencari lokasi...');
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     document.getElementById('my_lat').value = pos.coords.latitude;
@@ -161,9 +196,26 @@
                     document.getElementById('final_lat').value = pos.coords.latitude;
                     document.getElementById('final_long').value = pos.coords.longitude;
                     document.getElementById('final_acc').value = Math.round(pos.coords.accuracy);
+
+                    statusArea.className = "alert alert-success";
+                    statusArea.innerText = "✅ Posisi GPS berhasil diperbarui!";
+                    setButtonLoading(gpsButton, false);
+                    setTimeout(() => { statusArea.style.display = 'none'; }, 2000);
                 }, err => {
-                    alert("Izin GPS ditolak atau gagal: " + err.message);
-                }, { enableHighAccuracy: true });
+                    if (err.code === err.PERMISSION_DENIED) {
+                        statusArea.className = "alert alert-danger";
+                        statusArea.innerText = "❌ Gagal: Akses lokasi ditolak oleh browser/perangkat Anda.";
+                        alert('Gagal: Izin lokasi ditolak browser.');
+                    } else {
+                        statusArea.className = "alert alert-warning";
+                        statusArea.innerText = "⚠️ Sinyal GPS tidak stabil. Mencoba mempertahankan koordinat terakhir.";
+                    }
+                    setButtonLoading(gpsButton, false);
+                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            } else {
+                statusArea.className = "alert alert-danger";
+                statusArea.innerText = "❌ Geolocation tidak didukung browser Anda.";
+                setButtonLoading(gpsButton, false);
             }
         }
 
@@ -191,6 +243,9 @@
             html5QrCode.start(selectedCameraId, { fps: 10, qrbox: 250 }, (decodedText) => {
                 beep.play();
                 document.getElementById('barcode_input').value = decodedText;
+                
+                autoFillStoreName(decodedText);
+                
                 stopScanning();
                 startProcess();
             });
@@ -219,11 +274,7 @@
                         document.getElementById('my_long').value = position.coords.longitude;
                         document.getElementById('my_acc').value = Math.round(acc);
                     }
-                    if (acc <= targetAccuracy) {
-                        navigator.geolocation.clearWatch(watchId);
-                        resolve(bestResult);
-                    }
-                    if (Date.now() - startTime >= maxWait) {
+                    if (acc <= targetAccuracy || (Date.now() - startTime >= maxWait)) {
                         navigator.geolocation.clearWatch(watchId);
                         resolve(bestResult);
                     }
@@ -235,15 +286,17 @@
             const barcode = document.getElementById('barcode_input').value;
             if (!barcode) return alert('Silakan scan barcode toko dulu!');
 
+            const submitButton = document.getElementById('btn-submit-visit');
             const statusArea = document.getElementById('status_area');
+            
             statusArea.style.display = 'block';
             statusArea.className = "alert alert-warning";
             statusArea.innerText = "📍 Sedang mengunci koordinat terbaik Anda...";
+            setButtonLoading(submitButton, true, 'Mengonfirmasi...');
 
             try {
                 const pos = await getAccuratePosition(50);
-
-                statusArea.innerText = "⏳ Mengirim data ke server...";
+                statusArea.innerText = "⏳ Mengirim data kunjungan ke server...";
 
                 const response = await fetch("{{ route('sales.storeVisit') }}", {
                     method: "POST",
@@ -263,11 +316,19 @@
                 statusArea.className = result.status === 'success' ? "alert alert-success" : "alert alert-danger";
                 statusArea.innerText = (result.status === 'success' ? "✅ " : "❌ ") + result.message;
 
-                if (result.status === 'success') setTimeout(() => location.reload(), 3000);
+                setButtonLoading(submitButton, false);
+                if (result.status === 'success') setTimeout(() => location.reload(), 2500);
 
             } catch (error) {
-                statusArea.className = "alert alert-danger";
-                statusArea.innerText = "⚠️ Error GPS: " + error.message;
+                if (error.code === 1) {
+                    statusArea.className = "alert alert-danger";
+                    statusArea.innerText = "❌ Gagal: Izin akses lokasi ditolak oleh browser.";
+                    alert('Gagal: Izin lokasi ditolak.');
+                } else {
+                    statusArea.className = "alert alert-warning";
+                    statusArea.innerText = "⚠️ Koneksi GPS tertunda. Menggunakan basis data koordinat statis terakhir.";
+                }
+                setButtonLoading(submitButton, false);
             }
         }
 
