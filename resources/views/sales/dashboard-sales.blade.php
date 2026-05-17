@@ -121,7 +121,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {{-- Mengurutkan daftar toko resmi berdasarkan idtoko secara ascending --}}
                                     @foreach($listToko->sortBy('idtoko') as $t)
                                         <tr>
                                             <td><code>{{ $t->idtoko }}</code></td>
