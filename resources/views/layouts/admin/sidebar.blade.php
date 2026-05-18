@@ -53,7 +53,21 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.antrian.admin') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('admin.antrian.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.antrian.index') }}">
+                <span class="menu-title">Loket Antrian</span>
+                <i class="mdi mdi-queue menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.antrian.papan') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.antrian.papan') }}" target="_blank">
+                <span class="menu-title">Papan Antrian</span>
+                <i class="mdi mdi-monitor-dashboard menu-icon"></i>
+            </a>
+        </li>
+
+        {{-- <li class="nav-item {{ Request::routeIs('admin.antrian.admin') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.antrian.admin') }}">
                 <span class="menu-title">Antrian</span>
                 <i class="mdi mdi-book-multiple menu-icon"></i>
@@ -65,7 +79,7 @@
                 <span class="menu-title">Papan Antrian</span>
                 <i class="mdi mdi-book-multiple menu-icon"></i>
             </a>
-        </li>
+        </li> --}}
 
         <li class="nav-item {{ Request::routeIs('admin.toko.index') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.toko.index') }}">

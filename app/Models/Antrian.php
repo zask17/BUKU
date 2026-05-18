@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Poli;
 
 class Antrian extends Model
 {
@@ -13,14 +12,16 @@ class Antrian extends Model
     protected $table = 'antrian';
     protected $primaryKey = 'idantrian';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'nama',
         'idpoli',
-        // nomor, nomor_harian, tanggal diisi oleh trigger
     ];
 
+    // Relasi ke Poli
     public function poli()
     {
-        return $this->belongsTo(Poli::class, 'idpoli');
+        return $this->belongsTo(Poli::class, 'idpoli', 'idpoli');
     }
 }

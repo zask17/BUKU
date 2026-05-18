@@ -16,6 +16,7 @@ class AntrianController extends Controller
         return view('antrian.guest', compact('polis'));
     }
 
+
     public function guestDaftar(Request $request)
     {
         $request->validate([
@@ -28,17 +29,41 @@ class AntrianController extends Controller
             'idpoli' => $request->idpoli,
         ]);
 
+        // Refresh agar trigger terbaca
+        $antrian->refresh();
+
         $successData = [
             'nama'  => $antrian->nama,
-            'nomor' => $antrian->nomor,
-            'poli'  => $antrian->poli->nama_poli ?? ''
+            'nomor' => $antrian->nomor,           // Pastikan ini terisi
+            'poli'  => $antrian->poli->nama_poli ?? 'Poli Umum'
         ];
-
-        // Trigger update SSE
-        Cache::put('antrian_trigger_update', true, now()->addMinutes(10));
 
         return redirect()->back()->with('success_antrian', $successData);
     }
+
+    // public function guestDaftar(Request $request)
+    // {
+    //     $request->validate([
+    //         'nama'   => 'required|string|max:150',
+    //         'idpoli' => 'required|exists:poli,idpoli'
+    //     ]);
+
+    //     $antrian = Antrian::create([
+    //         'nama'   => $request->nama,
+    //         'idpoli' => $request->idpoli,
+    //     ]);
+
+    //     $successData = [
+    //         'nama'  => $antrian->nama,
+    //         'nomor' => $antrian->nomor,
+    //         'poli'  => $antrian->poli->nama_poli ?? ''
+    //     ];
+
+    //     // Trigger update SSE
+    //     Cache::put('antrian_trigger_update', true, now()->addMinutes(10));
+
+    //     return redirect()->back()->with('success_antrian', $successData);
+    // }
 
     // ===================== ADMIN =====================
     public function adminIndex()
@@ -59,7 +84,7 @@ class AntrianController extends Controller
 
         $antrian->update([
             'status'       => 'calling',
-            'waktu_panggil'=> now()
+            'waktu_panggil' => now()
         ]);
 
         Cache::put('antrian_sekarang', $antrian->fresh(), now()->addMinutes(10));
@@ -78,7 +103,7 @@ class AntrianController extends Controller
 
         // Update di database
         Antrian::where('idantrian', $antrianSekarang['idantrian'] ?? $antrianSekarang->idantrian ?? null)
-                ->update(['status' => 'skipped']);
+            ->update(['status' => 'skipped']);
 
         Cache::forget('antrian_sekarang');
         Cache::put('antrian_trigger_update', true);
@@ -101,7 +126,7 @@ class AntrianController extends Controller
 
         $antrian->update([
             'status'       => 'calling',
-            'waktu_panggil'=> now()
+            'waktu_panggil' => now()
         ]);
 
         Cache::put('antrian_sekarang', $antrian->fresh(), now()->addMinutes(10));
