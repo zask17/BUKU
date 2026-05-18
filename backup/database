@@ -1,36 +1,5 @@
-DROP TABLE IF EXISTS "reg_provinces";
-CREATE TABLE "reg_provinces" (
-  id CHAR(2) PRIMARY KEY,
-  name VARCHAR(255) NOT NULL
-);
-
-DROP TABLE IF EXISTS "reg_regencies";
-CREATE TABLE "reg_regencies" (
-  id CHAR(4) PRIMARY KEY,
-  province_id CHAR(2) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  CONSTRAINT fk_province FOREIGN KEY (province_id) REFERENCES reg_provinces(id)
-);
-
-DROP TABLE IF EXISTS "reg_districts";
-CREATE TABLE "reg_districts" (
-  id CHAR(6) PRIMARY KEY,
-  regency_id CHAR(4) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  CONSTRAINT fk_regency FOREIGN KEY (regency_id) REFERENCES reg_regencies(id)
-);
-
-DROP TABLE IF EXISTS "reg_villages";
-CREATE TABLE "reg_villages" (
-  id CHAR(10) PRIMARY KEY,
-  district_id CHAR(6) NOT NULL,
-  name VARCHAR(255) NOT NULL,
-  CONSTRAINT fk_district FOREIGN KEY (district_id) REFERENCES reg_districts(id)
-);
-
-
-
-
+-- MODUL 1 : BUAT APLIKASI SOAL BUKU
+-- KATEGORI
 create table kategori (
 	idkategori		serial	 		not null,
 	nama_kategori	varchar(100)	not null,
@@ -40,6 +9,11 @@ create table kategori (
 ALTER TABLE kategori
 ADD COLUMN deleted_at TIMESTAMP NULL;
 
+INSERT INTO kategori (nama_kategori) VALUES 
+('Novel'),  ('Biografi'), ('Komik');
+
+
+-- BUKU
 create table buku (
 	idbuku			serial			not null,
 	kode			varchar(20)		not null,
@@ -53,12 +27,39 @@ create table buku (
 ALTER TABLE buku
 ADD COLUMN deleted_at TIMESTAMP NULL;
 
+INSERT INTO buku (kode, judul, pengarang, idkategori) VALUES 
+(
+    'NV-01', 
+    'Home Sweet Loan', 
+    'Almira Bastari', 
+    (SELECT idkategori FROM kategori WHERE nama_kategori = 'Novel')
+),
+(
+    'BO-01', 
+    'Mohammad Hatta, Untuk Negeriku', 
+    'Taufik Abdullah', 
+    (SELECT idkategori FROM kategori WHERE nama_kategori = 'Biografi')
+),
+(
+    'NV-02', 
+    'Keajaiban Toko Kelontong Namiya', 
+    'Keigo Higashino', 
+    (SELECT idkategori FROM kategori WHERE nama_kategori = 'Novel')
+);
+
+
+-- ROLE
 create table roles (
 	idrole			serial			not null,
 	nama_role		varchar(1200)	not null,
-	constraint pk_roles primary key (idol)
+	constraint pk_roles primary key (idrole)
 );
 
+INSERT INTO roles (nama_role) VALUES 
+('admin'), ('visitor');
+
+
+-- USER
 create table users (
 	iduser				bigserial		not null,
 	nama_user			varchar(300)	not null,
@@ -70,59 +71,33 @@ create table users (
 	created_at			timestamp		null,
 	updated_at			timestamp		null,
 	constraint pk_users primary key (iduser),
-	constraint fk_user_r foreign key (idkategori) references kategori(idkategori) on delete set null
 );
 
+ALTER TABLE users ADD CONSTRAINT fk_users_roles 
+FOREIGN KEY (idrole) REFERENCES roles(idrole) ON DELETE RESTRICT;
 
--- DML
-INSERT INTO roles (nama_role) VALUES 
-('admin'), ('visitor');
-
-INSERT INTO kategori (nama_kategori) VALUES 
-('Novel'),  ('Biografi'), ('Komik');
-
-INSERT INTO buku (kode, judul, pengarang, idkategori) VALUES 
-(
-    'NV-01', 
-    'Home Sweet Loan', 
-    'Almira Bastari', 
-    (SELECT idkategori FROM kategori WHERE nama_kategori = 'Novel')
-),
-(
-    'BO-01', 
-    'Mohammad Hatta, Untuk Negeriku', 
-    'Taufik Abdullah', 
-    (SELECT idkategori FROM kategori WHERE nama_kategori = 'Biografi')
-),
-(
-    'NV-02', 
-    'Keajaiban Toko Kelontong Namiya', 
-    'Keigo Higashino', 
-    (SELECT idkategori FROM kategori WHERE nama_kategori = 'Novel')
-);
 
 -- Menambahkan Admin (Password: admin123)
-INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
+INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
 VALUES (
-    'Admin', 
-    'admin@gmail.com', 
-    '$2y$12$CDGbzleSJdD0UFIJvnApRe9govQUdIUQ0E1KEBh02DDHrSk5P1CFu',
-    1, 
-    NOW(), 
-    NOW()
+    'Admin', 
+    'admin@gmail.com', 
+    '$2y$12$CDGbzleSJdD0UFIJvnApRe9govQUdIUQ0E1KEBh02DDHrSk5P1CFu',
+    1, 
+    NOW(), 
+    NOW()
 );
 
 -- Menambahkan Visitor/User Biasa (Password: user123)
-INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
+INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
 VALUES (
-    'Zaskia Rania', 
-    'zaskia@gmail.com', 
-    '$2y$12$iT6Pq.Iz8R7rkyrP2RuijuNn8DWTDOQnxjFpFdH5ytcFHvhxAIhkO',
-    2, 
-    NOW(), 
-    NOW()
+    'Zaskia Rania', 
+    'zaskia@gmail.com', 
+    '$2y$12$iT6Pq.Iz8R7rkyrP2RuijuNn8DWTDOQnxjFpFdH5ytcFHvhxAIhkO',
+    2, 
+    NOW(), 
+    NOW()
 );
-
 
 -- Connect Users to Roles
 ALTER TABLE users ADD COLUMN role_id INT;
@@ -142,6 +117,7 @@ FOREIGN KEY (role_id) REFERENCES roles(id);
 UPDATE users SET role_id = 2 WHERE id = 2;
 
 
+
 -- MODUL 2 : TAMBAH LOGIN GOOGLE
 -- A. Tambah kolom id_google (varchar 256, nullable, unique)
 ALTER TABLE users
@@ -151,24 +127,58 @@ ADD COLUMN IF NOT EXISTS id_google VARCHAR(256) NULL UNIQUE;
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS otp VARCHAR(6) NULL;
 
--- C. Kolom email SUDAH ADA tapi buat agar email unique 
+-- C. Kolom email SUDAH ADA tapi buat agar email unique 
 ALTER TABLE users ADD CONSTRAINT unique_email UNIQUE (email);
 
 
-SELECT iduser, email, otp 
-FROM users 
+SELECT iduser, email, otp 
+FROM users 
 WHERE email = 'email_akun_google_yang_kamu_pakai@gmail.com';
 
 
 
 -- MODUL 3
 CREATE TABLE barang (
-    id_barang	VARCHAR(8) 	NOT NULL,
-    nama		VARCHAR(50)	NOT NULL,
-    harga 		INT			NOT NULL,
-    timestamp 	TIMESTAMP 	NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT pk_barang PRIMARY KEY (id_barang)
+    id_barang	VARCHAR(8) 	NOT NULL,
+    nama		VARCHAR(50)	NOT NULL,
+    harga 		INT			NOT NULL,
+    timestamp 	TIMESTAMP 	NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_barang PRIMARY KEY (id_barang)
 );
+
+-- Buat function untuk trigger
+CREATE OR REPLACE FUNCTION fungenerate_id_barang()
+RETURNS TRIGGER AS $$
+DECLARE
+    nr INTEGER := 0;
+    current_year VARCHAR(2);
+    current_month VARCHAR(2);
+    current_day VARCHAR(2);
+BEGIN
+    -- Hitung jumlah barang yang inserted hari ini
+    SELECT COUNT(id_barang) INTO nr
+    FROM barang
+    WHERE DATE_TRUNC('day', timestamp) = DATE_TRUNC('day', CURRENT_TIMESTAMP);
+
+    nr := nr + 1;  -- Increment untuk insert baru
+
+    -- Format tahun, bulan, hari (2 digit, dengan leading zero)
+    current_year := RIGHT(EXTRACT(YEAR FROM CURRENT_TIMESTAMP)::TEXT, 2);
+    current_month := LPAD(EXTRACT(MONTH FROM CURRENT_TIMESTAMP)::TEXT, 2, '0');
+    current_day := LPAD(EXTRACT(DAY FROM CURRENT_TIMESTAMP)::TEXT, 2, '0');
+
+    -- Generate ID: YYMMDDNN
+    NEW.id_barang := current_year || current_month || current_day || LPAD(nr::TEXT, 2, '0');
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Buat trigger
+CREATE TRIGGER trigger_id_barang
+BEFORE INSERT ON barang
+FOR EACH ROW
+EXECUTE FUNCTION generate_id_barang();
 
 INSERT INTO barang (nama, harga) VALUES 
 ('The Greatest Estate Developer', 105000),
@@ -185,68 +195,208 @@ INSERT INTO barang (nama, harga) VALUES 
 ('Bullet Train', 88000);
 
 
--- Buat function untuk trigger
-CREATE OR REPLACE FUNCTION fungenerate_id_barang()
-RETURNS TRIGGER AS $$
-DECLARE
-    nr INTEGER := 0;
-    current_year VARCHAR(2);
-    current_month VARCHAR(2);
-    current_day VARCHAR(2);
-BEGIN
-    -- Hitung jumlah barang yang inserted hari ini
-    SELECT COUNT(id_barang) INTO nr
-    FROM barang
-    WHERE DATE_TRUNC('day', timestamp) = DATE_TRUNC('day', CURRENT_TIMESTAMP);
-
-    nr := nr + 1;  -- Increment untuk insert baru
-
-    -- Format tahun, bulan, hari (2 digit, dengan leading zero)
-    current_year := RIGHT(EXTRACT(YEAR FROM CURRENT_TIMESTAMP)::TEXT, 2);
-    current_month := LPAD(EXTRACT(MONTH FROM CURRENT_TIMESTAMP)::TEXT, 2, '0');
-    current_day := LPAD(EXTRACT(DAY FROM CURRENT_TIMESTAMP)::TEXT, 2, '0');
-
-    -- Generate ID: YYMMDDNN
-    NEW.id_barang := current_year || current_month || current_day || LPAD(nr::TEXT, 2, '0');
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Buat trigger
-CREATE TRIGGER trigger_id_barang
-BEFORE INSERT ON barang
-FOR EACH ROW
-EXECUTE FUNCTION generate_id_barang();
-
+-- MODUL 5 : AJAX Jquery dan Axios
 -- AJAX AXIOS
 -- Tabel Penjualan (Header)
 CREATE TABLE penjualan (
-    id_penjualan    SERIAL          NOT NULL,
-    timestamp       TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total           INT             NOT NULL,
-    iduser          INT             NOT NULL, -- Tambahan untuk mencatat kasir
-    CONSTRAINT pk_penjualan PRIMARY KEY (id_penjualan),
-    CONSTRAINT fk_penjualan_user FOREIGN KEY (iduser) REFERENCES users(iduser)
+    id_penjualan    SERIAL          NOT NULL,
+    timestamp       TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total           INT             NOT NULL,
+    iduser          INT             NOT NULL, -- Tambahan untuk mencatat kasir
+    CONSTRAINT pk_penjualan PRIMARY KEY (id_penjualan),
+    CONSTRAINT fk_penjualan_user FOREIGN KEY (iduser) REFERENCES users(iduser)
 );
 
 -- Tabel Penjualan Detail
 CREATE TABLE penjualan_detail (
-    idpenjualan_detail SERIAL          NOT NULL,
-    id_penjualan       INT             NOT NULL,
-    id_barang          VARCHAR(8)      NOT NULL,
-    jumlah             INT2            NOT NULL,
-    subtotal           INT             NOT NULL,
-    CONSTRAINT pk_penjualan_detail PRIMARY KEY (idpenjualan_detail),
-    CONSTRAINT fk_detail_penjualan FOREIGN KEY (id_penjualan) REFERENCES penjualan(id_penjualan) ON DELETE CASCADE,
-    CONSTRAINT fk_detail_barang FOREIGN KEY (id_barang) REFERENCES barang(id_barang)
+    idpenjualan_detail SERIAL          NOT NULL,
+    id_penjualan       INT             NOT NULL,
+    id_barang          VARCHAR(8)      NOT NULL,
+    jumlah             INT2            NOT NULL,
+    subtotal           INT             NOT NULL,
+    CONSTRAINT pk_penjualan_detail PRIMARY KEY (idpenjualan_detail),
+    CONSTRAINT fk_detail_penjualan FOREIGN KEY (id_penjualan) REFERENCES penjualan(id_penjualan) ON DELETE CASCADE,
+    CONSTRAINT fk_detail_barang FOREIGN KEY (id_barang) REFERENCES barang(id_barang)
 );
+
+
+-- MODUL 6 : PAYMENT GATEWAY
+-- Insert Roles
+INSERT INTO roles (nama_role) VALUES ('vendor');
+
+-- 1. Tabel Vendor
+CREATE TABLE vendor (
+    idvendor        SERIAL          NOT NULL,
+    nama_vendor     VARCHAR(255)    NOT NULL,
+    CONSTRAINT pk_vendor PRIMARY KEY (idvendor)
+);
+
+-- 2. Tabel Menu
+CREATE TABLE menu (
+    idmenu          SERIAL          NOT NULL,
+    nama_menu       VARCHAR(255)    NOT NULL,
+    harga           INT             NOT NULL,
+    path_gambar     VARCHAR(255),
+    idvendor        INT             NOT NULL,
+    CONSTRAINT pk_menu PRIMARY KEY (idmenu),
+    CONSTRAINT fk_menu_vendor FOREIGN KEY (idvendor) 
+        REFERENCES vendor(idvendor) ON DELETE CASCADE
+);
+
+-- 3. Tabel Pesanan
+-- Status bayar menggunakan SMALLINT (Contoh: 0 = Pending, 1 = Lunas, 2 = Kadaluarsa)
+CREATE TABLE pesanan (
+    idpesanan       SERIAL          NOT NULL,
+    nama            VARCHAR(255)    NOT NULL, -- Menggunakan "Guest_0000001"
+    timestamp       TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total           INT             NOT NULL,
+    metode_bayar    INT,            
+    status_bayar    SMALLINT        NOT NULL DEFAULT 0,
+    -- Tambahan kolom untuk Payment Gateway (Midtrans)
+    snap_token      VARCHAR(255),
+    order_id_pg     VARCHAR(100)    UNIQUE,
+    CONSTRAINT pk_pesanan PRIMARY KEY (idpesanan)
+);
+-- 4. Tabel Detail Pesanan
+CREATE TABLE detail_pesanan (
+    iddetail_pesanan SERIAL         NOT NULL,
+    idmenu           INT            NOT NULL,
+    idpesanan        INT            NOT NULL,
+    jumlah           INT            NOT NULL,
+    harga            INT            NOT NULL, -- Harga satuan saat dipesan
+    subtotal         INT            NOT NULL,
+    timestamp        TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    catatan          VARCHAR(255),
+    CONSTRAINT pk_detail_pesanan PRIMARY KEY (iddetail_pesanan),
+    CONSTRAINT fk_detail_menu FOREIGN KEY (idmenu) 
+        REFERENCES menu(idmenu),
+    CONSTRAINT fk_detail_pesanan FOREIGN KEY (idpesanan) 
+        REFERENCES pesanan(idpesanan) ON DELETE CASCADE
+);
+
+-- Tambah Vendor
+INSERT INTO vendor (nama_vendor) VALUES 
+('Kantin Sehat'), ('Warung Berkah');
+
+-- RELASI USER DAN VENDOR
+ALTER TABLE vendor ADD COLUMN iduser INT;
+UPDATE vendor SET iduser = (SELECT iduser FROM users WHERE email = 'kantinsehat@gmail.com') WHERE idvendor = 1;
+UPDATE vendor SET iduser = (SELECT iduser FROM users WHERE email = 'warungberkah@gmail.com') WHERE idvendor = 2;
+
+-- Tambah User Vendor untuk login
+INSERT INTO users (nama_user, email, password, idrole) 
+VALUES ('Budi Tenan', 'budi@kantin.com', '$2y$12$po8bJ42ICMjiuzJ1h33KseHquL6wmeTegqhzNJyMw7Rl2i23rmTrm', 3);
+
+INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
+VALUES (
+    'Admin Kantin Sehat', 
+    'kantinsehat@gmail.com', 
+    '$2y$12$tzwCBvQi1d5bfNkwYLPbDu2dZK4Q8zciadzsbDdG.Kb7AJEGEBeW.',  --pass = kantinsehat
+    3, 
+    NOW(), 
+    NOW()
+);
+
+-- Akun untuk Warung Berkah (Vendor ID 2)
+INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
+VALUES (
+    'Admin Warung Berkah', 
+    'warungberkah@gmail.com', 
+    '$2y$12$zu92Dh05UPAqlMpAzCDxF.ICG38VlPvSbeCW5StyENK4PR5jJC0qu',   -- pass = warungberkah
+    3, 
+    NOW(), 
+    NOW()
+);
+
+-- Tambah Menu (Setelah ID vendor tersedia)
+INSERT INTO menu (nama_menu, harga, idvendor) VALUES 
+('Nasi Bakar', 15000, 1),
+('Ayam Geprek', 12000, 1),
+('Mie Goreng Spesial', 12000, 1),
+('Soto Ayam', 10000, 2),
+('Es Teh Manis', 3000, 2);
+
+
+
+-- MODUL 7 : BARCODE, QRCODE, KAMERA
+-- Insert Roles
+INSERT INTO roles (nama_role) VALUES ('customer');
+
+-- 1. Tabel Customer
+CREATE TABLE customer (
+    idcustomer      SERIAL          NOT NULL,
+    nama_customer   VARCHAR(255)    NOT NULL,
+    alamat          VARCHAR(250)    NOT NULL,
+    id_provinsi     VARCHAR(2)      NOT NULL, -- Sesuai CHAR(2)
+    id_kota         VARCHAR(4)      NOT NULL, -- Sesuai CHAR(4)
+    id_kecamatan    VARCHAR(7)      NOT NULL, -- Sesuai CHAR(6/7)
+    id_kelurahan    VARCHAR(10)     NOT NULL, -- Sesuai CHAR(10)
+	kode_pos		CHAR(5)			NOT NULL,
+    foto_blob       BYTEA,
+    foto_path       VARCHAR(500),
+    created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_customer PRIMARY KEY (idcustomer),
+	CONSTRAINT fk_customer_provinsi FOREIGN KEY (id_provinsi) 
+        REFERENCES reg_provinces(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_customer_kota FOREIGN KEY (id_kota) 
+        REFERENCES reg_regencies(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_customer_kecamatan FOREIGN KEY (id_kecamatan) 
+        REFERENCES reg_districts(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_customer_kelurahan FOREIGN KEY (id_kelurahan) 
+        REFERENCES reg_villages(id) ON DELETE RESTRICT
+);
+
+-- MODUL 9 : GEOLOCATION
+-- 1. Tabel Toko
+CREATE TABLE toko (
+    idtoko      serial          NOT NULL,
+    nama_toko   varchar(255)    NOT NULL,
+    latitude    double precision NOT NULL,
+    longtitude  double precision NOT NULL,
+    accuracy    double precision NOT NULL,
+    deleted_at  timestamp       NULL,
+    CONSTRAINT pk_toko PRIMARY KEY (idtoko)
+);
+
+-- 2. Tabel Sales
+CREATE TABLE sales (
+    idsales     serial          NOT NULL,
+    idtoko      int             NOT NULL,
+    latitude    double precision NOT NULL,
+    longitude   double precision NOT NULL,
+    accuracy    double precision NOT NULL,
+    jarak       int             NOT NULL,
+    status      varchar(20)     NOT NULL,
+    waktu       timestamp       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_sales PRIMARY KEY (idsales),
+    CONSTRAINT fk_sales_toko FOREIGN KEY (idtoko) REFERENCES toko(idtoko) ON DELETE CASCADE
+);
+
+-- Insert Role Sales
+INSERT INTO roles (nama_role) VALUES ('sales');
+
+-- Tambah akun Sales (Password: sales123)
+INSERT INTO users (nama_user, email, password, idrole, created_at, updated_at) 
+VALUES (
+    'Andi Salesman', 
+    'sales@gmail.com', 
+    '$2y$12$f0yE9Z0mXoE6z0rY.U7vOe9o6R7l.p5t5G9G9G9G9G9G9G9G9G9G9',
+    5, 
+    NOW(), 
+    NOW()
+);
+ -- pass: sales123
+UPDATE users
+SET password = '$2y$12$xMvHrzABkJqwKbO6xy3hfe.R04Z0TUYLkZ4hEpKsz2/PFXutEsS.e'
+WHERE email = 'sales@gmail.com';
 
 select * from users
 select * from roles
 select * from buku
 select * from kategori
 select * from barang
+select * from sales
 select * from reg_provinces;
 select * from reg_regencies;
 select * from reg_districts;

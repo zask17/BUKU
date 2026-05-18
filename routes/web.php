@@ -16,6 +16,7 @@ use App\Http\Controllers\BarangBaruController;
 use App\Http\Controllers\WilayahController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\TokoController;
+use App\Http\Controllers\AntrianController;
 
 use App\Http\Controllers\Admin\DashboardAdminController;
 use App\Http\Controllers\Admin\PenggunaAdminController;
@@ -53,6 +54,20 @@ Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('ka
 Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
 Route::get('/kantin/pending', [KantinController::class, 'pending'])->name('kantin.pending');
 Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.gagal');
+
+Route::get('/antrian', [AntrianController::class, 'guestIndex'])
+    ->name('antrian.guest');
+
+Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])
+    ->name('antrian.daftar');
+
+// Route::get('/guest', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
+// Route::post('/guest/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.daftar');
+
+// Endpoint Khusus Aliran Data Real-Time SSE Stream
+Route::get('/antrian/stream', [AntrianController::class, 'stream'])
+    ->name('antrian.stream');
+// Route::get('/sse/antrian', [AntrianController::class, 'stream'])->name('antrian.stream');
 
 // Webhook Midtrans (Pastikan URL ini didaftarkan di Dashboard Midtrans: https://namadomain.com/midtrans/callback)
 // Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback'])->name('midtrans.callback');
@@ -177,6 +192,25 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::put('/update/{id}', [CustomerController::class, 'update'])->name('update');
         Route::delete('/delete/{id}', [CustomerController::class, 'destroy'])->name('destroy');
     });
+
+    // Antrian
+    Route::prefix('antrian')->as('antrian.')->group(function () {
+        Route::get('/', [AntrianController::class, 'adminIndex'])
+            ->name('index');
+        Route::post('/panggil', [AntrianController::class, 'panggilNext'])
+            ->name('panggil');
+        Route::post('/lewatkan', [AntrianController::class, 'lewatkanAntrian'])
+            ->name('lewatkan');
+        Route::post('/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])
+            ->name('panggil_terlewat');
+        Route::get('/papan', [AntrianController::class, 'papanIndex'])
+            ->name('papan');
+    });
+    // Route::get('/antrian', [AntrianController::class, 'adminIndex'])->name('antrian.admin');
+    // Route::post('/antrian/panggil', [AntrianController::class, 'panggilNext'])->name('antrian.panggil');
+    // Route::post('/antrian/lewatkan', [AntrianController::class, 'lewatkanAntrian'])->name('antrian.lewatkan');
+    // Route::post('/antrian/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])->name('antrian.panggil_terlewat');
+    // Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
 });
 
 
@@ -205,5 +239,5 @@ Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 
 Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:5']], function () {
     Route::get('/dashboard', [SalesController::class, 'index'])->name('dashboard');
     Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
-    Route::post('/store-visit', [SalesController::class, 'storeVisit'])->name('storeVisit'); 
+    Route::post('/store-visit', [SalesController::class, 'storeVisit'])->name('storeVisit');
 });

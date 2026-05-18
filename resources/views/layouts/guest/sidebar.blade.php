@@ -19,6 +19,12 @@
                 <i class="mdi mdi-home menu-icon"></i>
             </a>
         </li>
+        <li class="nav-item {{ Request::is('antrian/guest') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('antrian.guest') }}">
+                <span class="menu-title">Antrian</span>
+                <i class="mdi mdi-book-multiple menu-icon"></i>
+            </a>
+        </li>
         <li class="nav-item {{ Request::is('kategori*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ url('/kategori') }}">
                 <span class="menu-title">Kategori</span>
