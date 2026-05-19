@@ -1,42 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Site\SiteController;
-use Illuminate\Support\Facades\Auth;
-
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Admin\BukuAdminController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\DashboardAdminController;
+use App\Http\Controllers\Admin\KategoriAdminController;
+use App\Http\Controllers\Admin\KotaController;
+use App\Http\Controllers\Admin\PenggunaAdminController;
+use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\WeekEmpatController;
+use App\Http\Controllers\AntrianController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\BarangBaruController;
+use App\Http\Controllers\BarangController;
 use App\Http\Controllers\Guest\BukuGuestController;
 use App\Http\Controllers\Guest\KategoriGuestController;
-
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KantinController;
 use App\Http\Controllers\PaymentCallbackController;
 use App\Http\Controllers\PdfController;
-use App\Http\Controllers\BarangController;
-use App\Http\Controllers\BarangBaruController;
-use App\Http\Controllers\WilayahController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\Site\SiteController;
 use App\Http\Controllers\TokoController;
-use App\Http\Controllers\AntrianController;
-
-use App\Http\Controllers\Admin\DashboardAdminController;
-use App\Http\Controllers\Admin\PenggunaAdminController;
-use App\Http\Controllers\Admin\KategoriAdminController;
-use App\Http\Controllers\Admin\BukuAdminController;
-use App\Http\Controllers\Admin\KotaController;
-use App\Http\Controllers\Admin\WeekEmpatController;
-use App\Http\Controllers\Admin\PosController;
-use App\Http\Controllers\Admin\CustomerController;
-
-use App\Http\Controllers\Visitor\DashboardVisitorController;
-use App\Http\Controllers\Visitor\KategoriVisitorController;
-use App\Http\Controllers\Visitor\BukuVisitorController;
-
 use App\Http\Controllers\Vendor\DashboardVendorController;
 use App\Http\Controllers\Vendor\MenuController;
-
-use App\Http\Controllers\Auth\LoginController;
-
-
+use App\Http\Controllers\Visitor\BukuVisitorController;
+use App\Http\Controllers\Visitor\DashboardVisitorController;
+use App\Http\Controllers\Visitor\KategoriVisitorController;
+use App\Http\Controllers\WilayahController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // --- RUTE UMUM ---
 // Route::get('/', function () {return view('welcome');});
@@ -107,6 +99,7 @@ Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('b
 // });
 
 
+
 // --- AUTHENTICATION ---
 Auth::routes();
 
@@ -124,6 +117,7 @@ Route::get('/auth/google/callback', [LoginController::class, 'handleGoogleCallba
 Route::get('/otp-verify', [LoginController::class, 'showOtpForm'])->name('otp.form');
 Route::post('/otp-verify', [LoginController::class, 'verifyOtp'])->name('otp.verify');
 Route::post('/otp-resend', [LoginController::class, 'resendOtp'])->name('otp.resend');
+
 
 
 // --- GRUP AKSES ADMIN (idrole = 1) ---
@@ -195,16 +189,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
 
     // Antrian
     Route::prefix('antrian')->as('antrian.')->group(function () {
-        Route::get('/', [AntrianController::class, 'adminIndex'])
-            ->name('index');
-        Route::post('/panggil', [AntrianController::class, 'panggilNext'])
-            ->name('panggil');
-        Route::post('/lewatkan', [AntrianController::class, 'lewatkanAntrian'])
-            ->name('lewatkan');
-        Route::post('/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])
-            ->name('panggil_terlewat');
-        Route::get('/papan', [AntrianController::class, 'papanIndex'])
-            ->name('papan');
+        Route::get('/', [AntrianController::class, 'adminIndex'])->name('index');
+        Route::post('/panggil', [AntrianController::class, 'panggilNext'])->name('panggil');
+        Route::post('/lewatkan', [AntrianController::class, 'lewatkanAntrian'])->name('lewatkan');
+        Route::post('/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])->name('panggil_terlewat');
+        Route::get('/papan', [AntrianController::class, 'papanIndex'])->name('papan');
     });
     // Route::get('/antrian', [AntrianController::class, 'adminIndex'])->name('antrian.admin');
     // Route::post('/antrian/panggil', [AntrianController::class, 'panggilNext'])->name('antrian.panggil');
@@ -212,6 +201,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
     // Route::post('/antrian/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])->name('antrian.panggil_terlewat');
     // Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
 });
+
 
 
 // --- GRUP AKSES VISITOR (idrole = 2) ---
@@ -226,6 +216,8 @@ Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], functi
     Route::get('/buku', [BukuVisitorController::class, 'index'])->name('visitor.buku');
 });
 
+
+
 // --- GRUP AKSES VENDOR (idrole = 3) ---
 Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 'role:3']], function () {
     Route::get('/dashboard', [DashboardVendorController::class, 'index'])->name('dashboard');
@@ -233,6 +225,7 @@ Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 
     Route::get('/scanner', [DashboardVendorController::class, 'scannerQRCode'])->name('scanner');
     Route::resource('menu', MenuController::class);
 });
+
 
 
 // --- GRUP AKSES SALES (idrole = 5) ---

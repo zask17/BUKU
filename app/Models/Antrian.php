@@ -17,6 +17,9 @@ class Antrian extends Model
     protected $fillable = [
         'nama',
         'idpoli',
+        'status',
+        'waktu_panggil',
+        'waktu_selesai'
     ];
 
     // Relasi ke Poli

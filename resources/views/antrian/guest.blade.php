@@ -31,6 +31,21 @@
                             </div>
                         @endif
 
+                        {{-- @if(session('success_antrian'))
+                        <div class="alert alert-success text-center mb-4 py-3">
+                            <h5 class="alert-heading">Pendaftaran Berhasil!</h5>
+                            <p class="mb-1">Selamat Datang, <strong>{{ session('success_antrian')['nama'] }}</strong></p>
+                            <hr>
+                            <span class="display-4 d-block font-weight-bold my-2 text-primary">
+                                {{ sprintf("%03d", session('success_antrian')['nomor'] ?? 0) }}
+                            </span>
+                            <small class="text-muted">
+                                Poli: <strong>{{ session('success_antrian')['poli'] ?? '-' }}</strong><br>
+                                Silakan tunggu nomor Anda dipanggil di ruang tunggu.
+                            </small>
+                        </div>
+                        @endif --}}
+
                         <form action="{{ route('antrian.daftar') }}" method="POST">
                             @csrf
                             <div class="mb-3">
