@@ -1,3 +1,15 @@
+// Route::get('/guest', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
+// Route::post('/guest/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.daftar');
+
+
+// Route::get('/antrian', [AntrianController::class, 'adminIndex'])->name('antrian.admin');
+// Route::post('/antrian/panggil', [AntrianController::class, 'panggilNext'])->name('antrian.panggil');
+// Route::post('/antrian/lewatkan', [AntrianController::class, 'lewatkanAntrian'])->name('antrian.lewatkan');
+// Route::post('/antrian/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])->name('antrian.panggil_terlewat');
+// Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
+
+
+
 // Route::get('/test-otp-email', function () {
 // $user = \App\Models\User::where('email', 'zaskiarania5@gmail.com')->first();
 // if ($user) {
@@ -50,39 +62,39 @@
 // ==================== CUSTOMER ROUTES ====================
 Route::prefix('customer')->name('customer.')->group(function () {
 
-    // Daftar Customer
-    Route::get('/', [CustomerController::class, 'index'])->name('index');
+// Daftar Customer
+Route::get('/', [CustomerController::class, 'index'])->name('index');
 
-    // Tambah Customer 1 (Simpan foto sebagai BLOB)
-    Route::get('/tambah1', [CustomerController::class, 'create1'])->name('create1');
-    Route::post('/tambah1', [CustomerController::class, 'store1'])->name('store1');
+// Tambah Customer 1 (Simpan foto sebagai BLOB)
+Route::get('/tambah1', [CustomerController::class, 'create1'])->name('create1');
+Route::post('/tambah1', [CustomerController::class, 'store1'])->name('store1');
 
-    // Tambah Customer 2 (Simpan foto sebagai File Path)
-    Route::get('/tambah2', [CustomerController::class, 'create2'])->name('create2');
-    Route::post('/tambah2', [CustomerController::class, 'store2'])->name('store2');
+// Tambah Customer 2 (Simpan foto sebagai File Path)
+Route::get('/tambah2', [CustomerController::class, 'create2'])->name('create2');
+Route::post('/tambah2', [CustomerController::class, 'store2'])->name('store2');
 
-    // Edit Customer
-    Route::get('/{id}/edit', [CustomerController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [CustomerController::class, 'update'])->name('update');
+// Edit Customer
+Route::get('/{id}/edit', [CustomerController::class, 'edit'])->name('edit');
+Route::put('/{id}', [CustomerController::class, 'update'])->name('update');
 
-    // Hapus Customer
-    Route::delete('/{id}', [CustomerController::class, 'destroy'])->name('destroy');
+// Hapus Customer
+Route::delete('/{id}', [CustomerController::class, 'destroy'])->name('destroy');
 });
 
 
 // // --- GRUP AKSES SALES (idrole = 5) ---
 // Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:5']], function () {
-//     Route::get('/dashboard', [SalesController::class, 'dashboard'])->name('dashboard');
-//     Route::post('/store', [SalesController::class, 'store'])->name('store');
-//     Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
+// Route::get('/dashboard', [SalesController::class, 'dashboard'])->name('dashboard');
+// Route::post('/store', [SalesController::class, 'store'])->name('store');
+// Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
 // });
 
 // --- GRUP AKSES ADMIN (idrole = 1) UNTUK MANAJEMEN TOKO ---
 // Route::group(['prefix' => 'toko', 'as' => 'toko.', 'middleware' => ['auth', 'role:1']], function () {
-//     Route::get('/', [TokoController::class, 'index'])->name('list');
-//     Route::get('/create', [TokoController::class, 'create'])->name('create');
-//     Route::post('/store', [TokoController::class, 'store'])->name('store');
-//     Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
-//     Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
-//     Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
+// Route::get('/', [TokoController::class, 'index'])->name('list');
+// Route::get('/create', [TokoController::class, 'create'])->name('create');
+// Route::post('/store', [TokoController::class, 'store'])->name('store');
+// Route::get('/edit/{id}', [TokoController::class, 'edit'])->name('edit');
+// Route::put('/update/{id}', [TokoController::class, 'update'])->name('update');
+// Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
 // });

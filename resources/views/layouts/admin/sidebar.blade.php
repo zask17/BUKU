@@ -60,8 +60,8 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('admin.antrian.papan') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('admin.antrian.papan') }}" target="_blank">
+        <li class="nav-item {{ Request::routeIs('antrian.stream') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('antrian.stream') }}">
                 <span class="menu-title">Papan Antrian</span>
                 <i class="mdi mdi-monitor-dashboard menu-icon"></i>
             </a>

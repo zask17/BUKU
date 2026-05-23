@@ -31,56 +31,86 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // --- RUTE UMUM ---
+// Route::get('/', function () {return view('welcome');});
 Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('site.cek-koneksi');
+
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 Route::get('/buku', [BukuGuestController::class, 'index'])->name('buku');
 Route::get('/kategori', [KategoriGuestController::class, 'index'])->name('kategori');
 
+
+
 // --- RUTE KANTIN GUEST ---
-Route::get('/kantin/order-details/{idpesanan}', [KantinController::class, 'getOrderDetails'])->name('kantin.order.details');
+Route::get('/kantin/order-details/{idpesanan}', [App\Http\Controllers\KantinController::class, 'getOrderDetails'])
+    ->name('kantin.order.details');
 Route::get('/kantin', [KantinController::class, 'index'])->name('kantin.index');
 Route::post('/kantin/checkout', [KantinController::class, 'checkout'])->name('kantin.checkout');
 Route::get('/kantin/selesai/{id}', [KantinController::class, 'selesai'])->name('kantin.selesai');
 Route::get('/kantin/pending', [KantinController::class, 'pending'])->name('kantin.pending');
 Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.gagal');
 
-// --- ANTRIAN POLI GUEST & REAL-TIME STREAM ENGINE ---
+
+// ANTRIAN POLI
 Route::get('/antrian', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
 Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.guest.daftar');
-Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan.index');
-// Mengeluarkan rute stream SSE ke rute umum agar tidak terhalang middleware auth session lock
-Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
+// Route::get('/antrian', [AntrianController::class, 'guestIndex'])
+//     ->name('antrian.guest');
 
-// --- MIDTRANS WEBHOOK ---
+// Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])
+//     ->name('antrian.daftar');
+
+
+// Webhook Midtrans (Pastikan URL ini didaftarkan di Dashboard Midtrans: https://namadomain.com/midtrans/callback)
+// Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback'])->name('midtrans.callback');
 Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
 
-// --- RUTE WILAYAH ---
+
+
+// RUTE WILAYAH (Bisa diakses semua pengguna)
 Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('wilayah.index_axios');
 Route::get('/wilayah/ajax', [WilayahController::class, 'indexAjax'])->name('wilayah.index_ajax');
+
+// Rute API (Digunakan bersama oleh AJAX & Axios)
 Route::post('/wilayah/get-kota', [WilayahController::class, 'getKota'])->name('wilayah.getKota');
 Route::post('/wilayah/get-kecamatan', [WilayahController::class, 'getKecamatan'])->name('wilayah.getKecamatan');
 Route::post('/wilayah/get-kelurahan', [WilayahController::class, 'getKelurahan'])->name('wilayah.getKelurahan');
 
-// --- PDF ROUTES ---
+
+
+// --- PDF Routes (bisa diakses semua pengguna) ---
+// Route::middleware(['auth', 'role:1,2'])->group(function () {
+// Index (menu pilihan sertifikat & undangan)
 Route::get('/generate-pdf', [PdfController::class, 'index'])->name('pdf.index');
+
+// Form & Proses Sertifikat
 Route::get('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatForm'])->name('pdf.sertifikat.form');
 Route::post('/generate-pdf/sertifikat', [PdfController::class, 'sertifikatPreview'])->name('pdf.sertifikat');
+
+// Form & Proses Undangan
 Route::get('/generate-pdf/undangan', [PdfController::class, 'undanganForm'])->name('pdf.undangan.form');
 Route::post('/generate-pdf/undangan', [PdfController::class, 'undanganPreview'])->name('pdf.undangan');
+
+// Preview & Download
 Route::get('/pdf/preview', [PdfController::class, 'preview'])->name('pdf.preview');
 Route::get('/pdf/download', [PdfController::class, 'download'])->name('pdf.download');
 
-// --- BARANG & SCANNER ---
+// Cetak PDF Label TnJ 108
 Route::get('/barang/scanner', [BarangController::class, 'scannerPage'])->name('barang.scanner');
 Route::post('/barang/cek-scan/{id}', [BarangController::class, 'cekBarangScan'])->name('barang.cek_scan');
 Route::resource('barang', BarangController::class);
 Route::post('/barang/cetak-pdf', [BarangController::class, 'cetakPdf'])->name('barang.cetak');
+// });
+
+
 
 // --- AUTHENTICATION ---
 Auth::routes();
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login.process');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Ganti dari POST jadi GET (ini lagi eror aja, nanti balik ke POST)
+// Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Google Login
 Route::get('/auth/google', [LoginController::class, 'redirectToGoogle'])->name('auth.google');
@@ -91,7 +121,10 @@ Route::get('/otp-verify', [LoginController::class, 'showOtpForm'])->name('otp.fo
 Route::post('/otp-verify', [LoginController::class, 'verifyOtp'])->name('otp.verify');
 Route::post('/otp-resend', [LoginController::class, 'resendOtp'])->name('otp.resend');
 
+
+
 // --- GRUP AKSES ADMIN (idrole = 1) ---
+// Route::group(['prefix' => 'admin', 'middleware' => ['auth', 'role:1']], function () {
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'role:1']], function () {
     // Dashboard
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
@@ -100,18 +133,22 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
     Route::get('/pengguna', [PenggunaAdminController::class, 'index'])->name('pengguna');
 
     // Kategori
-    Route::resource('kategori', KategoriAdminController::class)->except(['show']);
+    Route::get('/kategori', [KategoriAdminController::class, 'index'])->name('kategori.index');
+    Route::get('/kategori/create', [KategoriAdminController::class, 'create'])->name('kategori.create');
     Route::post('/kategori/store', [KategoriAdminController::class, 'store'])->name('kategori.store');
+    Route::get('/kategori/{id}/edit', [KategoriAdminController::class, 'edit'])->name('kategori.edit');
     Route::put('/kategori/{id}/update', [KategoriAdminController::class, 'update'])->name('kategori.update');
     Route::delete('/kategori/{id}/destroy', [KategoriAdminController::class, 'destroy'])->name('kategori.destroy');
 
     // Buku
-    Route::resource('buku', BukuAdminController::class)->except(['show']);
+    Route::get('/buku', [BukuAdminController::class, 'index'])->name('buku.index');
+    Route::get('/buku/create', [BukuAdminController::class, 'create'])->name('buku.create');
     Route::post('/buku/store', [BukuAdminController::class, 'store'])->name('buku.store');
+    Route::get('/buku/{id}/edit', [BukuAdminController::class, 'edit'])->name('buku.edit');
     Route::put('/buku/{id}/update', [BukuAdminController::class, 'update'])->name('buku.update');
     Route::delete('/buku/{id}/destroy', [BukuAdminController::class, 'destroy'])->name('buku.destroy');
 
-    // Keuangan / Toko Geolocation
+    // Manajemen Toko (Modul 9 Geolocation)
     Route::prefix('toko')->as('toko.')->group(function () {
         Route::get('/', [TokoController::class, 'index'])->name('index');
         Route::get('/create', [TokoController::class, 'create'])->name('create');
@@ -121,22 +158,27 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::delete('/delete/{id}', [TokoController::class, 'delete'])->name('delete');
     });
 
-    // Barang Baru & Datatable
+    // Barang Baru
     Route::get('/barang-baru/html', [BarangBaruController::class, 'barangBaru'])->name('barang.baru');
     Route::get('/barang-baru/datatable', [BarangBaruController::class, 'barangBaruDatatable'])->name('barang.datatable');
 
-    // Kota & Week 4 Ajax
+    // Kota
     Route::get('/kota', [KotaController::class, 'index'])->name('kota.index');
+
+    // Ajax Week4
     Route::get('/week4', [WeekEmpatController::class, 'index'])->name('week4.index');
     Route::post('/week4/ajax_submit', [WeekEmpatController::class, 'submit'])->name('week4.ajax_submit');
 
-    // POS (Point of Sales)
+    // Rute untuk POS versi Axios
     Route::get('/pos/axios', [PosController::class, 'indexAxios'])->name('pos.index_axios');
+
+    // Rute untuk POS versi Ajax (jQuery)
     Route::get('/pos/ajax', [PosController::class, 'indexAjax'])->name('pos.index_ajax');
+
+    // Rute Store (Digunakan oleh keduanya)
     Route::post('/pos/cek-barang', [PosController::class, 'cekBarang'])->name('pos.cek_barang');
     Route::post('/pos/store', [PosController::class, 'store'])->name('pos.store');
 
-    // Customer
     Route::prefix('customer')->as('customer.')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('index');
         Route::get('/tambah1', [CustomerController::class, 'create1'])->name('create1');
@@ -148,21 +190,60 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::delete('/delete/{id}', [CustomerController::class, 'destroy'])->name('destroy');
     });
 
-    // Manajemen Antrian Operator Poli (Backend Terintegrasi)
+    // Antrian
     Route::prefix('antrian')->as('antrian.')->group(function () {
         Route::get('/', [AntrianController::class, 'adminIndex'])->name('index');
+
+        // Operasi Kontrol Aksi Eksekusi Operator Loket (POST via Axios)
         Route::post('/panggil', [AntrianController::class, 'adminPanggil'])->name('panggil');
         Route::post('/lewatkan', [AntrianController::class, 'adminLewatkan'])->name('lewatkan');
         Route::post('/panggil-terlewat', [AntrianController::class, 'adminPanggilTerlewat'])->name('panggil_terlewat');
+
+        // Mengarah ke URL: /admin/antrian/sse/stream (Nama Rute: admin.antrian.stream)
+        Route::get('/sse/stream', [AntrianController::class, 'stream'])->name('stream');
+
+
+        
+        //     Route::post('/panggil', [AntrianController::class, 'panggilNext'])->name('panggil');
+        //     Route::post('/lewatkan', [AntrianController::class, 'lewatkanAntrian'])->name('lewatkan');
+        //     Route::post('/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])->name('panggil_terlewat');
+        //     Route::get('/papan', [AntrianController::class, 'papanIndex'])->name('papan');
+        // });
+
+        // Route::prefix('antrian')->as('antrian.')->group(function () {
+        //     Route::get('/', [AntrianController::class, 'adminIndex'])->name('index');
+        //     Route::post('/panggil', [AntrianController::class, 'panggilNext'])->name('panggil');
+        //     Route::post('/lewatkan', [AntrianController::class, 'lewatkanAntrian'])->name('lewatkan');
+        //     Route::post('/panggil-terlewat', [AntrianController::class, 'panggilTerlewat'])->name('panggil_terlewat');
+        //     Route::get('/papan', [AntrianController::class, 'papanIndex'])->name('papan');
+        // });
+
+
+        // Endpoint Khusus Aliran Data Real-Time SSE Stream
+        Route::get('/sse/antrian', [AntrianController::class, 'stream'])->name('antrian.stream');
+        // Route::get('/antrian/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
+        // Route::get('/antrian/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
+        // Route::get('/sse/antrian', [AntrianController::class, 'stream'])->name('antrian.stream');
     });
 });
 
+Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan.index');
+
+
+
 // --- GRUP AKSES VISITOR (idrole = 2) ---
 Route::group(['prefix' => 'visitor', 'middleware' => ['auth', 'role:2']], function () {
+    // Dashboard
     Route::get('/dashboard', [DashboardVisitorController::class, 'index'])->name('visitor.dashboard');
+
+    // Kategori
     Route::get('/kategori', [KategoriVisitorController::class, 'index'])->name('visitor.kategori');
+
+    // Buku
     Route::get('/buku', [BukuVisitorController::class, 'index'])->name('visitor.buku');
 });
+
+
 
 // --- GRUP AKSES VENDOR (idrole = 3) ---
 Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 'role:3']], function () {
@@ -171,6 +252,8 @@ Route::group(['prefix' => 'vendor', 'as' => 'vendor.', 'middleware' => ['auth', 
     Route::get('/scanner', [DashboardVendorController::class, 'scannerQRCode'])->name('scanner');
     Route::resource('menu', MenuController::class);
 });
+
+
 
 // --- GRUP AKSES SALES (idrole = 5) ---
 Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'role:5']], function () {

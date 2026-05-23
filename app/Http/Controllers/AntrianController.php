@@ -2,201 +2,208 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Antrian;
-use App\Models\Poli;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class AntrianController extends Controller
 {
-    // ===================== GUEST =====================
+    // ===================== INTERFACES & REGISTRASI GUEST =====================
     public function guestIndex()
     {
-        $polis = Poli::whereNull('deleted_at')->get();
-        return view('antrian.guest', compact('polis'));
+        $daftarPoli = DB::table('poli')->whereNull('deleted_at')->get();
+        return view('antrian.guest', compact('daftarPoli'));
     }
 
     public function guestDaftar(Request $request)
     {
         $request->validate([
             'nama'   => 'required|string|max:150',
-            'idpoli' => 'required|exists:poli,idpoli'
+            'idpoli' => 'required|integer|exists:poli,idpoli'
         ]);
 
-        $antrian = Antrian::create([
+        // Mengandalkan PostgreSQL trigger BEFORE INSERT untuk kalkulasi reset harian nomor urut
+        $idBaru = DB::table('antrian')->insertGetId([
             'nama'   => $request->nama,
             'idpoli' => $request->idpoli,
-            'status' => 'waiting'
+            'status' => 'menunggu'
+        ], 'idantrian');
+
+        $dataAntrian = DB::table('antrian')
+            ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
+            ->where('antrian.idantrian', $idBaru)
+            ->select('antrian.*', 'poli.nama_poli')
+            ->first();
+
+        return response()->json([
+            'success'   => true,
+            'nomor'     => $dataAntrian->nomor,
+            'nama'      => $dataAntrian->nama,
+            'nama_poli' => $dataAntrian->nama_poli
         ]);
-
-        // Refresh agar trigger nomor urut harian dari database terbaca
-        $antrian->refresh();
-
-        $successData = [
-            'nama'  => $antrian->nama,
-            'nomor' => $antrian->nomor,           
-            'poli'  => $antrian->poli->nama_poli ?? 'Poli Umum'
-        ];
-
-        // Memicu update SSE agar Admin & Papan langsung melihat penambahan antrian baru
-        Cache::put('antrian_trigger_update', true, now()->addMinutes(10));
-
-        return redirect()->back()->with('success_antrian', $successData);
     }
 
-    // ===================== ADMIN =====================
+    // ===================== PANEL CONTROL OPERATOR ADMIN =====================
     public function adminIndex()
     {
-        return view('antrian.admin');
+        $daftarPoli = DB::table('poli')->whereNull('deleted_at')->get();
+        return view('antrian.admin', compact('daftarPoli'));
     }
 
-    /**
-     * Memanggil pasien berikutnya yang berstatus 'waiting' urut dari nomor terkecil hari ini
-     */
-    public function panggilNext()
+    public function adminPanggil(Request $request)
     {
-        // Mengambil antrian pertama yang masih menunggu hari ini
-        $antrian = Antrian::where('tanggal', today())
-            ->where('status', 'waiting')
-            ->orderBy('nomor_harian', 'asc') // Dipastikan urut dari nomor terkecil
-            ->first();
+        $hariIni = now()->format('Y-m-d');
 
-        if (!$antrian) {
-            return response()->json([
-                'status' => 'empty', 
-                'message' => 'Antrian hari ini kosong atau semua sudah dipanggil!'
-            ]);
+        if ($request->has('idantrian') && $request->idantrian != null) {
+            DB::table('antrian')
+                ->where('status', 'dipanggil')
+                ->whereDate('created_at', $hariIni)
+                ->update(['status' => 'selesai', 'waktu_selesai' => now(), 'updated_at' => now()]);
+
+            DB::table('antrian')
+                ->where('idantrian', $request->idantrian)
+                ->update(['status' => 'dipanggil', 'waktu_panggil' => now(), 'updated_at' => now()]);
+
+            return response()->json(['success' => true, 'message' => 'Berhasil memanggil pasien terpilih.']);
         }
 
-        // Update status antrian menjadi sedang dipanggil (calling)
-        $antrian->update([
-            'status'        => 'calling',
-            'waktu_panggil' => now()
+        $query = DB::table('antrian')
+            ->where('status', 'menunggu')
+            ->whereDate('created_at', $hariIni)
+            ->whereNull('deleted_at');
+
+        if ($request->filled('kode_poli')) {
+            $query->whereIn('idpoli', function($q) use ($request) {
+                $q->select('idpoli')->from('poli')->where('kode_poli', $request->kode_poli);
+            });
+        }
+
+        $berikutnya = $query->orderBy('idantrian', 'asc')->first();
+
+        if (!$berikutnya) {
+            return response()->json(['success' => false, 'message' => 'Antrian tunggu hari ini sudah kosong.'], 404);
+        }
+
+        DB::table('antrian')
+            ->where('status', 'dipanggil')
+            ->whereDate('created_at', $hariIni)
+            ->update(['status' => 'selesai', 'waktu_selesai' => now(), 'updated_at' => now()]);
+
+        DB::table('antrian')
+            ->where('idantrian', $berikutnya->idantrian)
+            ->update(['status' => 'dipanggil', 'waktu_panggil' => now(), 'updated_at' => now()]);
+
+        return response()->json(['success' => true, 'message' => 'Memanggil antrian berikutnya.']);
+    }
+
+    public function adminLewatkan(Request $request)
+    {
+        $request->validate(['idantrian' => 'required|integer']);
+
+        DB::table('antrian')->where('idantrian', $request->idantrian)->update([
+            'status'     => 'terlewat',
+            'updated_at' => now()
         ]);
 
-        // Simpan data antrian yang sedang aktif dipanggil ke dalam Cache
-        Cache::put('antrian_sekarang', $antrian->fresh(), now()->addMinutes(10));
-        
-        // Picu pembaruan stream SSE untuk semua client (Admin & Papan Antrian)
-        Cache::put('antrian_trigger_update', true, now()->addMinutes(10));
-
-        return response()->json(['status' => 'success', 'data' => $antrian]);
+        return response()->json(['success' => true, 'message' => 'Pasien berhasil dilewatkan.']);
     }
 
-    /**
-     * Mengubah status antrian yang saat ini dipanggil menjadi 'skipped' (terlewat)
-     */
-    public function lewatkanAntrian()
+    public function adminPanggilTerlewat(Request $request)
     {
-        $antrianSekarang = Cache::get('antrian_sekarang');
+        $request->validate(['idantrian' => 'required|integer']);
+        $hariIni = now()->format('Y-m-d');
 
-        if (!$antrianSekarang) {
-            return response()->json(['status' => 'error', 'message' => 'Tidak ada antrian yang sedang dipanggil']);
-        }
+        DB::table('antrian')
+            ->where('status', 'dipanggil')
+            ->whereDate('created_at', $hariIni)
+            ->update(['status' => 'selesai', 'waktu_selesai' => now(), 'updated_at' => now()]);
 
-        // Ambil ID antrian baik berupa objek maupun array cache
-        $idAntrian = $antrianSekarang['idantrian'] ?? $antrianSekarang->idantrian ?? null;
-
-        if ($idAntrian) {
-            // Update status di database menjadi 'skipped'
-            Antrian::where('idantrian', $idAntrian)->update([
-                'status' => 'skipped'
-            ]);
-        }
-
-        // Bersihkan cache antrian aktif karena statusnya sudah dilewatkan
-        Cache::forget('antrian_sekarang');
-        
-        // Picu pembaruan data pada tampilan web via SSE
-        Cache::put('antrian_trigger_update', true, now()->addMinutes(10));
-
-        return response()->json(['status' => 'success']);
-    }
-
-    /**
-     * Memanggil ulang pasien yang sempat terlewat berdasarkan nomor urutnya
-     */
-    public function panggilTerlewat(Request $request)
-    {
-        $request->validate(['nomor' => 'required|integer']);
-
-        // Cari antrian hari ini yang statusnya terlewat (skipped) berdasarkan nomornya
-        $antrian = Antrian::where('tanggal', today())
-            ->where('nomor', $request->nomor)
-            ->where('status', 'skipped')
-            ->first();
-
-        if (!$antrian) {
-            return response()->json(['status' => 'error', 'message' => 'Antrian terlewat tidak ditemukan']);
-        }
-
-        // Kembalikan statusnya menjadi dipanggil (calling) kembali
-        $antrian->update([
-            'status'        => 'calling',
-            'waktu_panggil' => now()
+        DB::table('antrian')->where('idantrian', $request->idantrian)->update([
+            'status'        => 'dipanggil',
+            'waktu_panggil' => now(),
+            'updated_at'    => now()
         ]);
 
-        // Perbarui state cache untuk antrian yang sedang aktif dipanggil
-        Cache::put('antrian_sekarang', $antrian->fresh(), now()->addMinutes(10));
-        
-        // Sinyalkan update data ke SSE Stream
-        Cache::put('antrian_trigger_update', true, now()->addMinutes(10));
-
-        return response()->json(['status' => 'success']);
+        return response()->json(['success' => true]);
     }
 
-    // ===================== PAPAN =====================
     public function papanIndex()
     {
         return view('antrian.papan');
     }
 
-    // ===================== SSE STREAM =====================
+    // ===================== ENGINE REAL-TIME SSE (STREAM) =====================
     public function stream()
     {
-        set_time_limit(0);
+        set_time_limit(0); // 
+        if (function_exists('apache_setenv')) {
+            @apache_setenv('no-gzip', 1);
+        }
+        @ini_set('zlib.output_compression', 0);
+        @ini_set('implicit_flush', 1);
 
         return response()->stream(function () {
+            $lastHash = '';
+
+            // Memutus siklus tumpukan buffer memory lokal server PHP di awal koneksi
+            if (ob_get_level() > 0) {
+                @ob_end_clean();
+            }
+
             while (true) {
-                // Hapus penanda trigger jika ada, agar loop berikutnya tetap berjalan efisien
-                if (Cache::get('antrian_trigger_update')) {
-                    Cache::forget('antrian_trigger_update');
-                }
+                $hariIni = now()->format('Y-m-d');
 
-                $antrianSekarang = Cache::get('antrian_sekarang');
+                $daftar_tunggu = DB::table('antrian')
+                    ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
+                    ->where('antrian.status', 'menunggu')
+                    ->whereDate('antrian.created_at', $hariIni)
+                    ->whereNull('antrian.deleted_at')
+                    ->select('antrian.*', 'poli.nama_poli')
+                    ->orderBy('antrian.idantrian', 'asc')->get();
 
-                // Ambil daftar antrian aktif (waiting) hari ini secara urut
-                $antrianList = Antrian::where('tanggal', today())
-                    ->where('status', 'waiting')
-                    ->orderBy('nomor_harian', 'asc')
-                    ->get(['idantrian', 'nomor', 'nama', 'waktu_masuk as waktu']);
+                $sedang_dipanggil = DB::table('antrian')
+                    ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
+                    ->where('antrian.status', 'dipanggil')
+                    ->whereDate('antrian.created_at', $hariIni)
+                    ->whereNull('antrian.deleted_at')
+                    ->select('antrian.*', 'poli.nama_poli')->first();
 
-                // Ambil daftar antrian terlewat (skipped) hari ini secara urut
-                $antrianTerlewat = Antrian::where('tanggal', today())
-                    ->where('status', 'skipped')
-                    ->orderBy('nomor_harian', 'asc')
-                    ->get(['idantrian', 'nomor', 'nama']);
+                $terlewat = DB::table('antrian')
+                    ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
+                    ->where('antrian.status', 'terlewat')
+                    ->whereDate('antrian.created_at', $hariIni)
+                    ->whereNull('antrian.deleted_at')
+                    ->select('antrian.*', 'poli.nama_poli')
+                    ->orderBy('antrian.idantrian', 'desc')->get();
 
-                $data = [
-                    'antrian_list'     => $antrianList,
-                    'antrian_terlewat' => $antrianTerlewat,
-                    'antrian_sekarang' => $antrianSekarang,
+                $state = [
+                    'daftar_tunggu'    => $daftar_tunggu,
+                    'sedang_dipanggil' => $sedang_dipanggil,
+                    'terlewat'         => $terlewat
                 ];
 
-                echo "event: queue-update" . PHP_EOL;
-                echo "data: " . json_encode($data) . PHP_EOL . PHP_EOL;
+                $currentHash = md5(json_encode($state));
 
-                ob_flush();
-                flush();
+                if ($currentHash !== $lastHash) {
+                    echo "event: queue-update\n"; // [cite: 21, 29]
+                    echo "data: " . json_encode($state) . "\n\n"; // [cite: 21, 22, 29]
+                    $lastHash = $currentHash;
+                }
 
-                if (connection_aborted()) break;
+                echo ": keep-alive\n\n"; // [cite: 21]
 
-                sleep(1); // Melakukan pembaruan aliran data setiap 1 detik
+                if (connection_aborted()) { break; } // [cite: 29]
+
+                // Paksa aliran data keluar melewati pembungkus buffer Apache/Nginx [cite: 29, 64]
+                @ob_flush();
+                @flush();
+                
+                usleep(500000); // interval kirim stream 0.5 detik
             }
         }, 200, [
-            'Content-Type'      => 'text/event-stream',
-            'Cache-Control'     => 'no-cache',
-            'X-Accel-Buffering' => 'no', // Sangat krusial untuk mencegah buffering jika menggunakan web server Nginx
+            'Content-Type'      => 'text/event-stream', // [cite: 23, 29]
+            'Cache-Control'     => 'no-cache, no-store, must-revalidate', // [cite: 29, 64]
+            'Connection'        => 'keep-alive',
+            'X-Accel-Buffering' => 'no', // [cite: 29, 64]
         ]);
     }
 }
