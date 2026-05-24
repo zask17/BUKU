@@ -60,8 +60,8 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('antrian.stream') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('antrian.stream') }}">
+        <li class="nav-item {{ Request::routeIs('antrian.papan') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('antrian.papan') }}" target="_blank" rel="noopener noreferrer">
                 <span class="menu-title">Papan Antrian</span>
                 <i class="mdi mdi-monitor-dashboard menu-icon"></i>
             </a>
@@ -91,7 +91,7 @@
         <li class="nav-item-divider"></li>
 
         <li class="nav-item {{ Request::routeIs('barang.index') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('barang.index') }}">
+            <a class="nav-link" href="{{ route('barang.index') }}" target="_blank">
                 <span class="menu-title">Master Barang</span>
                 <i class="mdi mdi-database menu-icon"></i>
             </a>

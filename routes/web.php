@@ -47,7 +47,7 @@ Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.ga
 // --- ANTRIAN POLI GUEST & REAL-TIME STREAM ENGINE ---
 Route::get('/antrian', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
 Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.guest.daftar');
-Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan.index');
+Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
 // Mengeluarkan rute stream SSE ke rute umum agar tidak terhalang middleware auth session lock
 Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
 

@@ -81,7 +81,8 @@
 
             <div class="card border-0 shadow-sm rounded-4 bg-white">
                 <div class="card-body p-4">
-                    <h5 class="text-danger fw-bold mb-3">Antrian Terlewat <small class="text-muted fs-6">(Double-klik nama untuk panggil ulang)</small></h5>
+                    <h5 class="text-danger fw-bold mb-3">Antrian Terlewat <small class="text-muted fs-6">(Double-klik nama
+                            untuk panggil ulang)</small></h5>
                     <div class="scroller-antrian">
                         <ul class="list-group list-group-flush" id="listTerlewat">
                             <li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>
@@ -99,21 +100,22 @@
         const csrfToken = "{{ csrf_token() }}";
         let currentActiveIdantrian = null;
 
-        // Membuka Koneksi Persisten Server-Sent Events (SSE) [cite: 15]
-        if (!!window.EventSource) { [cite: 15]
-            // Mengarah ke nama rute luar baru bebas hambatan auth lock session [cite: 15]
-            const source = new EventSource("{{ route('antrian.stream') }}"); [cite: 15]
+        if (!!window.EventSource) {
+            // Mengarah ke nama rute stream luar
+            const source = new EventSource("{{ route('antrian.stream') }}");
+            source.addEventListener('queue-update', function (e) {
+                const data = JSON.parse(e.data);
+                const filterPoli = document.getElementById('filterPoli').value;
 
-            // Mendengarkan Event Update dari Server [cite: 25]
-            source.addEventListener('queue-update', function (e) { [cite: 25]        
-                const data = JSON.parse(e.data); [cite: 25]
-
-                // 1. Update Tampilan Komponen Pasien Aktif
+                // 1. Tampilan Pasien Aktif Utama
                 if (data.sedang_dipanggil) {
-                    currentActiveIdantrian = data.sedang_dipanggil.idantrian;
-                    document.getElementById('nomorAktif').innerText = data.sedang_dipanggil.nomor;
-                    document.getElementById('namaAktif').innerText = data.sedang_dipanggil.nama;
-                    document.getElementById('poliAktif').innerText = data.sedang_dipanggil.nama_poli;
+                    // Jika admin memfilter poli, sesuaikan tampilan panggilannya
+                    if (filterPoli === "" || data.sedang_dipanggil.kode_poli === filterPoli) {
+                        currentActiveIdantrian = data.sedang_dipanggil.idantrian;
+                        document.getElementById('nomorAktif').innerText = data.sedang_dipanggil.nomor;
+                        document.getElementById('namaAktif').innerText = data.sedang_dipanggil.nama;
+                        document.getElementById('poliAktif').innerText = data.sedang_dipanggil.nama_poli;
+                    }
                 } else {
                     currentActiveIdantrian = null;
                     document.getElementById('nomorAktif').innerText = "-";
@@ -121,10 +123,15 @@
                     document.getElementById('poliAktif').innerText = "-";
                 }
 
-                // 2. Render Loop Daftar Antrian Menunggu
-                document.getElementById('totalTunggu').innerText = data.daftar_tunggu.length;
+                // 2. Render List Tunggu Hari Ini (Ditambah fitur Filter Client-side agar responsif)
+                let daftarTungguFiltered = data.daftar_tunggu;
+                if (filterPoli !== "") {
+                    daftarTungguFiltered = data.daftar_tunggu.filter(item => item.nomor.startsWith(filterPoli));
+                }
+
+                document.getElementById('totalTunggu').innerText = daftarTungguFiltered.length;
                 let htmlTunggu = '';
-                data.daftar_tunggu.forEach(item => {
+                daftarTungguFiltered.forEach(item => {
                     htmlTunggu += `
                         <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" onclick="panggilSpesifik('${item.idantrian}')" style="cursor:pointer" title="Klik untuk panggil pasien ini">
                             <div>
@@ -137,7 +144,7 @@
                 });
                 document.getElementById('listTunggu').innerHTML = htmlTunggu || '<li class="list-group-item text-center text-muted py-4">Antrian tunggu hari ini kosong</li>';
 
-                // 3. Render Loop Daftar Antrian Terlewat
+                // 3. Render List Terlewat Hari Ini
                 let htmlTerlewat = '';
                 data.terlewat.forEach(item => {
                     htmlTerlewat += `
@@ -153,19 +160,18 @@
                 document.getElementById('listTerlewat').innerHTML = htmlTerlewat || '<li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>';
             });
 
-            // Deteksi kegagalan koneksi di background agar tidak blank loading [cite: 25]
-            source.onerror = function(err) { [cite: 25]
-                console.error("SSE Connection Error:", err); [cite: 25]
+            source.onerror = function (err) {
+                console.error("SSE Connection Error:", err);
                 document.getElementById('listTunggu').innerHTML = `
-                    <li class="list-group-item list-group-item-danger text-center py-4 border-0 rounded">
-                        <i class="mdi mdi-alert-circle me-1"></i> Gagal terhubung ke data real-time. Mencoba menyambung ulang...
-                    </li>`;
-            }; [cite: 25]
+                                <li class="list-group-item list-group-item-danger text-center py-4 border-0 rounded">
+                                    <i class="mdi mdi-alert-circle me-1"></i> Gagal terhubung ke data real-time. Mencoba menyambung ulang...
+                                </li>`;
+            };
         } else {
             document.getElementById('listTunggu').innerHTML = '<li class="list-group-item list-group-item-danger text-center py-4">Browser tidak mendukung SSE.</li>';
         }
 
-        // ===================== FUNGSI AXIOS HTTP REQUEST ===================== [cite: 26]
+        // ===================== FUNGSI HTTP REQUEST =====================
 
         function panggilUrutanBerikutnya() {
             const kp = document.getElementById('filterPoli').value;
@@ -191,5 +197,9 @@
             axios.post("{{ route('admin.antrian.panggil_terlewat') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil ulang pasien terlewat.'));
         }
+        document.getElementById('filterPoli').addEventListener('change', function () {
+            // Memaksa pengambilan data ulang atau refresh local visual saat filter berubah
+            location.reload();
+        });
     </script>
 @endsection

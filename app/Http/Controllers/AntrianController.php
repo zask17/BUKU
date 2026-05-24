@@ -72,10 +72,16 @@ class AntrianController extends Controller
             ->whereNull('deleted_at');
 
         if ($request->filled('kode_poli')) {
-            $query->whereIn('idpoli', function($q) use ($request) {
+            $query->whereIn('idpoli', function ($q) use ($request) {
                 $q->select('idpoli')->from('poli')->where('kode_poli', $request->kode_poli);
             });
         }
+
+        // if ($request->filled('kode_poli')) {
+        //     $query->whereIn('idpoli', function($q) use ($request) {
+        //         $q->select('idpoli')->from('poli')->where('kode_poli', $request->kode_poli);
+        //     });
+        // }
 
         $berikutnya = $query->orderBy('idantrian', 'asc')->first();
 
@@ -134,7 +140,7 @@ class AntrianController extends Controller
     // ===================== ENGINE REAL-TIME SSE (STREAM) =====================
     public function stream()
     {
-        set_time_limit(0); // 
+        set_time_limit(0);
         if (function_exists('apache_setenv')) {
             @apache_setenv('no-gzip', 1);
         }
@@ -144,9 +150,14 @@ class AntrianController extends Controller
         return response()->stream(function () {
             $lastHash = '';
 
-            // Memutus siklus tumpukan buffer memory lokal server PHP di awal koneksi
+            // Memutus siklus tumpukan buffer memory lokal server PHP di awal koneksi 
             if (ob_get_level() > 0) {
                 @ob_end_clean();
+            }
+
+            // CRITICAL FIX: Melepaskan kunci session PHP agar tidak memblokir request Axios/HTTP lain 
+            if (session_id()) {
+                session_write_close();
             }
 
             while (true) {
@@ -157,7 +168,8 @@ class AntrianController extends Controller
                     ->where('antrian.status', 'menunggu')
                     ->whereDate('antrian.created_at', $hariIni)
                     ->whereNull('antrian.deleted_at')
-                    ->select('antrian.*', 'poli.nama_poli')
+                    // ->select('antrian.*', 'poli.nama_poli')
+                    ->select('antrian.*', 'poli.nama_poli', 'poli.kode_poli')
                     ->orderBy('antrian.idantrian', 'asc')->get();
 
                 $sedang_dipanggil = DB::table('antrian')
@@ -165,14 +177,16 @@ class AntrianController extends Controller
                     ->where('antrian.status', 'dipanggil')
                     ->whereDate('antrian.created_at', $hariIni)
                     ->whereNull('antrian.deleted_at')
-                    ->select('antrian.*', 'poli.nama_poli')->first();
+                    // ->select('antrian.*', 'poli.nama_poli')->first();
+                    ->select('antrian.*', 'poli.nama_poli', 'poli.kode_poli')->first();
 
                 $terlewat = DB::table('antrian')
                     ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
                     ->where('antrian.status', 'terlewat')
                     ->whereDate('antrian.created_at', $hariIni)
                     ->whereNull('antrian.deleted_at')
-                    ->select('antrian.*', 'poli.nama_poli')
+                    // ->select('antrian.*', 'poli.nama_poli')
+                    ->select('antrian.*', 'poli.nama_poli', 'poli.kode_poli')
                     ->orderBy('antrian.idantrian', 'desc')->get();
 
                 $state = [
@@ -184,26 +198,28 @@ class AntrianController extends Controller
                 $currentHash = md5(json_encode($state));
 
                 if ($currentHash !== $lastHash) {
-                    echo "event: queue-update\n"; // [cite: 21, 29]
-                    echo "data: " . json_encode($state) . "\n\n"; // [cite: 21, 22, 29]
+                    echo "event: queue-update\n";
+                    echo "data: " . json_encode($state) . "\n\n";
                     $lastHash = $currentHash;
                 }
 
-                echo ": keep-alive\n\n"; // [cite: 21]
+                echo ": keep-alive\n\n";
 
-                if (connection_aborted()) { break; } // [cite: 29]
+                if (connection_aborted()) {
+                    break;
+                }
 
-                // Paksa aliran data keluar melewati pembungkus buffer Apache/Nginx [cite: 29, 64]
+                // Paksa aliran data keluar melewati pembungkus buffer Apache/Nginx
                 @ob_flush();
                 @flush();
-                
+
                 usleep(500000); // interval kirim stream 0.5 detik
             }
         }, 200, [
-            'Content-Type'      => 'text/event-stream', // [cite: 23, 29]
-            'Cache-Control'     => 'no-cache, no-store, must-revalidate', // [cite: 29, 64]
+            'Content-Type'      => 'text/event-stream',
+            'Cache-Control'     => 'no-cache, no-store, must-revalidate',
             'Connection'        => 'keep-alive',
-            'X-Accel-Buffering' => 'no', // [cite: 29, 64]
+            'X-Accel-Buffering' => 'no',
         ]);
     }
 }
