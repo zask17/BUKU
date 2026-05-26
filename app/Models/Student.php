@@ -12,7 +12,7 @@ class Student extends Model
 {
     protected $table = 'students';
     protected $primaryKey = 'idstudent';
-    protected $fillable = ['iduser', 'nim', 'fakultas', 'prodi'];
+    protected $fillable = ['iduser', 'nim', 'fakultas', 'prodi', 'created_at', 'updated_at'];
 
     public function user()
     {

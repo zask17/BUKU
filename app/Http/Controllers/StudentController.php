@@ -9,7 +9,7 @@ use App\Models\NfcCard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon; // Digunakan untuk memanipulasi zona waktu runtime
+use Carbon\Carbon;
 
 class StudentController extends Controller
 {
@@ -47,8 +47,8 @@ class StudentController extends Controller
                 'nama_user'  => $validated['name'],
                 'email'      => $validated['email'],
                 'password'   => Hash::make($validated['password']),
-                'idrole'     => self::STUDENT_ROLE_ID, 
-                'role_id'    => self::STUDENT_ROLE_ID, 
+                'idrole'     => self::STUDENT_ROLE_ID,
+                'role_id'    => self::STUDENT_ROLE_ID,
                 'created_at' => $nowWib,
                 'updated_at' => $nowWib,
             ]);
@@ -77,7 +77,6 @@ class StudentController extends Controller
                 'success'  => true,
                 'redirect' => route('admin.student.index'),
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create student: ' . $e->getMessage());
@@ -109,7 +108,6 @@ class StudentController extends Controller
             'nim'        => $validated['NIM'],
             'fakultas'   => $validated['fakultas'],
             'prodi'      => $validated['prodi'],
-            'updated_at' => Carbon::now('Asia/Jakarta'),
         ]);
 
         session()->flash('success', 'Student updated successfully!');

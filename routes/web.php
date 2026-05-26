@@ -61,7 +61,7 @@ Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('a
 // --- MIDTRANS WEBHOOK ---
 Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
 
-// --- RUTE WEB NFC API (MODUL 11 - ENDPOINT UNTUK SCANNER HP ANDROID) ---
+// --- RUTE WEB NFC API ---
 Route::post('/nfc/attendance', [NFCController::class, 'scan'])->name('attendance.scan_api');
 
 // --- RUTE WILAYAH ---
@@ -176,7 +176,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::delete('/delete/{id}', [StudentController::class, 'delete'])->name('delete');
     });
 
-    // Rekapitulasi Monitoring Absensi di Sisi Admin web
+    // Monitoring Absensi
     Route::prefix('attendance')->as('attendance.')->group(function () {
         Route::get('/', [NFCController::class, 'index'])->name('index');
     });
