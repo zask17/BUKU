@@ -23,6 +23,20 @@
             </a>
         </li>
 
+        <li class="nav-item {{ Request::routeIs('admin.student.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.student.index') }}">
+                <span class="menu-title">Student</span>
+                <i class="mdi mdi-school menu-icon"></i>
+            </a>
+        </li>
+
+        <li class="nav-item {{ Request::routeIs('admin.attendance.index') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.attendance.index') }}">
+                <span class="menu-title">Absensi NFC</span>
+                <i class="mdi mdi-nfc menu-icon"></i>
+            </a>
+        </li>
+
         <li class="nav-item {{ Request::routeIs('admin.pengguna.*') ? 'active' : '' }}">
             <a class="nav-link" href="{{ route('admin.pengguna') }}">
                 <span class="menu-title">Pengguna</span>

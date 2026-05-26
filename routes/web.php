@@ -8,6 +8,10 @@ use App\Http\Controllers\Admin\KotaController;
 use App\Http\Controllers\Admin\PenggunaAdminController;
 use App\Http\Controllers\Admin\PosController;
 use App\Http\Controllers\Admin\WeekEmpatController;
+// use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\NFCController;
+
 use App\Http\Controllers\AntrianController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BarangBaruController;
@@ -21,8 +25,10 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\Site\SiteController;
 use App\Http\Controllers\TokoController;
+
 use App\Http\Controllers\Vendor\DashboardVendorController;
 use App\Http\Controllers\Vendor\MenuController;
+
 use App\Http\Controllers\Visitor\BukuVisitorController;
 use App\Http\Controllers\Visitor\DashboardVisitorController;
 use App\Http\Controllers\Visitor\KategoriVisitorController;
@@ -49,11 +55,14 @@ Route::get('/antrian', [AntrianController::class, 'guestIndex'])->name('antrian.
 Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.guest.daftar');
 Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
 
-// Mengeluarkan rute stream SSE ke rute umum agar tidak terhalang middleware auth session lock
+// Rute stream SSE 
 Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
 
 // --- MIDTRANS WEBHOOK ---
 Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
+
+// --- RUTE WEB NFC API (MODUL 11 - ENDPOINT UNTUK SCANNER HP ANDROID) ---
+Route::post('/nfc/attendance', [NFCController::class, 'scan'])->name('attendance.scan_api');
 
 // --- RUTE WILAYAH ---
 Route::get('/wilayah/axios', [WilayahController::class, 'indexAxios'])->name('wilayah.index_axios');
@@ -155,6 +164,21 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::post('/panggil', [AntrianController::class, 'adminPanggil'])->name('panggil');
         Route::post('/lewatkan', [AntrianController::class, 'adminLewatkan'])->name('lewatkan');
         Route::post('/panggil-terlewat', [AntrianController::class, 'adminPanggilTerlewat'])->name('panggil_terlewat');
+    });
+
+    // Pengelolaan Data Mahasiswa (Student) beserta Kartu NFC
+    Route::prefix('student')->as('student.')->group(function () {
+        Route::get('/', [StudentController::class, 'index'])->name('index');
+        Route::get('/create', [StudentController::class, 'create'])->name('create');
+        Route::post('/store', [StudentController::class, 'store'])->name('store');
+        Route::get('/edit/{id}', [StudentController::class, 'edit'])->name('edit');
+        Route::put('/update/{id}', [StudentController::class, 'update'])->name('update');
+        Route::delete('/delete/{id}', [StudentController::class, 'delete'])->name('delete');
+    });
+
+    // Rekapitulasi Monitoring Absensi di Sisi Admin web
+    Route::prefix('attendance')->as('attendance.')->group(function () {
+        Route::get('/', [NFCController::class, 'index'])->name('index');
     });
 });
 

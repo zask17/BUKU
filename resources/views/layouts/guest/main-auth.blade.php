@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     @include('layouts.guest.head')
     <style>
-        .container-scroller, .page-body-wrapper {
+        .container-scroller,
+        .page-body-wrapper {
             min-height: 100vh !important;
         }
+
         .content-wrapper {
             background: #f2edf3;
             width: 100%;
@@ -15,6 +19,7 @@
     </style>
     @yield('style-page')
 </head>
+
 <body>
     <div class="container-scroller">
         <div class="container-fluid page-body-wrapper full-page-wrapper">
@@ -37,10 +42,10 @@
         }
 
         // Fungsi otomatis pasang loader ke form
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const forms = document.querySelectorAll('form');
             forms.forEach(form => {
-                form.addEventListener('submit', function() {
+                form.addEventListener('submit', function () {
                     const submitBtn = form.querySelector('button[type="submit"]');
                     if (submitBtn) {
                         setButtonLoading(submitBtn);
@@ -50,4 +55,5 @@
         });
     </script>
 </body>
+
 </html>

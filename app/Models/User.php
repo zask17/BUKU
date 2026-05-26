@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'idrole',
+        // 'role_id',
         'id_google',
         'otp',
         'email_verified_at',
@@ -49,5 +50,10 @@ class User extends Authenticatable
     public function vendor()
     {
         return $this->hasOne(Vendor::class, 'iduser', 'iduser');
+    }
+
+    public function student()
+    {
+        return $this->hasOne(Student::class, 'iduser', 'iduser');
     }
 }
