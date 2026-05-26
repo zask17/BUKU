@@ -48,6 +48,7 @@ Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.ga
 Route::get('/antrian', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
 Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.guest.daftar');
 Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
+
 // Mengeluarkan rute stream SSE ke rute umum agar tidak terhalang middleware auth session lock
 Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
 
@@ -148,7 +149,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::delete('/delete/{id}', [CustomerController::class, 'destroy'])->name('destroy');
     });
 
-    // Manajemen Antrian Operator Poli (Backend Terintegrasi)
+    // Antrian Operator Poli
     Route::prefix('antrian')->as('antrian.')->group(function () {
         Route::get('/', [AntrianController::class, 'adminIndex'])->name('index');
         Route::post('/panggil', [AntrianController::class, 'adminPanggil'])->name('panggil');

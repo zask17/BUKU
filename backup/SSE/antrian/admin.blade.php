@@ -50,7 +50,8 @@
 
                 <div class="row g-2">
                     <div class="col-6">
-                        <button class="btn btn-gradient-primary w-100 py-3 fw-bold shadow-sm" onclick="panggilUrutanBerikutnya()">
+                        <button class="btn btn-gradient-primary w-100 py-3 fw-bold shadow-sm"
+                            onclick="panggilUrutanBerikutnya()">
                             <i class="mdi mdi-play-circle me-1"></i> Panggil Berikutnya
                         </button>
                     </div>
@@ -80,41 +81,12 @@
 
             <div class="card border-0 shadow-sm rounded-4 bg-white">
                 <div class="card-body p-4">
-                    <h5 class="text-danger fw-bold mb-3">Antrian Terlewat <small class="text-muted fs-6">(Double-klik nama untuk panggil ulang)</small></h5>
+                    <h5 class="text-danger fw-bold mb-3">Antrian Terlewat <small class="text-muted fs-6">(Double-klik nama
+                            untuk panggil ulang)</small></h5>
                     <div class="scroller-antrian">
                         <ul class="list-group list-group-flush" id="listTerlewat">
                             <li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>
                         </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm rounded-4 bg-white">
-                <div class="card-body p-4">
-                    <h5 class="fw-bold text-secondary mb-3">📋 Riwayat Pendaftaran Antrian / Hari Lain</h5>
-                    <div class="scroller-antrian">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Tanggal Daftar</th>
-                                        <th>Nomor Antrian</th>
-                                        <th>Nama Lengkap Pasien</th>
-                                        <th>Layanan Poliklinik</th>
-                                        <th>Status Terakhir</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="listHariLain">
-                                    <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted small">Memuat riwayat antrian dari cache server...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -129,24 +101,20 @@
         let currentActiveIdantrian = null;
 
         if (!!window.EventSource) {
+            // Mengarah ke nama rute stream luar
             const source = new EventSource("{{ route('antrian.stream') }}");
-            
             source.addEventListener('queue-update', function (e) {
                 const data = JSON.parse(e.data);
                 const filterPoli = document.getElementById('filterPoli').value;
 
-                // Destrukturisasi pengaman membaca objek model tunggal / deret array
-                const active = data.sedang_dipanggil && Array.isArray(data.sedang_dipanggil) 
-                    ? data.sedang_dipanggil[0] 
-                    : data.sedang_dipanggil;
-
-                // 1. Render Elemen Pasien Aktif Utama
-                if (active) {
-                    if (filterPoli === "" || active.kode_poli === filterPoli) {
-                        currentActiveIdantrian = active.idantrian;
-                        document.getElementById('nomorAktif').innerText = active.nomor || '-';
-                        document.getElementById('namaAktif').innerText = active.nama || 'Tidak Ada Panggilan';
-                        document.getElementById('poliAktif').innerText = active.nama_poli || '-';
+                // 1. Tampilan Pasien Aktif Utama
+                if (data.sedang_dipanggil) {
+                    // Jika admin memfilter poli, sesuaikan tampilan panggilannya
+                    if (filterPoli === "" || data.sedang_dipanggil.kode_poli === filterPoli) {
+                        currentActiveIdantrian = data.sedang_dipanggil.idantrian;
+                        document.getElementById('nomorAktif').innerText = data.sedang_dipanggil.nomor;
+                        document.getElementById('namaAktif').innerText = data.sedang_dipanggil.nama;
+                        document.getElementById('poliAktif').innerText = data.sedang_dipanggil.nama_poli;
                     }
                 } else {
                     currentActiveIdantrian = null;
@@ -155,17 +123,17 @@
                     document.getElementById('poliAktif').innerText = "-";
                 }
 
-                // 2. Render List Tunggu Komponen
-                let daftarTungguFiltered = data.daftar_tunggu || [];
+                // 2. Render List Tunggu Hari Ini (Ditambah fitur Filter Client-side agar responsif)
+                let daftarTungguFiltered = data.daftar_tunggu;
                 if (filterPoli !== "") {
-                    daftarTungguFiltered = daftarTungguFiltered.filter(item => item.kode_poli === filterPoli);
+                    daftarTungguFiltered = data.daftar_tunggu.filter(item => item.nomor.startsWith(filterPoli));
                 }
 
                 document.getElementById('totalTunggu').innerText = daftarTungguFiltered.length;
                 let htmlTunggu = '';
                 daftarTungguFiltered.forEach(item => {
                     htmlTunggu += `
-                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" onclick="panggilSpesifik('${item.idantrian}')" style="cursor:pointer">
+                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" onclick="panggilSpesifik('${item.idantrian}')" style="cursor:pointer" title="Klik untuk panggil pasien ini">
                             <div>
                                 <strong class="text-primary fs-5 me-2">${item.nomor}</strong>
                                 <span class="text-dark fw-bold">${item.nama}</span>
@@ -176,16 +144,11 @@
                 });
                 document.getElementById('listTunggu').innerHTML = htmlTunggu || '<li class="list-group-item text-center text-muted py-4">Antrian tunggu hari ini kosong</li>';
 
-                // 3. Render List Terlewat Komponen
+                // 3. Render List Terlewat Hari Ini
                 let htmlTerlewat = '';
-                let daftarTerlewatFiltered = data.terlewat || [];
-                if (filterPoli !== "") {
-                    daftarTerlewatFiltered = daftarTerlewatFiltered.filter(item => item.kode_poli === filterPoli);
-                }
-
-                daftarTerlewatFiltered.forEach(item => {
+                data.terlewat.forEach(item => {
                     htmlTerlewat += `
-                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" ondblclick="panggilUlangTerlewat('${item.idantrian}')" style="cursor:pointer">
+                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" ondblclick="panggilUlangTerlewat('${item.idantrian}')" style="cursor:pointer" title="Double-klik untuk panggil ulang">
                             <div>
                                 <b class="text-danger fs-5 me-2">${item.nomor}</b>
                                 <span class="text-dark fw-semibold">${item.nama}</span>
@@ -195,41 +158,21 @@
                         </li>`;
                 });
                 document.getElementById('listTerlewat').innerHTML = htmlTerlewat || '<li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>';
-
-                // 4. Render Tabel Log Hari Lain
-                let htmlHariLain = '';
-                let daftarHariLain = data.hari_lain || [];
-                daftarHariLain.forEach(item => {
-                    if (filterPoli !== "" && item.kode_poli !== filterPoli) return;
-
-                    let badgeColor = 'bg-secondary';
-                    if (item.status === 'selesai') badgeColor = 'bg-success';
-                    if (item.status === 'terlewat') badgeColor = 'bg-warning text-dark';
-                    if (item.status === 'menunggu') badgeColor = 'bg-info';
-
-                    htmlHariLain += `
-                        <tr>
-                            <td class="small fw-semibold text-muted">${item.tanggal_antrian}</td>
-                            <td><span class="badge bg-dark fw-bold">${item.nomor}</span></td>
-                            <td class="text-capitalize fw-bold text-dark">${item.nama}</td>
-                            <td><span class="badge bg-light text-primary border">${item.nama_poli}</span></td>
-                            <td><span class="badge ${badgeColor} text-capitalize">${item.status}</span></td>
-                        </tr>`;
-                });
-                document.getElementById('listHariLain').innerHTML = htmlHariLain || `
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted small">Tidak ada riwayat antrian dari hari-hari sebelumnya.</td>
-                    </tr>`;
             });
 
             source.onerror = function (err) {
-                console.error("Kesalahan Sinkronisasi Koneksi SSE Stream Engine:", err);
+                console.error("SSE Connection Error:", err);
+                document.getElementById('listTunggu').innerHTML = `
+                                <li class="list-group-item list-group-item-danger text-center py-4 border-0 rounded">
+                                    <i class="mdi mdi-alert-circle me-1"></i> Gagal terhubung ke data real-time. Mencoba menyambung ulang...
+                                </li>`;
             };
         } else {
             document.getElementById('listTunggu').innerHTML = '<li class="list-group-item list-group-item-danger text-center py-4">Browser tidak mendukung SSE.</li>';
         }
 
-        // ===================== AKSI OPERATOR LOKET (AXIOS POST METHOD) =====================
+        // ===================== FUNGSI HTTP REQUEST =====================
+
         function panggilUrutanBerikutnya() {
             const kp = document.getElementById('filterPoli').value;
             axios.post("{{ route('admin.antrian.panggil') }}", { kode_poli: kp }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
@@ -254,5 +197,9 @@
             axios.post("{{ route('admin.antrian.panggil_terlewat') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil ulang pasien terlewat.'));
         }
+        document.getElementById('filterPoli').addEventListener('change', function () {
+            // Memaksa pengambilan data ulang atau refresh local visual saat filter berubah
+            location.reload();
+        });
     </script>
 @endsection

@@ -48,7 +48,6 @@
 </div>
 @endsection
 
-{{-- Sesuaikan bagian ini dengan @yield yang ada di layouts.guest.main --}}
 @section('js-page')
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
@@ -60,7 +59,6 @@
         const idpoliInput = document.getElementById('idpoli').value;
         const token = "{{ csrf_token() }}";
 
-        // Mencegah double submit (spam klik)
         btnSubmit.disabled = true;
         btnSubmit.innerText = "Memproses...";
 
@@ -75,23 +73,15 @@
             btnSubmit.innerText = "Daftar Sekarang";
 
             if (res.data.success) {
-                // Pengaman jika kolom nomor kosong, tampilkan fallback teks atau ID barunya
-                document.getElementById('noTiket').innerText = res.data.nomor || 'No. #' + res.data.idantrian;
+                document.getElementById('noTiket').innerText = res.data.nomor;
                 document.getElementById('namaTiket').innerText = res.data.nama;
                 document.getElementById('poliTiket').innerText = res.data.nama_poli;
-                
-                // Set waktu cetak lokal
-                const sekarang = new Date();
-                document.getElementById('waktuTiket').innerText = 'Waktu Daftar: ' + 
-                    sekarang.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + ' - ' +
-                    sekarang.toLocaleTimeString('id-ID') + ' WIB';
+                document.getElementById('waktuTiket').innerText = 'Waktu Cetak: ' + new Date().toLocaleTimeString('id-ID') + ' WIB';
 
-                // Tampilkan animasi box tiket muncul
                 const boxTiket = document.getElementById('tiketAntrian');
                 boxTiket.classList.remove('d-none');
-                boxTiket.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                boxTiket.scrollIntoView({ behavior: 'smooth' });
 
-                // Reset form input setelah berhasil daftar
                 document.getElementById('nama').value = '';
                 document.getElementById('idpoli').value = '';
             }
@@ -99,11 +89,7 @@
         .catch(err => {
             btnSubmit.disabled = false;
             btnSubmit.innerText = "Daftar Sekarang";
-            
-            // Menampilkan pesan error yang lebih spesifik jika validasi Laravel gagal
-            const pesanError = err.response?.data?.message || 'Gagal memproses pendaftaran. Silakan coba lagi.';
-            alert(pesanError);
-            console.error('Pendaftaran Error:', err);
+            alert('Gagal memproses pendaftaran. Coba lagi.');
         });
     });
 </script>
