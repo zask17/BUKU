@@ -127,112 +127,119 @@
     <script>
         const csrfToken = "{{ csrf_token() }}";
         let currentActiveIdantrian = null;
+        let pollingInterval = null;
 
-        if (!!window.EventSource) {
-            const source = new EventSource("{{ route('antrian.stream') }}");
-            
-            source.addEventListener('queue-update', function (e) {
-                const data = JSON.parse(e.data);
-                const filterPoli = document.getElementById('filterPoli').value;
-
-                // Destrukturisasi pengaman membaca objek model tunggal / deret array
-                const active = data.sedang_dipanggil && Array.isArray(data.sedang_dipanggil) 
-                    ? data.sedang_dipanggil[0] 
-                    : data.sedang_dipanggil;
-
-                // 1. Render Elemen Pasien Aktif Utama
-                if (active) {
-                    if (filterPoli === "" || active.kode_poli === filterPoli) {
-                        currentActiveIdantrian = active.idantrian;
-                        document.getElementById('nomorAktif').innerText = active.nomor || '-';
-                        document.getElementById('namaAktif').innerText = active.nama || 'Tidak Ada Panggilan';
-                        document.getElementById('poliAktif').innerText = active.nama_poli || '-';
-                    }
-                } else {
-                    currentActiveIdantrian = null;
-                    document.getElementById('nomorAktif').innerText = "-";
-                    document.getElementById('namaAktif').innerText = "Tidak Ada Panggilan";
-                    document.getElementById('poliAktif').innerText = "-";
-                }
-
-                // 2. Render List Tunggu Komponen
-                let daftarTungguFiltered = data.daftar_tunggu || [];
-                if (filterPoli !== "") {
-                    daftarTungguFiltered = daftarTungguFiltered.filter(item => item.kode_poli === filterPoli);
-                }
-
-                document.getElementById('totalTunggu').innerText = daftarTungguFiltered.length;
-                let htmlTunggu = '';
-                daftarTungguFiltered.forEach(item => {
-                    htmlTunggu += `
-                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" onclick="panggilSpesifik('${item.idantrian}')" style="cursor:pointer">
-                            <div>
-                                <strong class="text-primary fs-5 me-2">${item.nomor}</strong>
-                                <span class="text-dark fw-bold">${item.nama}</span>
-                                <br><small class="text-muted">${item.nama_poli}</small>
-                            </div>
-                            <span class="badge bg-info rounded-pill">Panggil</span>
-                        </li>`;
-                });
-                document.getElementById('listTunggu').innerHTML = htmlTunggu || '<li class="list-group-item text-center text-muted py-4">Antrian tunggu hari ini kosong</li>';
-
-                // 3. Render List Terlewat Komponen
-                let htmlTerlewat = '';
-                let daftarTerlewatFiltered = data.terlewat || [];
-                if (filterPoli !== "") {
-                    daftarTerlewatFiltered = daftarTerlewatFiltered.filter(item => item.kode_poli === filterPoli);
-                }
-
-                daftarTerlewatFiltered.forEach(item => {
-                    htmlTerlewat += `
-                        <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" ondblclick="panggilUlangTerlewat('${item.idantrian}')" style="cursor:pointer">
-                            <div>
-                                <b class="text-danger fs-5 me-2">${item.nomor}</b>
-                                <span class="text-dark fw-semibold">${item.nama}</span>
-                                <br><small class="text-muted">${item.nama_poli}</small>
-                            </div>
-                            <span class="badge bg-warning text-dark rounded-pill">Terlewat</span>
-                        </li>`;
-                });
-                document.getElementById('listTerlewat').innerHTML = htmlTerlewat || '<li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>';
-
-                // 4. Render Tabel Log Hari Lain
-                let htmlHariLain = '';
-                let daftarHariLain = data.hari_lain || [];
-                daftarHariLain.forEach(item => {
-                    if (filterPoli !== "" && item.kode_poli !== filterPoli) return;
-
-                    let badgeColor = 'bg-secondary';
-                    if (item.status === 'selesai') badgeColor = 'bg-success';
-                    if (item.status === 'terlewat') badgeColor = 'bg-warning text-dark';
-                    if (item.status === 'menunggu') badgeColor = 'bg-info';
-
-                    htmlHariLain += `
-                        <tr>
-                            <td class="small fw-semibold text-muted">${item.tanggal_antrian}</td>
-                            <td><span class="badge bg-dark fw-bold">${item.nomor}</span></td>
-                            <td class="text-capitalize fw-bold text-dark">${item.nama}</td>
-                            <td><span class="badge bg-light text-primary border">${item.nama_poli}</span></td>
-                            <td><span class="badge ${badgeColor} text-capitalize">${item.status}</span></td>
-                        </tr>`;
-                });
-                document.getElementById('listHariLain').innerHTML = htmlHariLain || `
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted small">Tidak ada riwayat antrian dari hari-hari sebelumnya.</td>
-                    </tr>`;
-            });
-
-            source.onerror = function (err) {
-                console.error("Kesalahan Sinkronisasi Koneksi SSE Stream Engine:", err);
-            };
-        } else {
-            document.getElementById('listTunggu').innerHTML = '<li class="list-group-item list-group-item-danger text-center py-4">Browser tidak mendukung SSE.</li>';
+        // ===================== POLLING CACHE (SETIAP 2 DETIK) =====================
+        // Admin menggunakan polling (bukan SSE) karena:
+        // 1. php artisan serve di Windows single-threaded → SSE akan blokir semua request
+        // 2. Polling tetap menggunakan data dari CACHE (bukan DB langsung)
+        // 3. Delay 2 detik masih sangat responsif untuk operator
+        //
+        // Papan display tetap pakai SSE (butuh real-time + suara panggilan otomatis).
+        function ambilDataAntrian() {
+            axios.get("{{ route('admin.antrian.data') }}")
+                .then(res => renderData(res.data))
+                .catch(err => console.error('Gagal ambil data:', err));
         }
 
-        // ===================== AKSI OPERATOR LOKET (AXIOS POST METHOD) =====================
+        function renderData(data) {
+            const filterPoli = document.getElementById('filterPoli').value;
+
+            // 1. Render Elemen Pasien Aktif Utama
+            const active = data.sedang_dipanggil || null;
+
+            if (active && active.idantrian) {
+                if (filterPoli === "" || active.kode_poli === filterPoli) {
+                    currentActiveIdantrian = active.idantrian;
+                    document.getElementById('nomorAktif').innerText = active.nomor || '-';
+                    document.getElementById('namaAktif').innerText = active.nama || 'Tidak Ada Panggilan';
+                    document.getElementById('poliAktif').innerText = active.nama_poli || '-';
+                }
+            } else {
+                currentActiveIdantrian = null;
+                document.getElementById('nomorAktif').innerText = "-";
+                document.getElementById('namaAktif').innerText = "Tidak Ada Panggilan";
+                document.getElementById('poliAktif').innerText = "-";
+            }
+
+            // 2. Render List Tunggu
+            let daftarTungguFiltered = data.daftar_tunggu || [];
+            if (filterPoli !== "") {
+                daftarTungguFiltered = daftarTungguFiltered.filter(item => item.kode_poli === filterPoli);
+            }
+
+            document.getElementById('totalTunggu').innerText = daftarTungguFiltered.length;
+            let htmlTunggu = '';
+            daftarTungguFiltered.forEach(item => {
+                htmlTunggu += `
+                    <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" onclick="panggilSpesifik('${item.idantrian}')" style="cursor:pointer">
+                        <div>
+                            <strong class="text-primary fs-5 me-2">${item.nomor}</strong>
+                            <span class="text-dark fw-bold">${item.nama}</span>
+                            <br><small class="text-muted">${item.nama_poli}</small>
+                        </div>
+                        <span class="badge bg-info rounded-pill">Panggil</span>
+                    </li>`;
+            });
+            document.getElementById('listTunggu').innerHTML = htmlTunggu || '<li class="list-group-item text-center text-muted py-4">Antrian tunggu hari ini kosong</li>';
+
+            // 3. Render List Terlewat
+            let htmlTerlewat = '';
+            let daftarTerlewatFiltered = data.terlewat || [];
+            if (filterPoli !== "") {
+                daftarTerlewatFiltered = daftarTerlewatFiltered.filter(item => item.kode_poli === filterPoli);
+            }
+
+            daftarTerlewatFiltered.forEach(item => {
+                htmlTerlewat += `
+                    <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" ondblclick="panggilUlangTerlewat('${item.idantrian}')" style="cursor:pointer">
+                        <div>
+                            <b class="text-danger fs-5 me-2">${item.nomor}</b>
+                            <span class="text-dark fw-semibold">${item.nama}</span>
+                            <br><small class="text-muted">${item.nama_poli}</small>
+                        </div>
+                        <span class="badge bg-warning text-dark rounded-pill">Terlewat</span>
+                    </li>`;
+            });
+            document.getElementById('listTerlewat').innerHTML = htmlTerlewat || '<li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>';
+
+            // 4. Render Tabel Log Hari Lain
+            let htmlHariLain = '';
+            let daftarHariLain = data.hari_lain || [];
+            daftarHariLain.forEach(item => {
+                if (filterPoli !== "" && item.kode_poli !== filterPoli) return;
+
+                let badgeColor = 'bg-secondary';
+                if (item.status === 'selesai') badgeColor = 'bg-success';
+                if (item.status === 'terlewat') badgeColor = 'bg-warning text-dark';
+                if (item.status === 'menunggu') badgeColor = 'bg-info';
+
+                htmlHariLain += `
+                    <tr>
+                        <td class="small fw-semibold text-muted">${item.tanggal_antrian}</td>
+                        <td><span class="badge bg-dark fw-bold">${item.nomor}</span></td>
+                        <td class="text-capitalize fw-bold text-dark">${item.nama}</td>
+                        <td><span class="badge bg-light text-primary border">${item.nama_poli}</span></td>
+                        <td><span class="badge ${badgeColor} text-capitalize">${item.status}</span></td>
+                    </tr>`;
+            });
+            document.getElementById('listHariLain').innerHTML = htmlHariLain || `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted small">Tidak ada riwayat antrian dari hari-hari sebelumnya.</td>
+                </tr>`;
+        }
+
+        // Mulai polling setelah halaman siap
+        document.addEventListener('DOMContentLoaded', function () {
+            ambilDataAntrian(); // Langsung ambil saat pertama kali buka
+            pollingInterval = setInterval(ambilDataAntrian, 2000); // Ulang tiap 2 detik
+        });
+
+        // ===================== AKSI OPERATOR LOKET (AXIOS POST) =====================
         function panggilUrutanBerikutnya() {
             const kp = document.getElementById('filterPoli').value;
             axios.post("{{ route('admin.antrian.panggil') }}", { kode_poli: kp }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil antrian.'));
         }
 
@@ -242,17 +249,25 @@
                 return;
             }
             axios.post("{{ route('admin.antrian.lewatkan') }}", { idantrian: currentActiveIdantrian }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
                 .catch(err => alert(err.response?.data?.message || 'Gagal melewatkan pasien.'));
         }
 
         function panggilSpesifik(id) {
             axios.post("{{ route('admin.antrian.panggil') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil pasien terpilih.'));
         }
 
         function panggilUlangTerlewat(id) {
             axios.post("{{ route('admin.antrian.panggil_terlewat') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil ulang pasien terlewat.'));
         }
+
+        // Hentikan polling saat halaman ditutup (cleanup)
+        window.addEventListener('beforeunload', function () {
+            if (pollingInterval) clearInterval(pollingInterval);
+        });
     </script>
 @endsection

@@ -73,6 +73,8 @@
 
     <script>
         let lastCalledId = null;
+        let sseReconnectDelay = 1000;
+        let audioDingdong = new Audio("{{ asset('audio/dingdong.mp3') }}");
 
         // Jam Digital Monitor
         setInterval(() => {
@@ -80,36 +82,38 @@
             document.getElementById('liveClock').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + ' - ' + now.toLocaleTimeString('id-ID') + ' WIB';
         }, 1000);
 
-        // Inisialisasi SSE Stream Client Handler
-        if (!!window.EventSource) {
-            const source = new EventSource("{{ route('antrian.stream') }}");
+        // ===================== SSE STREAM CLIENT =====================
+        function initSSE() {
+            if (!('EventSource' in window)) {
+                document.getElementById('papanGridTunggu').innerHTML = '<div class="col-12 text-center text-danger">Browser tidak mendukung SSE.</div>';
+                return;
+            }
 
+            const source = new EventSource("{{ route('antrian.stream') }}");
 
             source.addEventListener('queue-update', function (e) {
                 const data = JSON.parse(e.data);
 
-                // Deteksi pengaman objek aktif
-                const active = data.sedang_dipanggil;
+                sseReconnectDelay = 1000;
+
+                const active = data.sedang_dipanggil || null;
 
                 if (active && active.idantrian) {
                     document.getElementById('papanNomor').innerText = active.nomor || '-';
                     document.getElementById('papanNama').innerText = active.nama || 'Antrian Kosong';
                     document.getElementById('papanPoli').innerText = active.nama_poli || '-';
 
-                    // Cegah pengulangan suara jika ID antrian yang dipanggil masih sama
                     if (lastCalledId !== active.idantrian) {
                         lastCalledId = active.idantrian;
                         bunyiSuaraPanggilan(active.nomor, active.nama, active.nama_poli);
                     }
                 } else {
-                    // Jika data sedang_dipanggil kosong atau null
                     document.getElementById('papanNomor').innerText = "-";
                     document.getElementById('papanNama').innerText = "Antrian Kosong";
                     document.getElementById('papanPoli').innerText = "-";
                     lastCalledId = null;
                 }
 
-                // Render Grid Daftar Tunggu Publik (Maksimal 4 teratas)
                 let htmlGrid = '';
                 const antrianTunggu = data.daftar_tunggu ? data.daftar_tunggu.slice(0, 4) : [];
 
@@ -131,88 +135,55 @@
         </div>`;
             });
 
-
-            // source.addEventListener('queue-update', function (e) {
-            //     const data = JSON.parse(e.data);
-
-            //     // Render Panggilan Utama Aktif
-            //     // Render Panggilan Utama Aktif
-            //     const active = data.sedang_dipanggil && Array.isArray(data.sedang_dipanggil)
-            //         ? data.sedang_dipanggil[0]
-            //         : data.sedang_dipanggil;
-
-            //     if (active) {
-            //         document.getElementById('papanNomor').innerText = active.nomor || '-';
-            //         document.getElementById('papanNama').innerText = active.nama || 'Antrian Kosong';
-            //         document.getElementById('papanPoli').innerText = active.nama_poli || '-';
-
-            //         if (lastCalledId !== active.idantrian) {
-            //             lastCalledId = active.idantrian;
-            //             bunyiSuaraPanggilan(active.nomor, active.nama, active.nama_poli);
-            //         }
-            //     } else {
-            //         document.getElementById('papanNomor').innerText = "-";
-            //         document.getElementById('papanNama').innerText = "Antrian Kosong";
-            //         document.getElementById('papanPoli').innerText = "-";
-            //         lastCalledId = null;
-            //     }
-
-
-            //     // if (data.sedang_dipanggil) {
-            //     //     document.getElementById('papanNomor').innerText = data.sedang_dipanggil.nomor;
-            //     //     document.getElementById('papanNama').innerText = data.sedang_dipanggil.nama;
-            //     //     document.getElementById('papanPoli').innerText = data.sedang_dipanggil.nama_poli;
-
-            //     //     // Pengendali Audio Speech API anti-redundansi pemanggilan berulang
-            //     //     if (lastCalledId !== data.sedang_dipanggil.idantrian) {
-            //     //         lastCalledId = data.sedang_dipanggil.idantrian;
-            //     //         bunyiSuaraPanggilan(data.sedang_dipanggil.nomor, data.sedang_dipanggil.nama, data.sedang_dipanggil.nama_poli);
-            //     //     }
-            //     // } else {
-            //     //     document.getElementById('papanNomor').innerText = "-";
-            //     //     document.getElementById('papanNama').innerText = "Silakan Ambil Antrian";
-            //     //     document.getElementById('papanPoli').innerText = "-";
-            //     //     lastCalledId = null;
-            //     // }
-
-            //     // Render Grid Daftar Tunggu Publik (Maksimal 4 teratas)
-            //     let htmlGrid = '';
-            //     const antrianTunggu = data.daftar_tunggu.slice(0, 4);
-
-            //     antrianTunggu.forEach(item => {
-            //         htmlGrid += `
-            //             <div class="col-6">
-            //                 <div class="card card-sub-antrian p-3 text-center">
-            //                     <h3 class="text-primary class-nomor fw-bold mb-1">${item.nomor}</h3>
-            //                     <h6 class="text-dark fw-bold text-truncate mb-1 text-capitalize">${item.nama}</h6>
-            //                     <span class="badge bg-light text-secondary border rounded-pill small">${item.nama_poli}</span>
-            //                 </div>
-            //             </div>`;
-            //     });
-
-            //     document.getElementById('papanGridTunggu').innerHTML = htmlGrid || `
-            //         <div class="col-12 text-center py-5 text-muted">
-            //             <h5 class="fw-bold">Semua Pasien Telah Dilayani</h5>
-            //             <p class="small mb-0">Tidak ada antrian tunggu tersisa saat ini.</p>
-            //         </div>`;
-            // });
-
-            source.onerror = function (err) { console.error('Koneksi stream terputus:', err); };
-        } else {
-            document.getElementById('papanGridTunggu').innerHTML = '<div class="col-12 text-center text-danger">Browser tidak mendukung Server-Sent Events.</div>';
+            source.onerror = function () {
+                console.error('Koneksi SSE terputus. Reconnect dalam ' + sseReconnectDelay + 'ms...');
+                source.close();
+                setTimeout(initSSE, sseReconnectDelay);
+                sseReconnectDelay = Math.min(sseReconnectDelay * 2, 30000);
+            };
         }
 
-        // Web Speech API: Otomatisasi Suara Panggilan Indonesia
-        function bunyiSuaraPanggilan(nomor, nama, poli) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel(); // Matikan suara aktif antrian lain sebelumnya
+        document.addEventListener('DOMContentLoaded', initSSE);
 
-            const kalimat = `Nomor antrian, ${nomor}. Atas nama, ${nama}. Silakan menuju ke, ${poli}.`;
-            const utterance = new SpeechSynthesisUtterance(kalimat);
-            utterance.lang = 'id-ID';
-            utterance.rate = 0.82;
-            utterance.pitch = 1.0;
-            window.speechSynthesis.speak(utterance);
+        // ===================== PANGGILAN SUARA (Dingdong + Speech) =====================
+        // Panduan dari: Web Speech API + audio MP3
+        function bunyiSuaraPanggilan(nomor, nama, poli) {
+            // Batalkan speech yang sedang berjalan
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            // 1. Mainkan suara dingdong terlebih dahulu
+            if (audioDingdong) {
+                audioDingdong.currentTime = 0;
+                audioDingdong.play().catch(err => console.warn('Autoplay dingdong diblokir:', err));
+            }
+
+            // 2. Setelah audio selesai, ucapkan teks panggilan
+            audioDingdong.onended = function() {
+                if (!('speechSynthesis' in window)) return;
+
+                const kalimat = `Nomor antrian ${nomor}. Atas nama ${nama}. Silakan menuju ke ${poli}.`;
+                const utterance = new SpeechSynthesisUtterance(kalimat);
+                utterance.lang = 'id-ID';
+                utterance.rate = 0.85;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                window.speechSynthesis.speak(utterance);
+            };
+
+            // Fallback jika audio gagal dimuat: langsung speech
+            if (!audioDingdong || audioDingdong.error) {
+                audioDingdong.onended = null;
+                if ('speechSynthesis' in window) {
+                    const kalimat = `Nomor antrian ${nomor}. Atas nama ${nama}. Silakan menuju ke ${poli}.`;
+                    const utterance = new SpeechSynthesisUtterance(kalimat);
+                    utterance.lang = 'id-ID';
+                    utterance.rate = 0.85;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
         }
     </script>
 </body>

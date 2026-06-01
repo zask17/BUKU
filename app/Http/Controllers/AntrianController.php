@@ -119,11 +119,12 @@ class AntrianController extends Controller
         $this->updateAntrianCache();
 
         return response()->json([
-            'success'   => true,
-            'idantrian' => $dataBaru['idantrian'],
-            'nomor'     => $dataBaru['nomor'],
-            'nama'      => $request->nama,
-            'nama_poli' => $dataBaru['nama_poli']
+            'success'    => true,
+            'idantrian'  => $dataBaru['idantrian'],
+            'nomor'      => $dataBaru['nomor'],
+            'nama'       => $request->nama,
+            'nama_poli'  => $dataBaru['nama_poli'],
+            'tiket_url'  => route('antrian.tiket', $dataBaru['idantrian'])
         ]);
     }
     // public function guestDaftar(Request $request)
@@ -246,13 +247,46 @@ class AntrianController extends Controller
         return response()->json(['success' => true, 'message' => 'Memanggil ulang pasien terlewat.']);
     }
 
+    // =========================================================================
+    // 3. CACHE DATA ENDPOINT UNTUK ADMIN (POLLING)
+    // =========================================================================
+    public function adminGetData()
+    {
+        $state = Cache::get('antrian_state');
+
+        if (!$state) {
+            $this->updateAntrianCache();
+            $state = Cache::get('antrian_state');
+        }
+
+        return response()->json($state);
+    }
+
+    // =========================================================================
+    // 3. HALAMAN TIKET PRIBADI GUEST (Tab baru setelah daftar)
+    // =========================================================================
+    public function tiket($id)
+    {
+        $antrian = DB::table('antrian')
+            ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
+            ->where('antrian.idantrian', $id)
+            ->select('antrian.*', 'poli.nama_poli', 'poli.kode_poli')
+            ->first();
+
+        if (!$antrian) {
+            abort(404, 'Antrian tidak ditemukan');
+        }
+
+        return view('antrian.tiket', compact('antrian'));
+    }
+
     public function papanIndex()
     {
         return view('antrian.papan');
     }
 
     // =========================================================================
-    // 3. SSE STREAM ENGINE SINKRONISASI DATA CACHE
+    // 4. SSE STREAM ENGINE SINKRONISASI DATA CACHE
     // =========================================================================
     public function streamAntrian()
     {
@@ -311,7 +345,7 @@ class AntrianController extends Controller
         ]);
     }
 
-    public function stream(Request $request = null)
+    public function stream(?Request $request = null)
     {
         return $this->streamAntrian();
     }

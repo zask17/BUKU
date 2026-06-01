@@ -75,23 +75,15 @@
             btnSubmit.innerText = "Daftar Sekarang";
 
             if (res.data.success) {
-                // Pengaman jika kolom nomor kosong, tampilkan fallback teks atau ID barunya
-                document.getElementById('noTiket').innerText = res.data.nomor || 'No. #' + res.data.idantrian;
-                document.getElementById('namaTiket').innerText = res.data.nama;
-                document.getElementById('poliTiket').innerText = res.data.nama_poli;
-                
-                // Set waktu cetak lokal
-                const sekarang = new Date();
-                document.getElementById('waktuTiket').innerText = 'Waktu Daftar: ' + 
-                    sekarang.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }) + ' - ' +
-                    sekarang.toLocaleTimeString('id-ID') + ' WIB';
+                // ✅ BUKA TAB BARU dengan tiket pribadi (pengganti kertas cetak)
+                if (res.data.tiket_url) {
+                    window.open(res.data.tiket_url, '_blank');
+                }
 
-                // Tampilkan animasi box tiket muncul
-                const boxTiket = document.getElementById('tiketAntrian');
-                boxTiket.classList.remove('d-none');
-                boxTiket.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Tampilkan notifikasi sukses
+                alert('✅ Pendaftaran berhasil! Nomor antrian: ' + res.data.nomor);
 
-                // Reset form input setelah berhasil daftar
+                // Reset form input
                 document.getElementById('nama').value = '';
                 document.getElementById('idpoli').value = '';
             }
@@ -100,7 +92,6 @@
             btnSubmit.disabled = false;
             btnSubmit.innerText = "Daftar Sekarang";
             
-            // Menampilkan pesan error yang lebih spesifik jika validasi Laravel gagal
             const pesanError = err.response?.data?.message || 'Gagal memproses pendaftaran. Silakan coba lagi.';
             alert(pesanError);
             console.error('Pendaftaran Error:', err);

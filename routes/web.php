@@ -54,9 +54,11 @@ Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.ga
 Route::get('/antrian', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
 Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.guest.daftar');
 Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
+Route::get('/antrian/tiket/{id}', [AntrianController::class, 'tiket'])->name('antrian.tiket');
 
-// Rute stream SSE 
+// Rute stream SSE
 Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
+Route::get('/sse/antrian', [AntrianController::class, 'stream'])->name('sse.antrian');
 
 // --- MIDTRANS WEBHOOK ---
 Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
@@ -161,6 +163,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
     // Antrian Operator Poli
     Route::prefix('antrian')->as('antrian.')->group(function () {
         Route::get('/', [AntrianController::class, 'adminIndex'])->name('index');
+        Route::get('/data', [AntrianController::class, 'adminGetData'])->name('data');
         Route::post('/panggil', [AntrianController::class, 'adminPanggil'])->name('panggil');
         Route::post('/lewatkan', [AntrianController::class, 'adminLewatkan'])->name('lewatkan');
         Route::post('/panggil-terlewat', [AntrianController::class, 'adminPanggilTerlewat'])->name('panggil_terlewat');
