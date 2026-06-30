@@ -46,31 +46,57 @@ class AntrianController extends Controller
             'daftar_tunggu'    => $daftar_tunggu,
             'sedang_dipanggil' => $sedang_dipanggil,
             'terlewat'         => $terlewat,
-            'hari_lain'        => null, // diisi terpisah oleh getHariLain()
+            'hari_lain'        => null,
         ];
 
         Cache::put('antrian_state', $state, now()->addHours(12));
+
+        // Ikut rebuild cache riwayat (selesai / tidak_hadir)
+        $this->buildCacheRiwayat();
     }
 
     // =========================================================================
-    // DATA HARI LAIN — cache terpisah (jarang berubah, refresh tiap 1 jam)
+    // DATA RIWAYAT — cache terpisah (refresh tiap 30 detik setelah ada perubahan)
+    // Hanya menampilkan status selesai dan tidak_hadir, diurutkan descending.
     // =========================================================================
     private function getHariLain()
     {
-        return Cache::remember('antrian_hari_lain', now()->addHour(), function () {
+        return Cache::remember('antrian_hari_lain', now()->addMinutes(30), function () {
             $hariIni = date('Y-m-d');
 
             return DB::table('antrian')
                 ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
-                ->whereDate('antrian.created_at', '<', $hariIni)
+                ->whereIn('antrian.status', ['selesai', 'tidak_hadir'])
                 ->whereNull('antrian.deleted_at')
                 ->select('antrian.*', 'poli.nama_poli', 'poli.kode_poli',
                     DB::raw("TO_CHAR(antrian.created_at::timestamp, 'DD-MM-YYYY') as tanggal_antrian"))
                 ->orderBy('antrian.created_at', 'desc')
-                ->orderBy('antrian.idantrian', 'asc')
-                ->limit(500) // aman: max 500 record historis
+                ->orderBy('antrian.idantrian', 'desc')
+                ->limit(500)
                 ->get();
         });
+    }
+
+    // =========================================================================
+    // BUILD ULANG CACHE RIWAYAT — dipanggil setelah ada perubahan status
+    // =========================================================================
+    private function buildCacheRiwayat()
+    {
+        $hariIni = date('Y-m-d');
+
+        $data = DB::table('antrian')
+            ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
+            ->whereIn('antrian.status', ['selesai', 'tidak_hadir'])
+            ->whereNull('antrian.deleted_at')
+            ->select('antrian.*', 'poli.nama_poli', 'poli.kode_poli',
+                DB::raw("TO_CHAR(antrian.created_at::timestamp, 'DD-MM-YYYY') as tanggal_antrian"))
+            ->orderBy('antrian.created_at', 'desc')
+            ->orderBy('antrian.idantrian', 'desc')
+            ->limit(500)
+            ->get();
+
+        Cache::put('antrian_hari_lain', $data, now()->addMinutes(30));
+        return $data;
     }
 
     // =========================================================================
@@ -90,8 +116,6 @@ class AntrianController extends Controller
         ]);
 
         $hariIni = date('Y-m-d');
-
-        // Menggunakan Database Transaction untuk mengunci tabel sementara saat menghitung urutan
         $dataBaru = DB::transaction(function () use ($request, $hariIni) {
 
             // 1. Ambil kode poli untuk prefix nomor antrian
@@ -103,11 +127,9 @@ class AntrianController extends Controller
                 ->whereDate('created_at', $hariIni)
                 ->whereNull('deleted_at')
                 ->count();
-
             $urutanBaru = $jumlahHariIni + 1;
 
-            // 3. Format nomor antrian (Contoh: UMUM-01, GIGI-02)
-            // LPAD di PHP menggunakan str_pad
+            // 3. Format nomor antrian 
             $nomorAntrian = $poli->kode_poli . '-' . str_pad($urutanBaru, 2, '0', STR_PAD_LEFT);
 
             // 4. Masukkan data ke dalam database
@@ -139,35 +161,6 @@ class AntrianController extends Controller
             'tiket_url'  => route('antrian.tiket', $dataBaru['idantrian'])
         ]);
     }
-    // public function guestDaftar(Request $request)
-    // {
-    //     $request->validate([
-    //         'nama'   => 'required|string|max:150',
-    //         'idpoli' => 'required|integer|exists:poli,idpoli'
-    //     ]);
-
-    //     $idBaru = DB::table('antrian')->insertGetId([
-    //         'nama'   => $request->nama,
-    //         'idpoli' => $request->idpoli,
-    //         'status' => 'menunggu'
-    //     ], 'idantrian');
-
-    //     $this->updateAntrianCache();
-
-    //     $dataAntrian = DB::table('antrian')
-    //         ->join('poli', 'antrian.idpoli', '=', 'poli.idpoli')
-    //         ->where('antrian.idantrian', $idBaru)
-    //         ->select('antrian.*', 'poli.nama_poli')
-    //         ->first();
-
-    //     return response()->json([
-    //         'success'   => true,
-    //         'idantrian' => $idBaru,
-    //         'nomor'     => $dataAntrian->nomor,
-    //         'nama'      => $dataAntrian->nama,
-    //         'nama_poli' => $dataAntrian->nama_poli
-    //     ]);
-    // }
 
     // =========================================================================
     // 2. PANEL MANAGEMENT CONTROL OPERATOR LOKET
@@ -259,6 +252,20 @@ class AntrianController extends Controller
         return response()->json(['success' => true, 'message' => 'Memanggil ulang pasien terlewat.']);
     }
 
+    public function adminTidakHadir(Request $request)
+    {
+        $request->validate(['idantrian' => 'required|integer']);
+
+        DB::table('antrian')->where('idantrian', $request->idantrian)->update([
+            'status'     => 'tidak_hadir',
+            'updated_at' => now()
+        ]);
+
+        $this->updateAntrianCache(); // Juga rebuild cache riwayat via buildCacheRiwayat()
+
+        return response()->json(['success' => true, 'message' => 'Pasien ditandai tidak hadir.']);
+    }
+
     // =========================================================================
     // 3. CACHE DATA ENDPOINT UNTUK ADMIN (POLLING)
     // =========================================================================
@@ -271,7 +278,6 @@ class AntrianController extends Controller
             $state = Cache::get('antrian_state');
         }
 
-        // Gabungkan data hari_lain dari cache terpisah (lebih jarang di-refresh)
         $state['hari_lain'] = $this->getHariLain();
 
         return response()->json($state);
@@ -352,15 +358,13 @@ class AntrianController extends Controller
                     'hari_lain'        => []
                 ]);
 
-                // hari_lain dimuat terpisah agar query berat tidak memblokir SSE
                 $state['hari_lain'] = $state['hari_lain'] ?? [];
 
                 $currentHash = md5(json_encode($state));
 
                 if ($currentHash !== $lastHash) {
-                    // Minimum interval 3 detik antar event agar tidak flood browser
                     $elapsed = microtime(true) - $lastEventTime;
-                    if ($elapsed >= 3.0) {
+                    if ($elapsed >= 3.0) { // Minimum interval 3 detik antar event agar tidak flood browser
                         echo "event: queue-update\n";
                         echo "data: " . json_encode($state) . "\n\n";
                         $lastHash = $currentHash;
@@ -380,13 +384,11 @@ class AntrianController extends Controller
             }
         }, 200, [
             'Content-Type'      => 'text/event-stream',
-            // 'Cache-Control'     => 'no-cache, no-store, must-revalidate',
             'Cache-Control'     => 'no-cache',
             'Connection'        => 'keep-alive',
-            'X-Accel-Buffering' => 'no', // Menghindari buffering pada Nginx
+            'X-Accel-Buffering' => 'no',
         ]);
     }
-
     public function stream(?Request $request = null)
     {
         return $this->streamAntrian();

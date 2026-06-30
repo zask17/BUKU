@@ -8,12 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Antrian extends Model
 {
     use SoftDeletes;
-
     protected $table = 'antrian';
     protected $primaryKey = 'idantrian';
-
     public $timestamps = false;
-
     protected $fillable = [
         'nama',
         'idpoli',

@@ -41,10 +41,12 @@
             justify-content: center;
             transition: opacity 0.5s ease;
         }
+
         #soundOverlay.activated {
             opacity: 0;
             pointer-events: none;
         }
+
         .sound-card {
             background: #fff;
             border-radius: 24px;
@@ -53,18 +55,22 @@
             text-align: center;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
+
         .sound-card .icon-speaker {
             font-size: 4rem;
             margin-bottom: 1rem;
         }
+
         .sound-card h3 {
             font-weight: 800;
             color: #1e3c72;
         }
+
         .sound-card p {
             color: #666;
             margin-bottom: 1.5rem;
         }
+
         .btn-aktifkan {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: #fff;
@@ -76,13 +82,16 @@
             cursor: pointer;
             transition: transform 0.15s, box-shadow 0.15s;
         }
+
         .btn-aktifkan:hover {
             transform: scale(1.05);
             box-shadow: 0 8px 25px rgba(30, 60, 114, 0.4);
         }
+
         .btn-aktifkan:active {
             transform: scale(0.97);
         }
+
         .sound-status-aktif {
             position: fixed;
             top: 10px;
@@ -99,6 +108,7 @@
             transition: opacity 0.5s;
             pointer-events: none;
         }
+
         .sound-status-aktif.visible {
             opacity: 1;
         }
@@ -106,12 +116,12 @@
 </head>
 
 <body>
-    <!-- Overlay aktivasi suara (harus diklik sekali biar browser izinkan autoplay) -->
     <div id="soundOverlay">
         <div class="sound-card">
             <div class="icon-speaker">🔊</div>
             <h3>Aktifkan Suara Papan</h3>
-            <p>Klik tombol di bawah untuk mengaktifkan suara panggilan antrian.<br>Browser memerlukan interaksi pengguna satu kali.</p>
+            <p>Klik tombol di bawah untuk mengaktifkan suara panggilan antrian.<br>Browser memerlukan interaksi pengguna
+                satu kali.</p>
             <button class="btn-aktifkan" onclick="aktifkanSuara()">🔊 Aktifkan Suara</button>
         </div>
     </div>
@@ -166,17 +176,15 @@
         function aktifkanSuara() {
             if (suaraAktif) return;
 
-            // 1. Putar audio senyap sebentar untuk unlock AudioContext
             if (audioHospital) {
                 audioHospital.volume = 0.01;
                 audioHospital.currentTime = 0;
                 audioHospital.play().then(function () {
                     audioHospital.pause();
                     audioHospital.volume = 1.0;
-                }).catch(function () {});
+                }).catch(function () { });
             }
 
-            // 2. Unlock SpeechSynthesis dengan ucapan singkat
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 var u = new SpeechSynthesisUtterance(' ');
@@ -184,7 +192,6 @@
                 u.rate = 10;
                 window.speechSynthesis.speak(u);
             }
-
             suaraAktif = true;
 
             // Sembunyikan overlay
@@ -272,7 +279,7 @@
             u.pitch = 1.0;
             u.volume = 1.0;
 
-            var called = false; // Mencegah dobel panggil dari safety timeout + onend
+            var called = false;
             var amanPanggil = function () {
                 if (called) return;
                 called = true;
@@ -287,8 +294,6 @@
             u.onerror = amanPanggil;
             window.speechSynthesis.speak(u);
 
-            // Safety timeout: jika onend/onerror tidak pernah terpanggil (bug Chrome),
-            // paksa lanjut setelah durasi estimasi
             if (delayMs != null) {
                 var estimated = Math.max(teks.length * 60, 800) + delayMs;
                 setTimeout(amanPanggil, estimated);
@@ -297,10 +302,6 @@
 
         function ucapkanPanggilan(nomor, nama, poli) {
             if (!('speechSynthesis' in window)) return;
-
-            // Urutan:
-            //   "Nomor antrian"  → [delay 1dtk]  →  "{nomor}"
-            //   → [delay 300ms]  →  "Atas nama {nama}. Silakan menuju ke {poli}."
             bicaraBertahap('Nomor antrian', function () {
                 bicaraBertahap(nomor, function () {
                     bicaraBertahap('Atas nama ' + nama + '. Silakan menuju ke ' + poli + '.');
@@ -328,7 +329,6 @@
             if (audioHospital && !audioHospital.error) {
                 audioHospital.onended = siapUcap;
             } else {
-                // Fallback: langsung TTS jika audio gagal
                 audioHospital.onended = null;
                 siapUcap();
             }

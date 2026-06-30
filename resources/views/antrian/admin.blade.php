@@ -80,7 +80,7 @@
 
             <div class="card border-0 shadow-sm rounded-4 bg-white">
                 <div class="card-body p-4">
-                    <h5 class="text-danger fw-bold mb-3">Antrian Terlewat <small class="text-muted fs-6">(Double-klik nama untuk panggil ulang)</small></h5>
+                    <h5 class="text-danger fw-bold mb-3">Antrian Terlewat</h5>
                     <div class="scroller-antrian">
                         <ul class="list-group list-group-flush" id="listTerlewat">
                             <li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>
@@ -183,7 +183,7 @@
             });
             document.getElementById('listTunggu').innerHTML = htmlTunggu || '<li class="list-group-item text-center text-muted py-4">Antrian tunggu hari ini kosong</li>';
 
-            // 3. Render List Terlewat
+            // 3. Render List Terlewat — dengan tombol Panggil Ulang & Tidak Hadir
             let htmlTerlewat = '';
             let daftarTerlewatFiltered = data.terlewat || [];
             if (filterPoli !== "") {
@@ -192,27 +192,36 @@
 
             daftarTerlewatFiltered.forEach(item => {
                 htmlTerlewat += `
-                    <li class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded" ondblclick="panggilUlangTerlewat('${item.idantrian}')" style="cursor:pointer">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3 bg-light mb-1 border-0 rounded">
                         <div>
                             <b class="text-danger fs-5 me-2">${item.nomor}</b>
                             <span class="text-dark fw-semibold">${item.nama}</span>
                             <br><small class="text-muted">${item.nama_poli}</small>
                         </div>
-                        <span class="badge bg-warning text-dark rounded-pill">Terlewat</span>
+                        <div class="d-flex gap-2 flex-shrink-0">
+                            <button class="btn btn-sm btn-primary" onclick="panggilUlangTerlewat('${item.idantrian}')">
+                                <i class="mdi mdi-play-circle"></i> Panggil Ulang
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="tidakHadirPasien('${item.idantrian}', '${item.nama}')">
+                                <i class="mdi mdi-close-circle"></i> Tidak Hadir
+                            </button>
+                        </div>
                     </li>`;
             });
             document.getElementById('listTerlewat').innerHTML = htmlTerlewat || '<li class="list-group-item text-center text-muted py-4">Tidak ada antrian terlewat</li>';
 
-            // 4. Render Tabel Log Hari Lain
+            // 4. Render Tabel Riwayat — hanya status selesai & tidak_hadir
             let htmlHariLain = '';
             let daftarHariLain = data.hari_lain || [];
             daftarHariLain.forEach(item => {
                 if (filterPoli !== "" && item.kode_poli !== filterPoli) return;
 
-                let badgeColor = 'bg-secondary';
-                if (item.status === 'selesai') badgeColor = 'bg-success';
-                if (item.status === 'terlewat') badgeColor = 'bg-warning text-dark';
-                if (item.status === 'menunggu') badgeColor = 'bg-info';
+                let badgeColor = 'bg-success';
+                let badgeLabel = 'Selesai';
+                if (item.status === 'tidak_hadir') {
+                    badgeColor = 'bg-danger';
+                    badgeLabel = 'Tidak Hadir';
+                }
 
                 htmlHariLain += `
                     <tr>
@@ -220,12 +229,12 @@
                         <td><span class="badge bg-dark fw-bold">${item.nomor}</span></td>
                         <td class="text-capitalize fw-bold text-dark">${item.nama}</td>
                         <td><span class="badge bg-light text-primary border">${item.nama_poli}</span></td>
-                        <td><span class="badge ${badgeColor} text-capitalize">${item.status}</span></td>
+                        <td><span class="badge ${badgeColor} text-capitalize">${badgeLabel}</span></td>
                     </tr>`;
             });
             document.getElementById('listHariLain').innerHTML = htmlHariLain || `
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-muted small">Tidak ada riwayat antrian dari hari-hari sebelumnya.</td>
+                    <td colspan="5" class="text-center py-4 text-muted small">Tidak ada riwayat antrian.</td>
                 </tr>`;
         }
 
@@ -239,7 +248,7 @@
         function panggilUrutanBerikutnya() {
             const kp = document.getElementById('filterPoli').value;
             axios.post("{{ route('admin.antrian.panggil') }}", { kode_poli: kp }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
-                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
+                .then(() => ambilDataAntrian())
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil antrian.'));
         }
 
@@ -249,20 +258,29 @@
                 return;
             }
             axios.post("{{ route('admin.antrian.lewatkan') }}", { idantrian: currentActiveIdantrian }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
-                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
+                .then(() => ambilDataAntrian())
                 .catch(err => alert(err.response?.data?.message || 'Gagal melewatkan pasien.'));
         }
 
         function panggilSpesifik(id) {
             axios.post("{{ route('admin.antrian.panggil') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
-                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
+                .then(() => ambilDataAntrian())
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil pasien terpilih.'));
         }
 
         function panggilUlangTerlewat(id) {
             axios.post("{{ route('admin.antrian.panggil_terlewat') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
-                .then(() => ambilDataAntrian()) // Refresh langsung setelah aksi
+                .then(() => ambilDataAntrian())
                 .catch(err => alert(err.response?.data?.message || 'Gagal memanggil ulang pasien terlewat.'));
+        }
+
+        function tidakHadirPasien(id, nama) {
+            if (!confirm('Tandai "' + nama + '" sebagai TIDAK HADIR? Status ini final dan tidak bisa dipanggil ulang.')) {
+                return;
+            }
+            axios.post("{{ route('admin.antrian.tidak_hadir') }}", { idantrian: id }, { headers: { 'X-CSRF-TOKEN': csrfToken } })
+                .then(() => ambilDataAntrian())
+                .catch(err => alert(err.response?.data?.message || 'Gagal menandai pasien tidak hadir.'));
         }
 
         // Hentikan polling saat halaman ditutup (cleanup)

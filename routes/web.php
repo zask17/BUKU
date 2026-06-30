@@ -168,6 +168,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => ['auth', 'r
         Route::post('/panggil', [AntrianController::class, 'adminPanggil'])->name('panggil');
         Route::post('/lewatkan', [AntrianController::class, 'adminLewatkan'])->name('lewatkan');
         Route::post('/panggil-terlewat', [AntrianController::class, 'adminPanggilTerlewat'])->name('panggil_terlewat');
+        Route::post('/tidak-hadir', [AntrianController::class, 'adminTidakHadir'])->name('tidak_hadir');
     });
 
     // Pengelolaan Data Mahasiswa (Student) beserta Kartu NFC

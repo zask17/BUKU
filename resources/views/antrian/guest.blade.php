@@ -6,8 +6,7 @@
 <div class="row justify-content-center py-5">
     <div class="col-xl-5 col-lg-6 col-md-8">
         <div class="card border-0 rounded-4 shadow">
-            <div class="card-body p-4 p-sm-5">
-                
+            <div class="card-body p-4 p-sm-5">                
                 <div id="tiketAntrian" class="d-none mb-5 text-center p-4 border border-2 border-dashed border-success rounded-4 bg-light">
                     <span class="badge bg-success text-white rounded-pill py-2 px-3 mb-2" id="poliTiket">POLIKLINIK</span>
                     <h4 class="text-success fw-bold mb-1">Registrasi Berhasil!</h4>
@@ -23,7 +22,6 @@
                     <h3 class="fw-bold text-primary">Ambil Antrian Baru</h3>
                     <p class="text-muted">Pilih unit layanan poliklinik tujuan Anda.</p>
                 </div>
-
                 <form id="formDaftar">
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Nama Lengkap Pasien</label>
@@ -39,7 +37,6 @@
                             @endforeach
                         </select>
                     </div>
-
                     <button type="submit" id="btnDaftar" class="btn btn-primary btn-lg w-100 fw-bold">Daftar Sekarang</button>
                 </form>
             </div>
@@ -60,7 +57,6 @@
         const idpoliInput = document.getElementById('idpoli').value;
         const token = "{{ csrf_token() }}";
 
-        // Mencegah double submit (spam klik)
         btnSubmit.disabled = true;
         btnSubmit.innerText = "Memproses...";
 
@@ -75,12 +71,10 @@
             btnSubmit.innerText = "Daftar Sekarang";
 
             if (res.data.success) {
-                // ✅ BUKA TAB BARU dengan tiket pribadi (pengganti kertas cetak)
                 if (res.data.tiket_url) {
                     window.open(res.data.tiket_url, '_blank');
                 }
 
-                // Tampilkan notifikasi sukses
                 alert('✅ Pendaftaran berhasil! Nomor antrian: ' + res.data.nomor);
 
                 // Reset form input
