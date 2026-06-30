@@ -122,7 +122,7 @@
     </div>
 @endsection
 
-@section('script-page')
+@section('js-page')
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         const csrfToken = "{{ csrf_token() }}";

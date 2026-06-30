@@ -54,11 +54,12 @@ Route::get('/kantin/gagal', [KantinController::class, 'gagal'])->name('kantin.ga
 Route::get('/antrian', [AntrianController::class, 'guestIndex'])->name('antrian.guest');
 Route::post('/antrian/daftar', [AntrianController::class, 'guestDaftar'])->name('antrian.guest.daftar');
 Route::get('/antrian/papan', [AntrianController::class, 'papanIndex'])->name('antrian.papan');
+Route::get('/antrian/papan/data', [AntrianController::class, 'papanGetData'])->name('antrian.papan.data');
 Route::get('/antrian/tiket/{id}', [AntrianController::class, 'tiket'])->name('antrian.tiket');
 
 // Rute stream SSE
 Route::get('/antrian/sse/stream', [AntrianController::class, 'stream'])->name('antrian.stream');
-Route::get('/sse/antrian', [AntrianController::class, 'stream'])->name('sse.antrian');
+// Route::get('/sse/antrian', [AntrianController::class, 'stream'])->name('sse.antrian');
 
 // --- MIDTRANS WEBHOOK ---
 Route::post('/midtrans/callback', [PaymentCallbackController::class, 'callback']);
@@ -205,4 +206,8 @@ Route::group(['prefix' => 'sales', 'as' => 'sales.', 'middleware' => ['auth', 'r
     Route::get('/dashboard', [SalesController::class, 'index'])->name('dashboard');
     Route::get('/barcode/{id}', [SalesController::class, 'findByBarcode'])->name('find-by-barcode');
     Route::post('/store-visit', [SalesController::class, 'storeVisit'])->name('storeVisit');
+});
+
+Route::get('/phpinfo', function () {
+    return phpinfo();
 });

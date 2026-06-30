@@ -2,7 +2,9 @@
 <html lang="en">
 
 <head>
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    @production
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    @endproduction
     @include('layouts.guest.head')
     <style>
         .container-scroller,
